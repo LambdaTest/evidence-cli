@@ -1,0 +1,4 @@
+valid: false
+errors: [version.unsupported]
+not_errors: [schema.invalid]
+description: a 0.2 pack is rejected with no schema noise — the version gate halts (decision 0027)

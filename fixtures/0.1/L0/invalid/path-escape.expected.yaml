@@ -1,0 +1,3 @@
+valid: false
+errors: [definition.path_escape]
+description: definition.path escapes the test directory (decisions 0029, 0031)

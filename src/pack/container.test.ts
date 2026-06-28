@@ -5,7 +5,7 @@ import * as path from "node:path";
 import AdmZip from "adm-zip";
 import { openContainer } from "./container";
 
-const SMOKE = path.resolve(__dirname, "../../fixtures/valid-L0/smoke.evidence");
+const SMOKE = path.resolve(__dirname, "../../fixtures/0.1/L0/valid/smoke.evidence");
 
 async function makeZip(): Promise<string> {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), "evi-zip-"));

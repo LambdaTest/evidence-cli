@@ -1,0 +1,3 @@
+valid: false
+errors: [ended.before_started]
+description: finalized pack with ended earlier than started (decision 0031, full-seal)

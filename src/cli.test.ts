@@ -26,12 +26,12 @@ describe("evidence CLI", () => {
   }, 120_000);
 
   it("exits 0 on the valid smoke pack", () => {
-    const r = run(["validate", path.join(FIX, "valid-L0/smoke.evidence"), "--profile", "L0"]);
+    const r = run(["validate", path.join(FIX, "0.1/L0/valid/smoke.evidence"), "--profile", "L0"]);
     expect(r.status).toBe(0);
   });
 
   it("exits 1 on an invalid pack and --json emits the report", () => {
-    const r = run(["validate", path.join(FIX, "invalid-L0/totals-mismatch.evidence"), "--json"]);
+    const r = run(["validate", path.join(FIX, "0.1/L0/invalid/totals-mismatch.evidence"), "--json"]);
     expect(r.status).toBe(1);
     const report = JSON.parse(r.stdout);
     expect(report.valid).toBe(false);
@@ -39,7 +39,7 @@ describe("evidence CLI", () => {
   });
 
   it("exits 2 (usage) when finalize is given a non-directory", () => {
-    const r = run(["finalize", path.join(FIX, "valid-L0/smoke.evidence/run.yaml")]);
+    const r = run(["finalize", path.join(FIX, "0.1/L0/valid/smoke.evidence/run.yaml")]);
     expect(r.status).toBe(2);
   });
 });

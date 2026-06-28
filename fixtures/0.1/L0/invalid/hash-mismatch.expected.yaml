@@ -1,0 +1,3 @@
+valid: false
+errors: [definition.hash_mismatch]
+description: finalized pack whose definition.sha256 does not match the file (decisions 0011, 0018, 0031)
