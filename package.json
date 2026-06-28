@@ -4,9 +4,30 @@
   "description": "An open, framework-agnostic format for what a test run produced — and the CLI that seals and validates it.",
   "license": "MIT",
   "private": true,
+  "bin": { "evidence": "dist/cli.js" },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
   "scripts": {
+    "build": "tsc && node scripts/copy-schemas.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "docs": "npm --prefix design/web run dev",
     "docs:build": "npm --prefix design/web run build",
     "docs:install": "npm --prefix design/web install"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.14",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "commander": "^12.1.0",
+    "picocolors": "^1.0.1",
+    "yaml": "^2.5.0"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.5",
+    "@types/node": "^20.14.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
   }
 }
