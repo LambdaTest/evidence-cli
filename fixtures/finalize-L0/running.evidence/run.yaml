@@ -1,0 +1,6 @@
+# A live, in-flight pack: no ended/totals yet. `evidence finalize` derives them.
+evidence: "0.1"
+run_id: 2026-06-28-running
+status: running
+title: Running pack to finalize
+started: 2026-06-28T09:00:00Z
