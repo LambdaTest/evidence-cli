@@ -1,0 +1,12 @@
+{
+  "name": "evidence-cli",
+  "version": "0.0.0",
+  "description": "An open, framework-agnostic format for what a test run produced — and the CLI that seals and validates it.",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "docs": "npm --prefix design/web run dev",
+    "docs:build": "npm --prefix design/web run build",
+    "docs:install": "npm --prefix design/web install"
+  }
+}

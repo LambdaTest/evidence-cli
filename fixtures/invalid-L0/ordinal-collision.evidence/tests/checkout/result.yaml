@@ -1,0 +1,10 @@
+evidence: "0.1"
+test: checkout
+status: passed
+definition:
+  path: test.md
+steps:
+  # INVALID: both steps claim ordinal 1. Ordinals must be unique and strictly
+  # increasing in array order. (Decision 0030.)
+  - { id: open-checkout, ordinal: 1, status: passed, kind: navigate }
+  - { id: place-order,   ordinal: 1, status: passed, kind: assertion }

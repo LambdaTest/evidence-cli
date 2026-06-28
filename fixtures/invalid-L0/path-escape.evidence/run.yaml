@@ -1,0 +1,9 @@
+evidence: "0.1"
+run_id: 2026-06-19-path-escape
+status: running
+title: Definition path escape (INVALID)
+started: 2026-06-19T10:00:00Z
+# This pack is `running`, so `ended`/`totals` are legitimately absent. The
+# violation is in tests/checkout/result.yaml: its `definition.path` escapes the
+# test directory with `../`. A contained relative path is required at ANY run
+# status. See decisions 0029 (definition path safety) and 0031 (validator cross-checks).

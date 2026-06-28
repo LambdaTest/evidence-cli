@@ -1,0 +1,9 @@
+evidence: "0.1"
+run_id: 2026-06-19-ordinal-collision
+status: running
+title: Step ordinal collision (INVALID)
+started: 2026-06-19T10:00:00Z
+# This pack is `running`, so `ended`/`totals` are legitimately absent. The
+# violation is in tests/checkout/result.yaml: two steps share ordinal 1. Step
+# ordinals MUST be unique and strictly increasing in array order (gaps are fine).
+# See decisions 0030 (ordinal semantics) and 0031 (validator cross-checks).

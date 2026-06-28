@@ -1,0 +1,25 @@
+evidence: "0.1"
+test: login
+status: failed
+definition:
+  path: test.md
+  sha256: "sha256:c7596aec1575cbbbf4d7d1f909b965c2cd08f9afbfb88b643fe2963db417d029"
+duration_ms: 6100
+tags: [auth, p0]
+requirements: [REQ-AUTH]
+steps:
+  - id: open-signin
+    ordinal: 1
+    status: passed
+    kind: navigate
+    duration_ms: 2600
+  - id: submit-credentials
+    ordinal: 2
+    status: failed
+    kind: assertion
+    duration_ms: 3500
+    defect: Product
+    expected: "account dashboard is shown after sign-in"
+    actual: "stayed on /signin with error 'invalid credentials' for known-good user"
+    check:
+      kind: presence

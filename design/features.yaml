@@ -1,0 +1,49 @@
+# Feature / spec-area nodes for the decision traceability.
+#
+# Each feature is a capability of evidence-cli produced by a set of decisions
+# (see each decision's `feature:` frontmatter) and maps to its spec target — the
+# contract page and/or schema/code it ultimately lands in. The viewer is
+# spec-centric (decision 0032, superseding the node graph 0026): a spec key links
+# to its governing decisions via each decision's `governs` pointers; features are
+# the coarse grouping those decisions roll up to.
+features:
+  - id: pack-format
+    title: Pack format & container
+    blurb: The .evidence directory/zip and the run.yaml manifest anchor.
+    spec: design/contract/01-pack-layout.md
+  - id: definition
+    title: Definition handling
+    blurb: The opaque, framework-owned definition — referenced and hashed, never parsed.
+    spec: design/schemas/L0/result.schema.json#/properties/definition
+  - id: result-model
+    title: Result model
+    blurb: Per-test result.yaml — verdicts, steps, and the L0 mandatory cut.
+    spec: design/schemas/L0/result.schema.json
+  - id: run-model
+    title: Run model
+    blurb: Run-level run.yaml — lifecycle, totals, metrics, environment.
+    spec: design/schemas/L0/run.schema.json
+  - id: validate
+    title: Validate
+    blurb: Status-gated conformance checking against a profile.
+    spec: design/contract/03-commands.md
+  - id: finalize
+    title: Finalize
+    blurb: Derive totals + definition hashes, set finalized, seal the live directory to a flat zip.
+    spec: design/contract/03-commands.md
+  - id: index
+    title: Index
+    blurb: Autogenerate the optional human renders (summary.md / result.md) from load-bearing data.
+    spec: design/contract/03-commands.md
+  - id: profiles-config
+    title: Profiles & config
+    blurb: Profile resolution and the testmuai-branded config location.
+    spec: design/contract/03-commands.md
+  - id: runtime
+    title: Runtime & mounting
+    blurb: TypeScript/Node, mounted in-process as `kane-cli evidence`.
+    spec: design/contract/03-commands.md
+  - id: decision-system
+    title: Decision system & viewer
+    blurb: Governance, the ADR format, schemas-as-source-of-truth, and the viewer.
+    spec: design/README.md

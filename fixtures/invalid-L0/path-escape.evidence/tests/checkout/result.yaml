@@ -1,0 +1,9 @@
+evidence: "0.1"
+test: checkout
+status: passed
+definition:
+  # INVALID: path escapes the test directory. `definition.path` MUST be a
+  # contained relative path — no leading `/`, no `..` segment. (Decision 0029.)
+  path: ../shared/test.md
+steps:
+  - { id: open-checkout, ordinal: 1, status: passed, kind: navigate }
