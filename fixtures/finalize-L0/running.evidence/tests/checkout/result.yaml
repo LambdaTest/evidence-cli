@@ -1,0 +1,8 @@
+evidence: "0.1"
+test: checkout
+status: passed
+definition:
+  path: test.md
+steps:
+  - { id: open, ordinal: 1, status: passed }
+  - { id: pay,  ordinal: 2, status: passed }

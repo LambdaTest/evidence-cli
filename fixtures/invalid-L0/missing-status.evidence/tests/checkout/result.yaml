@@ -1,0 +1,9 @@
+evidence: "0.1"
+test: checkout
+# INVALID: `status` is required on every result.yaml (it is the test verdict).
+# This file omits it. A missing required field fails validation at ANY run status.
+# See decision 0015 (result.yaml mandatory cut).
+definition:
+  path: test.md
+steps:
+  - { id: open-checkout, ordinal: 1, status: passed, kind: navigate }

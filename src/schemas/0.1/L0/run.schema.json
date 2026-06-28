@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://evidence-cli.dev/schemas/0.1/L0/run.schema.json",
+  "title": "run.yaml (L0)",
+  "description": "Run-level manifest for an .evidence pack. Its presence at the top of a pack is what identifies the pack (the manifest anchor). One pack = one run. evidence-cli is framework-agnostic: nothing here is specific to any test framework.",
+  "type": "object",
+  "required": ["evidence", "run_id", "status", "started", "title"],
+  "properties": {
+    "evidence": {
+      "description": "Evidence CONTRACT version this pack conforms to. One contract version spans all profiles (L0–L3); adding a profile is additive and does NOT change it — only a breaking change to an existing meaning bumps the version. A validator is pinned to one contract version, so this is a const: a 0.1 validator rejects other versions rather than silently mis-reading them. See decision 0027.",
+      "const": "0.1"
+    },
+    "run_id": {
+      "description": "Stable identifier for this run.",
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "description": "Lifecycle of the run, NOT a test verdict. While `running`, totals are not yet authoritative; `finalize` seals the pack to `finalized`. `aborted` is a run that ended without sealing.",
+      "enum": ["running", "finalized", "aborted"]
+    },
+    "title": {
+      "description": "Human-readable run title.",
+      "type": "string",
+      "minLength": 1
+    },
+    "started": {
+      "description": "When the run started (RFC3339 / ISO-8601).",
+      "type": "string",
+      "format": "date-time"
+    },
+    "ended": {
+      "description": "When the run ended (RFC3339 / ISO-8601). Required once status is `finalized`.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "totals": {
+      "description": "Verdict roll-up over all tests. DERIVED by `evidence finalize` from every tests/<id>/result.yaml — not hand-authored. Required once status is `finalized`.",
+      "type": "object",
+      "required": ["tests", "passed", "failed", "broken", "skipped"],
+      "additionalProperties": false,
+      "properties": {
+        "tests": { "type": "integer", "minimum": 0 },
+        "passed": { "type": "integer", "minimum": 0 },
+        "failed": { "type": "integer", "minimum": 0 },
+        "broken": { "type": "integer", "minimum": 0 },
+        "skipped": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "metrics": {
+      "description": "Free-form, framework-defined metrics. Each metric is a typed FACT, never a verdict. The set of metric names and their `type` strings is entirely up to the producing framework.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["value", "type"],
+        "properties": {
+          "value": {
+            "description": "The measured value. A metric is a FACT, never a verdict, so boolean is intentionally excluded — a bare true/false reads as a pass/fail. Emit a flag as a typed string instead. See decision 0012.",
+            "type": ["number", "integer", "string"]
+          },
+          "type": {
+            "description": "Producer-defined type of the metric (open string, e.g. percentage, ratio, count, ms, currency). evidence-cli validates presence only, not vocabulary.",
+            "type": "string",
+            "minLength": 1
+          },
+          "unit": {
+            "description": "Optional display unit.",
+            "type": "string"
+          },
+          "label": {
+            "description": "Optional human label.",
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "environment": {
+      "description": "Optional provenance/context block — an OPEN map of key:value pairs. The keys below are conventional, none is required, and any additional key:value pairs are allowed. A non-browser framework (unit, API) may legitimately omit model/surfaces — or the whole block — entirely. See decision 0013.",
+      "type": "object",
+      "properties": {
+        "producer": {
+          "description": "The tool that produced this pack.",
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "version": { "type": "string" }
+          },
+          "additionalProperties": true
+        },
+        "model": { "type": "string" },
+        "surfaces": { "type": "array", "items": { "type": "string" } },
+        "ci": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "allOf": [
+    {
+      "description": "Finalized packs are sealed: ended timestamp and the derived totals must be present.",
+      "if": {
+        "properties": { "status": { "const": "finalized" } },
+        "required": ["status"]
+      },
+      "then": {
+        "required": ["ended", "totals"]
+      }
+    }
+  ],
+  "additionalProperties": true
+}

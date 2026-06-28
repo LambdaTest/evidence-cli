@@ -1,0 +1,11 @@
+evidence: "0.1"
+test: checkout
+status: passed
+definition:
+  path: test.md
+  sha256: "sha256:b9148b426bf0543939c5214ba09adf4309d8f24776b69724e50e806f0ca35258"
+duration_ms: 8400
+steps:
+  - { id: open-checkout,    ordinal: 1, status: passed, kind: navigate,  duration_ms: 3100 }
+  - { id: confirm-order,    ordinal: 2, status: passed, kind: input,     duration_ms: 2200 }
+  - { id: see-confirmation, ordinal: 3, status: passed, kind: assertion, duration_ms: 3100 }

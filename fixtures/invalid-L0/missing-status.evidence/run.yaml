@@ -1,0 +1,8 @@
+evidence: "0.1"
+run_id: 2026-06-19-running
+status: running
+title: Missing status (INVALID)
+started: 2026-06-19T10:00:00Z
+# This pack is `running`, so `ended`/`totals` are legitimately absent (structure-only
+# validation). The violation is in tests/checkout/result.yaml, which omits the
+# required `status` field — invalid regardless of run status.

@@ -1,0 +1,14 @@
+evidence: "0.1"
+run_id: 2026-06-19-smoke-7f3a
+status: finalized
+title: Nightly smoke
+started: 2026-06-19T10:00:00Z
+ended: 2026-06-19T10:02:14Z
+# totals is DERIVED by `evidence finalize` — it must agree with the per-test verdicts.
+totals: { tests: 2, passed: 1, failed: 1, broken: 0, skipped: 0 }
+metrics:
+  pass_rate: { value: 0.5, type: percentage }
+  duration: { value: 134, type: seconds }
+environment:
+  producer: { name: example-framework, version: 0.1.0 }
+  ci: { provider: github-actions, build: "42" }

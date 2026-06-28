@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://evidence-cli.dev/schemas/0.1/L0/result.schema.json",
+  "title": "result.yaml (L0)",
+  "description": "THE RESULT for one test inside an .evidence pack (tests/<id>/result.yaml): structured, easy-to-parse per-step outcomes. The test's DEFINITION (the framework's own artifact — kane test.md, a .spec.ts, etc.) lives beside this file and is OPAQUE to evidence-cli; it is referenced by `definition`, never parsed.",
+  "type": "object",
+  "required": ["evidence", "test", "status", "steps"],
+  "properties": {
+    "evidence": {
+      "description": "Evidence CONTRACT version this file conforms to. One contract version spans all profiles (L0–L3); only a breaking change bumps it. Const by design — a validator is pinned to its contract version. See decision 0027.",
+      "const": "0.1"
+    },
+    "test": {
+      "description": "Test identifier. MUST equal the tests/<id>/ directory name — the validator enforces this equality (a cross-check beyond JSON Schema; see decision 0031).",
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "description": "Test verdict, authored by the producer. `failed` = oracle evaluated and the product was wrong. `broken` = oracle could NOT be evaluated (environment/infra/test fault). `skipped` = not executed.",
+      "enum": ["passed", "failed", "broken", "skipped"]
+    },
+    "definition": {
+      "description": "Reference to the opaque definition artifact. The framework pre-declares `path` (its own native filename); `evidence finalize` adds `sha256`. evidence-cli asserts the file at `path` exists and (when sealed) that its hash matches — it never reads the content.",
+      "type": "object",
+      "required": ["path"],
+      "properties": {
+        "path": {
+          "description": "Path to the definition file, relative to and CONTAINED WITHIN this test directory. No leading '/', no '..' segment, no URL scheme — subdirectories are allowed. The pattern below catches the obvious shapes; the validator additionally normalizes the path and rejects any escape (see decisions 0029, 0031).",
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*(^|/)\\.\\.(/|$))(?![a-zA-Z][a-zA-Z0-9+.-]*:)[^\\\\]+$"
+        },
+        "sha256": {
+          "description": "Content hash of the definition file. Added by `evidence finalize`. Format: 'sha256:<hex>'.",
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      },
+      "additionalProperties": true
+    },
+    "steps": {
+      "description": "Ordered per-step outcomes. The framework decides what a 'step' is and its granularity. MAY be empty (a unit/API test may have no sub-steps).",
+      "type": "array",
+      "items": { "$ref": "#/$defs/step" }
+    },
+    "params_hash": {
+      "description": "Optional hash of the parameterization used for this test.",
+      "type": "string"
+    },
+    "external_id": {
+      "description": "Optional open map of links into external systems (e.g. a test-manager URL).",
+      "type": "object",
+      "additionalProperties": true
+    },
+    "duration_ms": { "type": "number", "minimum": 0 },
+    "attempts": {
+      "description": "Optional per-attempt outcomes for a retried test. Each attempt carries a `status` from the verdict enum; the array length is the attempt count. The test-level `status` remains the authoritative final verdict. See decision 0033.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": {
+            "description": "Outcome of this attempt — same vocabulary as the test verdict.",
+            "enum": ["passed", "failed", "broken", "skipped"]
+          },
+          "duration_ms": { "type": "number", "minimum": 0 }
+        },
+        "additionalProperties": true
+      }
+    },
+    "flaky": {
+      "description": "Optional. Derived: true when the statuses in `attempts` disagree. See decision 0033.",
+      "type": "boolean"
+    },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "requirements": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "step": {
+      "type": "object",
+      "required": ["id", "ordinal", "status"],
+      "properties": {
+        "id": {
+          "description": "Stable identifier for the step within this test.",
+          "type": "string",
+          "minLength": 1
+        },
+        "ordinal": {
+          "description": "1-based position in the producer's step sequence (NOT an index into this array). Ordinals MUST be unique and strictly increasing in array order; gaps are allowed when a producer records only some of a longer sequence. Uniqueness/monotonicity is a validator cross-check beyond JSON Schema; see decisions 0030, 0031.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "status": {
+          "description": "Step verdict, same vocabulary as the test verdict.",
+          "enum": ["passed", "failed", "broken", "skipped"]
+        },
+        "kind": {
+          "description": "OPTIONAL producer-defined step kind (open string, e.g. navigate, input, assertion, api, wait). Not required on a step; when present it must be non-empty. evidence-cli never checks the vocabulary. See decision 0009.",
+          "type": "string",
+          "minLength": 1
+        },
+        "duration_ms": { "type": "number", "minimum": 0 },
+        "durable_id": {
+          "description": "Optional stable cross-run identity for the step.",
+          "type": "string"
+        },
+        "defect": {
+          "description": "Optional defect classification for a non-passing step (e.g. Product, Infrastructure, Test).",
+          "type": "string"
+        },
+        "expected": { "type": "string" },
+        "actual": { "type": "string" },
+        "check": {
+          "description": "Optional oracle descriptor.",
+          "type": "object",
+          "properties": {
+            "kind": { "type": "string" }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

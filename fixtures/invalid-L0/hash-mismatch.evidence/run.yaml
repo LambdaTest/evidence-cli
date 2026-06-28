@@ -1,0 +1,7 @@
+evidence: "0.1"
+run_id: 2026-06-28-hashbad
+status: finalized
+title: Hash mismatch (INVALID)
+started: 2026-06-28T09:00:00Z
+ended: 2026-06-28T09:00:10Z
+totals: { tests: 1, passed: 1, failed: 0, broken: 0, skipped: 0 }

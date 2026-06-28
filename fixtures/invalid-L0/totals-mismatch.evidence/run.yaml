@@ -1,0 +1,10 @@
+evidence: "0.1"
+run_id: 2026-06-19-mismatch
+status: finalized
+title: Totals mismatch (INVALID)
+started: 2026-06-19T10:00:00Z
+ended: 2026-06-19T10:00:30Z
+# INVALID: the single test's verdict is `failed`, but totals claim a pass and no
+# failures. On a finalized pack, totals MUST agree with the rolled-up verdicts.
+# See decision 0011 (totals derived by finalize) and 0018 (status-gated validation).
+totals: { tests: 1, passed: 1, failed: 0, broken: 0, skipped: 0 }
