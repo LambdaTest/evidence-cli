@@ -6,7 +6,7 @@ import { finalize } from "./index";
 import { validate } from "../validate";
 import { parseYaml } from "../yaml";
 
-const SRC = path.resolve(__dirname, "../../fixtures/finalize-L0/running.evidence");
+const SRC = path.resolve(__dirname, "../../fixtures/0.1/L0/finalized/running.evidence");
 let work: string | undefined;
 
 async function stageCopy(): Promise<string> {

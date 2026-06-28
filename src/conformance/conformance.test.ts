@@ -6,9 +6,9 @@ import type { ValidationReport } from "../contract";
 import { discoverFixtures, toZip, type Fixture } from "./harness";
 
 const FIX = path.resolve(__dirname, "../../fixtures");
-const ROOTS = [path.join(FIX, "valid-L0"), path.join(FIX, "invalid-L0")];
+const ROOTS = [path.join(FIX, "0.1/L0/valid"), path.join(FIX, "0.1/L0/invalid")];
 
-const fixtures = discoverFixtures(ROOTS);
+const fixtures = discoverFixtures(FIX, ROOTS);
 const cases = fixtures.map((f) => [f.name, f] as const);
 
 function errorCodes(report: ValidationReport): string[] {

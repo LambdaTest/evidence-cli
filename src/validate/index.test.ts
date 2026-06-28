@@ -12,7 +12,7 @@ const FIX = path.resolve(__dirname, "../../fixtures");
 describe("validate — non-pack edge cases", () => {
   it("reports MANIFEST_MISSING when the target has no top-level run.yaml", async () => {
     // tests/ is a directory inside a pack, not a pack: it has no run.yaml anchor.
-    const report = await validate(path.join(FIX, "valid-L0/smoke.evidence/tests"));
+    const report = await validate(path.join(FIX, "0.1/L0/valid/smoke.evidence/tests"));
     expect(report.valid).toBe(false);
     expect(report.diagnostics.some((d) => d.code === Codes.MANIFEST_MISSING)).toBe(true);
   });

@@ -14,7 +14,7 @@ export interface Expected {
 }
 
 export interface Fixture {
-  /** human label, e.g. "invalid-L0/ordinal-collision" */
+  /** human label relative to fixtures/, e.g. "0.1/L0/invalid/ordinal-collision" */
   name: string;
   /** absolute path to the <name>.evidence directory */
   packDir: string;
@@ -23,13 +23,15 @@ export interface Fixture {
 
 /**
  * Discover every `<name>.evidence/` directory under the given roots, pairing it
- * with its sibling `<name>.expected.yaml` sidecar. Throws (no silent skips) if a
- * pack has no sidecar, or if an `invalid` expectation declares no error codes.
+ * with its sibling `<name>.expected.yaml` sidecar. `fixturesRoot` is the base the
+ * fixture name is reported relative to (e.g. `0.1/L0/invalid/ordinal-collision`),
+ * so labels stay unambiguous as more versions/profiles are added. Throws (no
+ * silent skips) if a pack has no sidecar, or if an `invalid` expectation declares
+ * no error codes.
  */
-export function discoverFixtures(roots: string[]): Fixture[] {
+export function discoverFixtures(fixturesRoot: string, roots: string[]): Fixture[] {
   const fixtures: Fixture[] = [];
   for (const root of roots) {
-    const rootLabel = path.basename(root);
     let entries: string[];
     try {
       entries = readdirSync(root);
@@ -41,7 +43,7 @@ export function discoverFixtures(roots: string[]): Fixture[] {
       const packDir = path.join(root, entry);
       const base = entry.replace(/\.evidence$/, "");
       const sidecar = path.join(root, `${base}.expected.yaml`);
-      const name = `${rootLabel}/${base}`;
+      const name = path.relative(fixturesRoot, packDir).replace(/\.evidence$/, "");
 
       let raw: string;
       try {
