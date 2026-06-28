@@ -5,22 +5,13 @@ import { Codes } from "../contract";
 
 const FIX = path.resolve(__dirname, "../../fixtures");
 
-describe("validate — version gate & schema", () => {
-  it("rejects a 0.2 pack with version.unsupported and halts (no schema noise)", async () => {
-    const report = await validate(path.join(FIX, "invalid-L0/version-0.2.evidence"));
-    expect(report.valid).toBe(false);
-    const codes = report.diagnostics.map((d) => d.code);
-    expect(codes).toContain(Codes.VERSION_UNSUPPORTED);
-    expect(codes).not.toContain(Codes.SCHEMA); // halted before schema pass
-  });
-
-  it("flags a missing required field as a schema error (not a version error)", async () => {
-    const report = await validate(path.join(FIX, "invalid-L0/missing-status.evidence"));
-    expect(report.valid).toBe(false);
-    expect(report.diagnostics.some((d) => d.code === Codes.SCHEMA)).toBe(true);
-  });
-
-  it("reports MANIFEST_MISSING when there is no run.yaml", async () => {
+// Fixture-pack conformance cases (valid/invalid + expected codes) live in the
+// data-driven corpus at src/conformance/. This file keeps only non-pack edge
+// cases — inputs that are not a real <name>.evidence pack and therefore carry no
+// expectation sidecar.
+describe("validate — non-pack edge cases", () => {
+  it("reports MANIFEST_MISSING when the target has no top-level run.yaml", async () => {
+    // tests/ is a directory inside a pack, not a pack: it has no run.yaml anchor.
     const report = await validate(path.join(FIX, "valid-L0/smoke.evidence/tests"));
     expect(report.valid).toBe(false);
     expect(report.diagnostics.some((d) => d.code === Codes.MANIFEST_MISSING)).toBe(true);

@@ -1,0 +1,3 @@
+valid: false
+errors: [schema.invalid]
+description: result.yaml omits the required status field (decision 0015)
