@@ -24,7 +24,7 @@ decision: >
   checked only for being an object; nothing inside it is required at L0. A
   non-browser framework may omit model/surfaces — or the whole block — entirely.
 governs:
-  - design/schemas/L0/run.schema.json#/properties/environment
+  - src/schemas/0.1/L0/run.schema.json#/properties/environment
 feature: [run-model]
 depends_on: [10, 2]
 supersedes: []

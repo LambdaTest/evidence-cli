@@ -23,7 +23,7 @@ decision: >
   may have no sub-steps). evidence-cli does not require steps to mirror the
   definition.
 governs:
-  - design/schemas/L0/result.schema.json#/properties/steps
+  - src/schemas/0.1/L0/result.schema.json#/properties/steps
 feature: [result-model]
 depends_on: [6, 2]
 supersedes: []

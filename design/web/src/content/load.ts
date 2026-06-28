@@ -12,10 +12,10 @@ import type {
 // ---------------------------------------------------------------------------
 // Sibling content is loaded at build/dev time via import.meta.glob.
 // Paths are relative to THIS module (design/web/src/content/load.ts):
-//   ../../../decisions  -> design/decisions
-//   ../../../contract   -> design/contract
-//   ../../../schemas/L0 -> design/schemas/L0
-//   ../../../README.md  -> design/README.md
+//   ../../../decisions          -> design/decisions
+//   ../../../contract           -> design/contract
+//   ../../../../src/schemas/0.1/L0 -> src/schemas/0.1/L0 (canonical home, decision 0038)
+//   ../../../README.md          -> design/README.md
 // Every glob may return 0..N entries — the app must never crash on absence.
 // ---------------------------------------------------------------------------
 
@@ -132,7 +132,7 @@ export function loadContractPages(): ContractPage[] {
 
 // --- Schemas ---------------------------------------------------------------
 
-const schemaFiles = import.meta.glob('../../../schemas/L0/*.json', {
+const schemaFiles = import.meta.glob('../../../../src/schemas/0.1/L0/*.json', {
   eager: true,
   import: 'default',
 }) as Record<string, JSONSchema>

@@ -27,7 +27,7 @@ decision: >
   sequence. `ordinal` is the step's position in the producer's sequence, not an
   index into the `steps[]` array.
 governs:
-  - design/schemas/L0/result.schema.json#/$defs/step/properties/ordinal
+  - src/schemas/0.1/L0/result.schema.json#/$defs/step/properties/ordinal
 feature: [result-model]
 depends_on: [8]
 supersedes: []

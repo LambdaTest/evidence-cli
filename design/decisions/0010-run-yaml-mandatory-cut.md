@@ -23,7 +23,7 @@ decision: >
   DERIVED by finalize. `metrics` and `environment` are optional. `lineage` is
   deferred.
 governs:
-  - design/schemas/L0/run.schema.json#/required
+  - src/schemas/0.1/L0/run.schema.json#/required
 feature: [run-model]
 depends_on: [3, 7]
 supersedes: []

@@ -15,12 +15,12 @@ options:
     summary: Maintain a doc description and a code schema independently.
     chosen: false
 decision: >
-  The L0 schemas under `design/schemas/L0/` are authored once as JSON Schema and
+  The L0 schemas under `src/schemas/0.1/L0/` are authored once as JSON Schema and
   are the single source of truth, consumed by BOTH `src/` (validate) AND
   `design/web` (the contract browser). Documentation cannot drift from the
   validator because they are the same files.
 governs:
-  - design/schemas/L0
+  - src/schemas/0.1/L0
   - src/
   - design/web
 feature: [decision-system]
@@ -29,6 +29,8 @@ supersedes: []
 ---
 
 ## Reasoning
+
+> **Amended by [0038](0038-schemas-canonical-home-in-src.md):** the canonical home is now `src/schemas/<version>/<profile>/` (e.g. `src/schemas/0.1/L0/`), imported directly by the validator. The single-source-of-truth principle below is unchanged — only the location moved.
 
 Drift between "what the docs say" and "what the validator enforces" is the
 classic way a spec loses trust. Eliminating the second copy eliminates the drift:
@@ -47,6 +49,6 @@ This decision is what gives [0001](0001-decisions-gate-code.md)'s
 
 ## Consequences
 
-- `src/` loads `design/schemas/L0/*.json` to validate; it does not redefine them.
+- `src/` loads `src/schemas/0.1/L0/*.json` to validate; it does not redefine them.
 - `design/web` renders those same files as the contract's field reference.
 - Schema changes are contract changes and therefore require a decision.

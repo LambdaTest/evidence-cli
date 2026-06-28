@@ -20,7 +20,7 @@ decision: >
   not required to declare a `kind` (a unit/API step may have none). Frameworks
   coin their own kinds.
 governs:
-  - design/schemas/L0/result.schema.json#/$defs/step/properties/kind
+  - src/schemas/0.1/L0/result.schema.json#/$defs/step/properties/kind
 feature: [result-model]
 depends_on: [2, 8]
 supersedes: []

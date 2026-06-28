@@ -31,8 +31,8 @@ decision: >
   mis-read it. Additive = new profile (same version); breaking = version bump,
   and older packs are never retro-invalidated.
 governs:
-  - design/schemas/L0/run.schema.json#/properties/evidence
-  - design/schemas/L0/result.schema.json#/properties/evidence
+  - src/schemas/0.1/L0/run.schema.json#/properties/evidence
+  - src/schemas/0.1/L0/result.schema.json#/properties/evidence
   - design/contract
 feature: [run-model, result-model]
 depends_on: [10, 20]

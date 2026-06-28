@@ -23,7 +23,7 @@ decision: >
   in result.yaml. `evidence finalize` reads that path, computes the content hash,
   and writes `definition.sha256` back. evidence-cli never guesses a filename.
 governs:
-  - design/schemas/L0/result.schema.json#/properties/definition
+  - src/schemas/0.1/L0/result.schema.json#/properties/definition
 feature: [definition, finalize]
 depends_on: [4]
 supersedes: []

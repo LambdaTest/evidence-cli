@@ -52,6 +52,7 @@ evidence-cli/
 
 ## Consequences
 
-- The viewer reads `../decisions`, `../contract`, `../schemas` from inside `design/web`.
-- `src/` imports schemas from `design/schemas/L0` — the
+- The viewer reads `../decisions`, `../contract` from inside `design/web`.
+- `src/` imports schemas from `src/schemas/0.1/L0` — the
   [single source of truth](0024-schemas-single-source-of-truth.md).
+- **Amended by [0038](0038-schemas-canonical-home-in-src.md):** the L0 schemas moved out of `design/` to `src/schemas/0.1/L0/` (they are consumed by code, not merely rendered); the rest of this structure stands.

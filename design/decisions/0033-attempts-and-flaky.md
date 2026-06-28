@@ -30,8 +30,8 @@ decision: >
   verdict. `flaky` is optional and means "the attempt statuses disagree" — now a
   real derivation over `attempts`, not a reference to absent data.
 governs:
-  - design/schemas/L0/result.schema.json#/properties/attempts
-  - design/schemas/L0/result.schema.json#/properties/flaky
+  - src/schemas/0.1/L0/result.schema.json#/properties/attempts
+  - src/schemas/0.1/L0/result.schema.json#/properties/flaky
 feature: [result-model]
 depends_on: [6, 15]
 supersedes: []

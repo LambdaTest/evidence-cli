@@ -22,7 +22,7 @@ decision: >
   it exists and records its content hash, but treats the bytes as opaque — it
   never parses them.
 governs:
-  - design/schemas/L0/result.schema.json#/properties/definition
+  - src/schemas/0.1/L0/result.schema.json#/properties/definition
 feature: [definition]
 depends_on: [2]
 supersedes: []

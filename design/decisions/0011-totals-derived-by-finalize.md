@@ -19,7 +19,7 @@ decision: >
   every tests/<id>/result.yaml. Totals are not hand-authored, and are required
   once the run is finalized.
 governs:
-  - design/schemas/L0/run.schema.json#/properties/totals
+  - src/schemas/0.1/L0/run.schema.json#/properties/totals
 feature: [run-model, finalize]
 depends_on: [6, 7]
 supersedes: []

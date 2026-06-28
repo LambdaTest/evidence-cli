@@ -14,15 +14,15 @@ features:
   - id: definition
     title: Definition handling
     blurb: The opaque, framework-owned definition — referenced and hashed, never parsed.
-    spec: design/schemas/L0/result.schema.json#/properties/definition
+    spec: src/schemas/0.1/L0/result.schema.json#/properties/definition
   - id: result-model
     title: Result model
     blurb: Per-test result.yaml — verdicts, steps, and the L0 mandatory cut.
-    spec: design/schemas/L0/result.schema.json
+    spec: src/schemas/0.1/L0/result.schema.json
   - id: run-model
     title: Run model
     blurb: Run-level run.yaml — lifecycle, totals, metrics, environment.
-    spec: design/schemas/L0/run.schema.json
+    spec: src/schemas/0.1/L0/run.schema.json
   - id: validate
     title: Validate
     blurb: Status-gated conformance checking against a profile.

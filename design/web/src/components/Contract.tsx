@@ -36,7 +36,7 @@ export function Contract() {
           The L0 contract is the minimum, framework-neutral shape every pack
           conforms to. The prose pages are the narrative; the schema tables are
           generated directly from the JSON Schemas in{' '}
-          <code>design/schemas/L0/</code> — the same files the validator uses.{' '}
+          <code>src/schemas/0.1/L0/</code> — the same files the validator uses.{' '}
           <b>Every key that a decision shaped is clickable</b>: select it to read
           the decision(s) behind it, right here.
         </p>
@@ -58,7 +58,7 @@ export function Contract() {
       <div className="section-title">L0 Schemas — click a key for its decisions</div>
       {schemas.length === 0 ? (
         <div className="empty">
-          No schemas found in design/schemas/L0/. Add *.json files to populate
+          No schemas found in src/schemas/0.1/L0/. Add *.json files to populate
           this section.
         </div>
       ) : (
@@ -75,7 +75,7 @@ export function Contract() {
       )}
 
       <div className="footer">
-        <span>generated from design/schemas/L0/*.json + design/decisions/*.md</span>
+        <span>generated from src/schemas/0.1/L0/*.json + design/decisions/*.md</span>
         <span>
           {schemas.length} schema(s) · {decisions.length} decisions
         </span>

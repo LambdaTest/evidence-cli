@@ -20,7 +20,7 @@ decision: >
   rollup rules. At most, the validator MAY warn if an authored status disagrees
   with the steps; it never overrides.
 governs:
-  - design/schemas/L0/result.schema.json#/properties/status
+  - src/schemas/0.1/L0/result.schema.json#/properties/status
 feature: [result-model]
 depends_on: [8, 6]
 supersedes: []

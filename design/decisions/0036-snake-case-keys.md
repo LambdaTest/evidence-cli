@@ -24,8 +24,8 @@ decision: >
   `paramsHash` and `externalId` are renamed to `params_hash` and `external_id`.
   No mixed casing is permitted in any schema, at any profile, going forward.
 governs:
-  - design/schemas/L0/run.schema.json
-  - design/schemas/L0/result.schema.json
+  - src/schemas/0.1/L0/run.schema.json
+  - src/schemas/0.1/L0/result.schema.json
 feature: [run-model, result-model]
 depends_on: [24]
 supersedes: []

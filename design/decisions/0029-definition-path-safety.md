@@ -29,7 +29,7 @@ decision: >
   directory. Subdirectories are allowed (a framework may keep `src/login.spec.ts`),
   bare filenames are the common case.
 governs:
-  - design/schemas/L0/result.schema.json#/properties/definition
+  - src/schemas/0.1/L0/result.schema.json#/properties/definition
 feature: [definition]
 depends_on: [5]
 supersedes: []

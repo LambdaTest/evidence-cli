@@ -13,12 +13,12 @@ function basename(path: string): string {
 
 /**
  * Normalize a `governs` entry into lookup tokens.
- *   design/schemas/L0/run.schema.json#/properties/totals
+ *   src/schemas/0.1/L0/run.schema.json#/properties/totals
  *     -> "run.schema.json#/properties/totals"
  *   design/contract/03-commands.md
  *     -> "design/contract/03-commands.md"
- *   design/schemas/L0/run.schema.json
- *     -> "design/schemas/L0/run.schema.json" AND "run.schema.json"
+ *   src/schemas/0.1/L0/run.schema.json
+ *     -> "src/schemas/0.1/L0/run.schema.json" AND "run.schema.json"
  */
 function tokensFor(governs: string): string[] {
   const hash = governs.indexOf('#')

@@ -22,8 +22,8 @@ decision: >
   MUST carry `id`, `ordinal`, `status`. Everything else — including failure
   forensics (expected/actual/defect/check) — is optional at L0.
 governs:
-  - design/schemas/L0/result.schema.json#/required
-  - design/schemas/L0/result.schema.json#/$defs/step/required
+  - src/schemas/0.1/L0/result.schema.json#/required
+  - src/schemas/0.1/L0/result.schema.json#/$defs/step/required
 feature: [result-model]
 depends_on: [6, 8, 4]
 supersedes: []

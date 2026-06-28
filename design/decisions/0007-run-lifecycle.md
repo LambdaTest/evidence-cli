@@ -23,7 +23,7 @@ decision: >
   verdict. While `running`, totals/index/hashes are not authoritative; `finalize`
   seals them. `aborted` is a run that ended without sealing.
 governs:
-  - design/schemas/L0/run.schema.json#/properties/status
+  - src/schemas/0.1/L0/run.schema.json#/properties/status
 feature: [run-model]
 depends_on: []
 supersedes: []

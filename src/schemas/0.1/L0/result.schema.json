@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://evidence-cli.dev/schemas/L0/result.schema.json",
+  "$id": "https://evidence-cli.dev/schemas/0.1/L0/result.schema.json",
   "title": "result.yaml (L0)",
   "description": "THE RESULT for one test inside an .evidence pack (tests/<id>/result.yaml): structured, easy-to-parse per-step outcomes. The test's DEFINITION (the framework's own artifact — kane test.md, a .spec.ts, etc.) lives beside this file and is OPAQUE to evidence-cli; it is referenced by `definition`, never parsed.",
   "type": "object",

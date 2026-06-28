@@ -23,7 +23,7 @@ decision: >
   optional `unit`/`label`). `type` is an open string declared by the producer.
   Metrics are FACTS, never verdicts.
 governs:
-  - design/schemas/L0/run.schema.json#/properties/metrics
+  - src/schemas/0.1/L0/run.schema.json#/properties/metrics
 feature: [run-model]
 depends_on: [2, 6]
 supersedes: []

@@ -23,8 +23,8 @@ decision: >
   was wrong (a real defect). `broken` = the oracle could NOT be evaluated
   (environment / infrastructure / test fault). `skipped` = not executed.
 governs:
-  - design/schemas/L0/result.schema.json#/properties/status
-  - design/schemas/L0/result.schema.json#/$defs/step/properties/status
+  - src/schemas/0.1/L0/result.schema.json#/properties/status
+  - src/schemas/0.1/L0/result.schema.json#/$defs/step/properties/status
 feature: [result-model]
 depends_on: []
 supersedes: []

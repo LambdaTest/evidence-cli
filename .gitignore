@@ -1,3 +1,7 @@
+# Dependencies and build output.
+node_modules/
+dist/
+
 # Working specs / brainstorming artifacts — not part of the tracked living spec.
 # The durable governance record lives in design/decisions/.
 docs/superpowers/

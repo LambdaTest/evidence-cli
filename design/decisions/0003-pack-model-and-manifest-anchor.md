@@ -24,7 +24,7 @@ decision: >
   identifies a valid pack. One pack = one run. `validate` accepts either form.
 governs:
   - design/contract
-  - design/schemas/L0/run.schema.json
+  - src/schemas/0.1/L0/run.schema.json
 feature: [pack-format, finalize]
 depends_on: []
 supersedes: []

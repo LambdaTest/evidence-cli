@@ -24,7 +24,7 @@ decision: >
   non-schema checks lives in [decision 0031](0031-validator-cross-checks.md).
 governs:
   - src/
-  - design/schemas/L0/run.schema.json#/allOf
+  - src/schemas/0.1/L0/run.schema.json#/allOf
 feature: [validate]
 depends_on: [7, 11, 5]
 supersedes: []
