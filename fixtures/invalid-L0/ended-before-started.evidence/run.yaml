@@ -1,0 +1,8 @@
+evidence: "0.1"
+run_id: 2026-06-28-timewarp
+status: finalized
+title: ended before started (INVALID)
+started: 2026-06-28T09:05:00Z
+# INVALID: ended precedes started. (Decision 0031, full-seal check.)
+ended: 2026-06-28T09:00:00Z
+totals: { tests: 1, passed: 1, failed: 0, broken: 0, skipped: 0 }

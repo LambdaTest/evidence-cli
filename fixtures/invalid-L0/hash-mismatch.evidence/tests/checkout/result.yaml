@@ -1,0 +1,9 @@
+evidence: "0.1"
+test: checkout
+status: passed
+definition:
+  path: test.md
+  # INVALID: this is not the sha256 of test.md (all zeros). (Decisions 0011/0018/0031.)
+  sha256: "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+steps:
+  - { id: open, ordinal: 1, status: passed }
