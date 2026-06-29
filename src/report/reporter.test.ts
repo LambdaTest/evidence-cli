@@ -6,6 +6,7 @@ const REPORT: ValidationReport = {
   valid: false,
   profile: "L0",
   version: "0.1",
+  status: "finalized",
   diagnostics: [
     { code: "totals.mismatch", severity: "error", location: "run.yaml#/totals/passed", message: "boom" },
   ],

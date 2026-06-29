@@ -17,10 +17,12 @@ export async function validate(
 ): Promise<ValidationReport> {
   const profile = opts.profile ?? DEFAULT_PROFILE;
   const diagnostics: Diagnostic[] = [];
+  let status: string | null = null;
   const finish = (): ValidationReport => ({
     valid: !diagnostics.some((d) => d.severity === "error"),
     profile,
     version: CONTRACT_VERSION,
+    status,
     diagnostics,
   });
 
@@ -41,6 +43,7 @@ export async function validate(
     diagnostics.push(err(Codes.MANIFEST_PARSE, "run.yaml", `run.yaml is not valid YAML: ${e?.message ?? e}`));
     return finish();
   }
+  status = typeof run?.status === "string" ? run.status : null;
 
   // Version gate (decision 0027): reject rather than mis-read; halt on mismatch.
   const vg = versionGate(run, "run.yaml");
