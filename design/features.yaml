@@ -43,6 +43,10 @@ features:
     title: Runtime & mounting
     blurb: TypeScript/Node, mounted in-process as `kane-cli evidence`.
     spec: design/contract/03-commands.md
+  - id: l1-profile
+    title: L1 profile
+    blurb: The additive evidence-artifact layer — per-test logs/ and steps/ screenshots, global coverage/, optional video; opaque and validated by filesystem cross-checks.
+    spec: design/contract/04-L1.md
   - id: decision-system
     title: Decision system & viewer
     blurb: Governance, the ADR format, schemas-as-source-of-truth, and the viewer.

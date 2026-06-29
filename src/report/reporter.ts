@@ -44,10 +44,11 @@ export class HumanReporter implements Reporter {
       const line = `${this.sym(d.severity)} ${d.location}: ${d.message} [${d.code}]`;
       process.stdout.write(this.paint(line, d.severity) + "\n");
     }
+    const where = `profile ${report.profile}, evidence ${report.version}, status ${report.status ?? "unknown"}`;
     if (report.valid) {
-      process.stdout.write(this.paint(`${this.sym("ok")} valid (profile ${report.profile}, evidence ${report.version})`, "ok") + "\n");
+      process.stdout.write(this.paint(`${this.sym("ok")} valid (${where})`, "ok") + "\n");
     } else {
-      process.stdout.write(this.paint(`${this.sym("error")} invalid — ${errors.length} error(s), ${warnings.length} warning(s)`, "error") + "\n");
+      process.stdout.write(this.paint(`${this.sym("error")} invalid — ${errors.length} error(s), ${warnings.length} warning(s) (${where})`, "error") + "\n");
     }
   }
 

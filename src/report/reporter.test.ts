@@ -6,6 +6,7 @@ const REPORT: ValidationReport = {
   valid: false,
   profile: "L0",
   version: "0.1",
+  status: "finalized",
   diagnostics: [
     { code: "totals.mismatch", severity: "error", location: "run.yaml#/totals/passed", message: "boom" },
   ],
@@ -42,5 +43,10 @@ describe("reporters", () => {
   it("HumanReporter (TTY) uses the ✗ glyph", () => {
     const out = capture(() => new HumanReporter(true).validation(REPORT));
     expect(out).toContain("✗");
+  });
+
+  it("HumanReporter surfaces the pack's current status", () => {
+    const out = capture(() => new HumanReporter(false).validation(REPORT));
+    expect(out).toContain("finalized");
   });
 });

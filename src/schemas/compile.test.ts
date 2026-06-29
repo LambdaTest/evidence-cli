@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { loadSchemas } from "./compile";
+import { loadSchemas, loadL1Schemas } from "./compile";
 
 describe("loadSchemas", () => {
   it("accepts a minimal valid run.yaml object", () => {
@@ -31,5 +31,33 @@ describe("loadSchemas", () => {
       started: "2026-06-28T09:00:00Z",
     });
     expect(ok).toBe(false);
+  });
+});
+
+describe("loadL1Schemas", () => {
+  it("accepts a logs/meta.yaml with at least one fully-declared log", () => {
+    const { logsMeta } = loadL1Schemas("0.1");
+    expect(
+      logsMeta({ logs: [{ name: "console", file: "console.ndjson", format: "ndjson" }] }),
+    ).toBe(true);
+  });
+
+  it("rejects an empty logs list and missing entry fields", () => {
+    const { logsMeta } = loadL1Schemas("0.1");
+    expect(logsMeta({ logs: [] })).toBe(false);
+    expect(logsMeta({ logs: [{ name: "x" }] })).toBe(false);
+  });
+
+  it("accepts any non-empty format string (open vocabulary)", () => {
+    const { logsMeta } = loadL1Schemas("0.1");
+    expect(
+      logsMeta({ logs: [{ name: "trace", file: "trace.csv", format: "csv" }] }),
+    ).toBe(true);
+  });
+
+  it("requires url on video.yaml", () => {
+    const { video } = loadL1Schemas("0.1");
+    expect(video({ url: "https://store/v.mp4" })).toBe(true);
+    expect(video({})).toBe(false);
   });
 });

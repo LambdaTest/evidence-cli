@@ -1,0 +1,22 @@
+# The profile ladder on the 0.1 contract.
+#
+# Profiles are a single additive axis (decisions 0020, 0027): L0 is the minimal
+# core, and each higher profile KEEPS everything below it and adds more — it never
+# rewrites the core. `extends` records that containment; the viewer renders the
+# ladder so "L1 = L0 + more" is visible. `adds` is the short hint shown per layer.
+profiles:
+  - id: L0
+    title: Minimal core
+    blurb: >
+      The minimum, framework-neutral shape every pack conforms to — the run
+      manifest plus structured per-step results, anchored by run.yaml.
+    adds: run.yaml · result.yaml · the opaque definition
+
+  - id: L1
+    title: Evidence artifacts
+    extends: L0
+    blurb: >
+      Everything in L0, plus the captured proof of what happened: per-test
+      execution logs and step screenshots, and a global coverage directory
+      (video optional). Artifacts are opaque — referenced, never parsed.
+    adds: logs/ · steps/ screenshots · coverage/ · (video)

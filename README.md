@@ -13,6 +13,7 @@ npm i -g evidence-cli
 evidence finalize my-run.evidence/          # roll up totals, hash definitions, seal → .evidence (directory only)
 evidence index    my-run.evidence/          # (re)generate the optional human renders (summary.md / result.md)
 evidence validate my-run.evidence --profile L0   # check a directory OR a sealed .evidence zip
+evidence validate my-run.evidence --profile L1   # L1 = L0 + the captured-artifact layer (logs, screenshots, coverage)
 ```
 
 ## What's in a pack
@@ -38,9 +39,10 @@ never by rewriting the L0 core.
 
 `evidence-cli` is governed by a living decision log. The
 [`design/`](design) directory holds the **decisions** (proposition → options →
-decision → reasoning), the **contract**, the **JSON Schemas** (the single source
-of truth, consumed by both the validator and the docs), and a **web viewer** that
-renders all of it.
+decision → reasoning), the **contract**, and a **web viewer** that renders all of
+it. The **JSON Schemas** — the single source of truth, consumed by *both* the
+validator and the viewer — live under [`src/schemas/0.1/`](src/schemas) (decision
+0038).
 
 > The decision is the unit of work. Code is downstream of it. No code lands
 > without a decision; no change lands without updating the structure.
@@ -59,12 +61,17 @@ npm run docs        # serves the design/ viewer at a local URL
 evidence-cli/
   design/
     decisions/     # ADRs — every choice and its reasoning
-    contract/      # L0 pack layout, lifecycle, commands, config
-    schemas/L0/    # JSON Schema — single source of truth
+    contract/      # pack layout, lifecycle, commands (L0) + the L1 profile
+    profiles.yaml  # the additive profile ladder (L0 → L1 → …)
     web/           # local viewer (Vite/React)
-  src/             # validate, finalize, profile/config resolution  (TypeScript)
-  fixtures/        # valid-L0/, invalid-L0/  — conformance examples
+  src/
+    schemas/0.1/   # JSON Schema — single source of truth, version-first (L0, L1)
+    …              # validate, finalize, index, profile/config resolution (TypeScript)
+  fixtures/0.1/    # conformance corpus, version- & profile-first (L0/{valid,invalid,finalized})
 ```
+
+Schemas live under `src/` (consumed directly by the validator, decision 0038);
+the viewer and contract render those same files — no second copy.
 
 ## Status
 

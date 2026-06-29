@@ -1,10 +1,11 @@
-import { CONTRACT_VERSION, Codes, DEFAULT_PROFILE } from "../contract";
+import { CONTRACT_VERSION, Codes, DEFAULT_PROFILE, profileChain } from "../contract";
 import type { Diagnostic, ValidationReport } from "../contract";
 import { err } from "../diagnostics";
 import { openContainer } from "../pack/container";
 import { loadSchemas } from "../schemas/compile";
 import { parseYaml } from "../yaml";
 import { runCrossChecks } from "./checks";
+import { runL1Checks } from "./l1";
 import type { ValidateFunction } from "ajv";
 
 export interface ValidateOptions {
@@ -16,11 +17,19 @@ export async function validate(
   opts: ValidateOptions = {},
 ): Promise<ValidationReport> {
   const profile = opts.profile ?? DEFAULT_PROFILE;
+  const chain = profileChain(profile);
+  if (!chain) {
+    const e = new Error(`unknown profile "${profile}"`) as Error & { code?: string };
+    e.code = "USAGE";
+    throw e;
+  }
   const diagnostics: Diagnostic[] = [];
+  let status: string | null = null;
   const finish = (): ValidationReport => ({
     valid: !diagnostics.some((d) => d.severity === "error"),
     profile,
     version: CONTRACT_VERSION,
+    status,
     diagnostics,
   });
 
@@ -41,6 +50,7 @@ export async function validate(
     diagnostics.push(err(Codes.MANIFEST_PARSE, "run.yaml", `run.yaml is not valid YAML: ${e?.message ?? e}`));
     return finish();
   }
+  status = typeof run?.status === "string" ? run.status : null;
 
   // Version gate (decision 0027): reject rather than mis-read; halt on mismatch.
   const vg = versionGate(run, "run.yaml");
@@ -49,7 +59,10 @@ export async function validate(
     return finish();
   }
 
-  const schemas = loadSchemas(CONTRACT_VERSION, profile);
+  // The L0 layer always validates against the L0 schemas — higher profiles are
+  // additive and add checks, never a different run/result shape (decisions 0027,
+  // 0040). The requested profile only selects which extra layers run.
+  const schemas = loadSchemas(CONTRACT_VERSION, "L0");
   diagnostics.push(...schemaDiagnostics(schemas.run, run, "run.yaml"));
 
   const testIds = await container.listTestIds();
@@ -78,6 +91,12 @@ export async function validate(
   }
 
   diagnostics.push(...(await runCrossChecks({ run, tests, container })));
+
+  if (chain.includes("L1")) {
+    diagnostics.push(
+      ...(await runL1Checks({ container, status, tests, version: CONTRACT_VERSION })),
+    );
+  }
 
   return finish();
 }

@@ -6,7 +6,12 @@ import type { ValidationReport } from "../contract";
 import { discoverFixtures, toZip, type Fixture } from "./harness";
 
 const FIX = path.resolve(__dirname, "../../fixtures");
-const ROOTS = [path.join(FIX, "0.1/L0/valid"), path.join(FIX, "0.1/L0/invalid")];
+const ROOTS = [
+  path.join(FIX, "0.1/L0/valid"),
+  path.join(FIX, "0.1/L0/invalid"),
+  path.join(FIX, "0.1/L1/valid"),
+  path.join(FIX, "0.1/L1/invalid"),
+];
 
 const fixtures = discoverFixtures(FIX, ROOTS);
 const cases = fixtures.map((f) => [f.name, f] as const);
@@ -49,14 +54,14 @@ describe("L0 conformance corpus", () => {
   });
 
   it.each(cases)("%s — directory form", async (_name, f) => {
-    assertFixture(f, await validate(f.packDir));
+    assertFixture(f, await validate(f.packDir, { profile: f.profile }));
   });
 
   it.each(cases)("%s — sealed-zip form (identical outcome)", async (_name, f) => {
     const zipPath = await toZip(f.packDir);
     try {
-      const zipReport = await validate(zipPath);
-      const dirReport = await validate(f.packDir);
+      const zipReport = await validate(zipPath, { profile: f.profile });
+      const dirReport = await validate(f.packDir, { profile: f.profile });
       assertFixture(f, zipReport);
       // decision 0028: dir and zip resolve to the same valid + code set
       expect(outcome(zipReport)).toEqual(outcome(dirReport));

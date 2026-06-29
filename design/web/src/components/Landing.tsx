@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { loadReadme } from '../content/load'
+import { loadReadme, loadProfiles } from '../content/load'
 import { renderMarkdown } from '../content/markdown'
 
 const L0_FILES = [
@@ -15,23 +15,24 @@ const FEATURES = [
     body: 'The per-test definition is referenced and hashed, never parsed. kane test.md, a .spec.ts, an API suite — treated identically.',
   },
   {
-    tag: 'structured',
-    title: 'The same shape, every time',
-    body: 'A run manifest plus structured per-step results. A CI dashboard, an auditor, or a human can read a pack without knowing what produced it.',
+    tag: 'additive',
+    title: 'A ladder of profiles, one contract',
+    body: 'L0 is the minimal shape every pack conforms to. Higher profiles only add — L1 keeps all of L0 and brings the captured evidence artifacts (logs, screenshots, coverage). The 0.1 contract never gets rewritten.',
   },
   {
     tag: 'self-hosted',
     title: 'The repo IS the spec',
-    body: 'Decisions, contract and L0 JSON Schemas live in design/. The validator and these docs render the same files — drift is impossible, not just discouraged.',
+    body: 'Decisions, contract, and the JSON Schemas live in the repo. The validator and these docs render the same files — drift is impossible, not just discouraged.',
   },
 ]
 
 export function Landing() {
   const readme = loadReadme()
+  const profiles = loadProfiles()
   return (
     <div className="shell">
       <section className="hero">
-        <span className="eyebrow">evidence format · L0</span>
+        <span className="eyebrow">evidence format · L0 → L1</span>
         <h1>
           Evidence for <span className="grad">ANY</span> test framework.
         </h1>
@@ -57,6 +58,17 @@ export function Landing() {
             </span>
           ))}
         </div>
+
+        {profiles.length > 0 && (
+          <div className="chips" style={{ marginTop: 14 }}>
+            {profiles.map((p) => (
+              <span className="chip" key={p.id}>
+                <span className="k">{p.id}</span>
+                {p.extends ? `= ${p.extends} + ${p.title.toLowerCase()}` : p.title.toLowerCase()}
+              </span>
+            ))}
+          </div>
+        )}
 
         <div className="chips" style={{ marginTop: 18 }}>
           <Link

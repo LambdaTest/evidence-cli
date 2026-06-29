@@ -1,6 +1,7 @@
 ---
 title: Pack layout
 order: 1
+profile: L0
 ---
 
 # Pack layout (L0)

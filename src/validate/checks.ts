@@ -114,7 +114,7 @@ export async function runCrossChecks(input: CrossCheckInput): Promise<Diagnostic
 }
 
 /** A path is contained iff it is relative, scheme-less, and never climbs out. */
-function isContained(relPath: string): boolean {
+export function isContained(relPath: string): boolean {
   if (relPath.startsWith("/")) return false;
   if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(relPath)) return false; // URL scheme
   const norm = path.posix.normalize(relPath);
