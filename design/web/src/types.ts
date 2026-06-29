@@ -36,12 +36,25 @@ export interface Feature {
   spec?: string
 }
 
+/** A profile on the contract ladder, defined in design/profiles.yaml. */
+export interface Profile {
+  id: string
+  title: string
+  /** the profile this one builds on (its base); absent for the minimal core */
+  extends?: string
+  blurb?: string
+  /** short hint of what this layer adds, for the ladder display */
+  adds?: string
+}
+
 export interface ContractPage {
   title: string
   order: number
   body: string
   file: string
   slug: string
+  /** profile this page documents (frontmatter), e.g. L0 / L1 */
+  profile?: string
 }
 
 export interface SchemaDoc {
@@ -49,6 +62,8 @@ export interface SchemaDoc {
   file: string
   /** raw parsed JSON Schema */
   schema: JSONSchema
+  /** profile the schema belongs to, derived from its src/schemas/0.1/<profile>/ path */
+  profile?: string
 }
 
 /** Intentionally loose — JSON Schema is dynamic. */

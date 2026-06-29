@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://evidence-cli.dev/schemas/0.1/L1/logs-meta.schema.json",
+  "title": "logs/meta.yaml (L1)",
+  "description": "Declares the execution logs kept for one test, at tests/<id>/logs/meta.yaml. The log files themselves are OPAQUE to evidence-cli — referenced by `file` and checked for existence and declared `format`, never parsed. L1 requires at least one log. See decision 0040.",
+  "type": "object",
+  "required": ["logs"],
+  "properties": {
+    "logs": {
+      "description": "The logs this test kept. L1 requires at least one. The set of log names is open (the framework chooses what to keep); the `format` is a closed set evidence-cli understands.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "file", "format"],
+        "properties": {
+          "name": {
+            "description": "Human-facing log name (e.g. console, network). Open vocabulary.",
+            "type": "string",
+            "minLength": 1
+          },
+          "file": {
+            "description": "Path to the log file, relative to and CONTAINED WITHIN this test's logs/ directory. No leading '/', no '..' segment, no URL scheme — same containment rule as definition.path (decision 0029). The file MUST exist (a validator cross-check).",
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^(?!/)(?!.*(^|/)\\.\\.(/|$))(?![a-zA-Z][a-zA-Z0-9+.-]*:)[^\\\\]+$"
+          },
+          "format": {
+            "description": "Log format. Closed enum — evidence-cli validates the value but never parses the content.",
+            "enum": ["ndjson", "har", "log"]
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,6 +1,7 @@
 ---
 title: Lifecycle & verdicts
 order: 2
+profile: L0
 ---
 
 # Lifecycle & verdicts (L0)

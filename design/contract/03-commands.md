@@ -1,6 +1,7 @@
 ---
 title: Commands & config
 order: 3
+profile: L0
 ---
 
 # Commands & config (L0)

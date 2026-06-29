@@ -7,6 +7,7 @@ import type {
   SchemaDoc,
   JSONSchema,
   Feature,
+  Profile,
 } from '../types'
 
 // ---------------------------------------------------------------------------
@@ -123,6 +124,7 @@ export function loadContractPages(): ContractPage[] {
         body,
         file,
         slug: file.replace(/\.md$/, ''),
+        profile: asString(data.profile),
       }
     },
   )
@@ -131,17 +133,25 @@ export function loadContractPages(): ContractPage[] {
 }
 
 // --- Schemas ---------------------------------------------------------------
+// All profiles under the 0.1 contract — src/schemas/0.1/<profile>/*.json. Each
+// doc is tagged with its profile (the path segment after the version) so the
+// spec view can group L0, L1, … (decisions 0038, 0040).
 
-const schemaFiles = import.meta.glob('../../../../src/schemas/0.1/L0/*.json', {
+const schemaFiles = import.meta.glob('../../../../src/schemas/0.1/*/*.json', {
   eager: true,
   import: 'default',
 }) as Record<string, JSONSchema>
+
+function profileOf(path: string): string | undefined {
+  return path.match(/\/0\.1\/([^/]+)\//)?.[1]
+}
 
 export function loadSchemas(): SchemaDoc[] {
   const docs: SchemaDoc[] = Object.entries(schemaFiles).map(
     ([path, schema]) => ({
       file: basename(path),
       schema,
+      profile: profileOf(path),
     }),
   )
   docs.sort((a, b) => a.file.localeCompare(b.file))
@@ -194,4 +204,37 @@ export function loadFeatures(): Feature[] {
       }
     })
     .filter((f) => f.id.length > 0)
+}
+
+// --- Profiles (the contract's additive ladder) -----------------------------
+
+const profileFiles = import.meta.glob('../../../profiles.yaml', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+}) as Record<string, string>
+
+export function loadProfiles(): Profile[] {
+  const raw = Object.values(profileFiles)[0]
+  if (!raw) return []
+  let parsed: unknown
+  try {
+    parsed = yaml.load(raw)
+  } catch {
+    return []
+  }
+  const list = (parsed as { profiles?: unknown })?.profiles
+  if (!Array.isArray(list)) return []
+  return list
+    .map((p) => {
+      const obj = (p && typeof p === 'object' ? p : {}) as Record<string, unknown>
+      return {
+        id: asString(obj.id) ?? '',
+        title: asString(obj.title) ?? asString(obj.id) ?? '',
+        extends: asString(obj.extends),
+        blurb: asString(obj.blurb),
+        adds: asString(obj.adds),
+      }
+    })
+    .filter((p) => p.id.length > 0)
 }

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://evidence-cli.dev/schemas/0.1/L1/video.schema.json",
+  "title": "video.yaml (L1)",
+  "description": "Optional pointer to a test's video when it is not stored inline. Present only when a test uses the external form instead of an inline video.<ext> file. Validated only when present (video is optional at L1). See decision 0040.",
+  "type": "object",
+  "required": ["url"],
+  "properties": {
+    "url": {
+      "description": "Location of the video (e.g. an object-store or CDN URL).",
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": true
+}
