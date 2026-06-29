@@ -7,7 +7,7 @@
   "required": ["logs"],
   "properties": {
     "logs": {
-      "description": "The logs this test kept. L1 requires at least one. The set of log names is open (the framework chooses what to keep); the `format` is a closed set evidence-cli understands.",
+      "description": "The logs this test kept. L1 requires at least one. Both the log `name` and its `format` are open vocabulary — the framework chooses what to keep and how to label it; evidence-cli records both and parses neither.",
       "type": "array",
       "minItems": 1,
       "items": {
@@ -26,8 +26,9 @@
             "pattern": "^(?!/)(?!.*(^|/)\\.\\.(/|$))(?![a-zA-Z][a-zA-Z0-9+.-]*:)[^\\\\]+$"
           },
           "format": {
-            "description": "Log format. Closed enum — evidence-cli validates the value but never parses the content.",
-            "enum": ["ndjson", "har", "log"]
+            "description": "Producer-declared log format (open string, e.g. ndjson, har, log, csv, jsonl, txt). Since evidence-cli never parses the log content, it validates presence and non-emptiness only, never the vocabulary — same stance as step `kind` (decision 0009) and metric `type` (decision 0012).",
+            "type": "string",
+            "minLength": 1
           }
         },
         "additionalProperties": true

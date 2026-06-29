@@ -31,21 +31,23 @@ options:
     chosen: false
 decision: >
   L1 is the EVIDENCE-ARTIFACT layer. On top of the full L0 core (every L0 rule
-  still holds, same `evidence: "0.1"`), an L1 pack MUST carry: per test a `logs/`
-  directory with a `logs/meta.yaml` declaring at least one `{ name, file, format }`
-  (format ∈ a closed `{ndjson, har, log}`) whose `file` exists and is contained;
-  per test a `steps/` directory whose subfolders are named `<ordinal>-<id>`,
-  match a `result.yaml` step, and contain a `screenshot.<ext>`; and one GLOBAL
-  `coverage/` directory (existence only — its internals are open). Per-test
-  `video` (an inline `video.<ext>` or a `video.yaml` with `url`) is OPTIONAL; a
-  per-test `issues/` directory is reserved and unvalidated. Artifacts are OPAQUE
-  (existence/naming/declared-format checked, never parsed) except the small
-  declarations `logs/meta.yaml` and `video.yaml`. Validation is ADDITIVE and
-  LAYERED — a profile resolves to a chain (`L1 → [L0, L1]`) and `validate
-  --profile L1` runs every L0 check then the L1 additions. L1 checks are NOT
-  status-gated; instead the report carries the pack's current `status` so a host
-  that validates mid-run can interpret missing-artifact findings in context.
-  `finalize` is UNCHANGED — it already seals every artifact in the directory.
+  still holds, same `evidence: "0.1"`), a finalized L1 pack MUST carry: per test a
+  `logs/` directory with a `logs/meta.yaml` declaring at least one
+  `{ name, file, format }` (both `name` and `format` are OPEN strings — see below)
+  whose `file` exists and is contained; per test a `steps/` directory whose
+  subfolders are named `<ordinal>-<id>`, match a `result.yaml` step, and contain a
+  `screenshot.<ext>`; and one GLOBAL `coverage/` directory (existence only — its
+  internals are open). Per-test `video` (an inline `video.<ext>` or a `video.yaml`
+  with `url`) is OPTIONAL; a per-test `issues/` directory is reserved and
+  unvalidated. Artifacts are OPAQUE (existence/naming/declared-format checked,
+  never parsed) except the small declarations `logs/meta.yaml` and `video.yaml`.
+  Validation is ADDITIVE and LAYERED — a profile resolves to a chain
+  (`L1 → [L0, L1]`) and `validate --profile L1` runs every L0 check then the L1
+  additions. L1 is STATUS-GATED like L0 (decision 0018): artifact PRESENCE
+  (`logs/`, `steps/`, `coverage/`) is required only once `status: finalized`,
+  while shape/containment/matching checks on whatever artifacts ARE present run at
+  any status. The report also carries the pack's current `status`. `finalize` is
+  UNCHANGED — it already seals every artifact in the directory.
 governs:
   - design/contract/04-L1.md
   - src/schemas/0.1/L1
@@ -79,6 +81,18 @@ Only the two tiny declarations that evidence-cli must understand —
 external video is) — are parsed, each against its own L1 schema under
 [`src/schemas/0.1/L1/`](0038-schemas-canonical-home-in-src.md).
 
+**Why `format` is an open string, not a closed enum.** Since the log bytes are
+opaque and never parsed, evidence-cli gains nothing by constraining the *value* of
+`format` — and a closed `{ndjson, har, log}` would force a framework with `csv`,
+`jsonl`, or plain `txt` logs to mislabel them. This is the same call already made
+for step [`kind`](0009-step-kind-open-string.md) and metric
+[`type`](0012-typed-free-form-metrics.md): the format fixes the *structure* (a log
+has a `name`, a `file`, and a declared `format`), the framework supplies the
+*vocabulary*, and evidence-cli validates presence and non-emptiness only. `format`
+is therefore an open, non-empty string. (`har`/`ndjson` were always
+execution-trace shapes; mandating the *category* of L1 — that captured proof
+travels with the pack — does not require dictating each log's label.)
+
 **Why additive + layered.** [0027](0027-evidence-version-and-profiles.md) makes a
 profile purely additive on a single contract version. Modelling a profile as a
 **chain of layers** (`L1 = [L0, L1]`) is the literal implementation of that: L1
@@ -88,15 +102,21 @@ exactly the drift [0024](0024-schemas-single-source-of-truth.md) exists to
 prevent. L1 adds **no fields** to `run.yaml`/`result.yaml`; it is a sibling-tree
 layer validated by filesystem cross-checks plus the two declaration schemas.
 
-**Why not status-gated, and why the report carries `status`.** L0 gates some
-checks on `finalized` because totals/hashes literally do not exist until
-[finalize](0018-status-gated-validation.md). L1 artifacts are produced during the
-run, and *when* to demand them is a host concern, not the validator's: the
-kane-cli mount decides when to run L1 validation. So L1 checks run whenever
-invoked, and `validate` instead **reports the pack's current `status`** — a
-caller validating a `running` pack sees both the L1 findings and that the pack is
-still in flight, and interprets accordingly. This keeps the validator a checker,
-not a lifecycle manager.
+**Why presence is status-gated, exactly like L0.** An earlier draft left L1
+ungated and merely reported `status`. But that breaks the very guarantee
+[status-gating](0018-status-gated-validation.md) exists to give: `coverage/` is an
+end-of-run artifact, and `logs/`/`steps/` fill in as a run progresses, so a
+perfectly healthy `running` pack would report `valid: false` — the "false failure
+on an in-progress pack" 0018 was written to prevent. The fix is to treat L1
+presence the way L0 treats its sealed set: artifact PRESENCE (`logs/`, `steps/`,
+`coverage/`) is required only once `status: finalized`; before that, L1 is
+structure-only — it checks the *shape* of whatever artifacts already exist
+(`meta.yaml` parses, declared log files are contained and present, `steps/`
+subfolders are well-formed and match a step, `video.yaml` parses) but never fails
+a pack for an artifact that does not exist yet. A `running` pack that is otherwise
+sound is L1-valid. The report still carries the pack's current `status`, so a host
+also knows the lifecycle state at a glance. This keeps L1 consistent with L0 and
+keeps the validator a checker, not a lifecycle manager.
 
 **Why `finalize` is untouched.** [finalize](0035-finalize-targets-live-directory.md)
 already zips the *contents* of the live directory; logs/steps/coverage/video ride
@@ -111,8 +131,14 @@ validate, and it gains no L1 responsibility.
   container primitives (`exists`/`isDir`/`listDir`/`readText`) that read a
   directory and a flat zip identically (extending [0028](0028-zip-internal-layout.md)
   to artifact directories). `ValidationReport` gains a `status` field.
+- The L1 layer is status-gated like L0: presence checks (`logs/`/`steps/`/
+  `coverage/`) fire only when `status: finalized`; shape/containment/matching
+  checks run at any status against whatever artifacts exist.
+- `format` in `logs/meta.yaml` is an open non-empty string (not a closed enum),
+  consistent with [`kind`](0009-step-kind-open-string.md)/[`type`](0012-typed-free-form-metrics.md).
 - New L1 diagnostic codes (`l1.logs.*`, `l1.steps.*`, `l1.coverage.missing`,
-  `l1.video.invalid`); the conformance corpus gains `fixtures/0.1/L1/{valid,invalid}/`
-  and the harness infers the profile from the fixture path.
+  `l1.video.invalid`), the presence ones gated to finalized; the conformance
+  corpus gains `fixtures/0.1/L1/{valid,invalid}/` and the harness infers the
+  profile from the fixture path.
 - Deferred, additively: `issues/`, `coverage/` internals, artifact hashing, and
   L2/L3.

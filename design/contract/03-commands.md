@@ -31,6 +31,13 @@ finalized. See decision [0035 — finalize targets the live directory](#/decisio
    the directory's contents (root-level `run.yaml`, `tests/…` beside it, no
    wrapping folder). See decision [0028 — zip internal layout](#/decisions).
 
+The seal **replaces the live directory in place**: finalize builds the complete
+zip in memory, removes the `<name>.evidence/` directory, and writes the sealed
+`<name>.evidence` *file* at the exact path the directory occupied (the buffer is
+built before the directory is removed, so a mid-operation failure cannot lose
+data). Unzipping restores the tree. See decision
+[0039 — finalize seals in place](#/decisions).
+
 ## `evidence index <dir>`
 
 Regenerates the **optional** human renders — the run-level `summary.md` and each

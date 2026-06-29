@@ -19,11 +19,12 @@ This is itself a decision — [`design/decisions/0001-decisions-gate-code.md`](d
 3. **Full visibility.** Every decision records its **proposition**, the
    **options** weighed, the **decision**, and the **reasoning** — all in the tree,
    all rendered by the [viewer](design/web).
-4. **Schemas are the single source of truth.** The L0 JSON Schemas in
-   [`design/schemas/L0/`](design/schemas/L0) are consumed by *both* the validator
-   (`src/`) and the viewer (`design/web`). Docs cannot drift from the validator
-   because they are the same files. See
-   [decision 0024](design/decisions/0024-schemas-single-source-of-truth.md).
+4. **Schemas are the single source of truth.** The JSON Schemas in
+   [`src/schemas/0.1/`](src/schemas/0.1) (version-first: `0.1/L0`, `0.1/L1`) are
+   consumed by *both* the validator (`src/`) and the viewer (`design/web`). Docs
+   cannot drift from the validator because they are the same files. See decisions
+   [0024](design/decisions/0024-schemas-single-source-of-truth.md) and
+   [0038](design/decisions/0038-schemas-canonical-home-in-src.md).
 
 ## A decision record
 

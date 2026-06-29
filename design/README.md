@@ -14,8 +14,9 @@ the [web viewer](./web) renders it.
 | Pillar | What it holds |
 | --- | --- |
 | [`decisions/`](./decisions) | Every design decision as a record: **proposition → options → decision → reasoning**. Read these to understand *why*, not just *what*. |
-| [`contract/`](./contract) | The L0 contract in prose: pack layout, lifecycle & verdicts, commands & config. |
-| [`schemas/L0/`](./schemas/L0) | The L0 JSON Schemas — the **single source of truth**, consumed by both the validator and this viewer. |
+| [`contract/`](./contract) | The contract in prose: L0 pack layout, lifecycle & verdicts, commands & config — plus the additive **L1** profile. |
+| [`profiles.yaml`](./profiles.yaml) | The additive profile ladder (L0 → L1 → …) on the one `0.1` contract. |
+| [`../src/schemas/0.1/`](../src/schemas/0.1) | The JSON Schemas — the **single source of truth**, consumed by both the validator and this viewer. Version-first (`0.1/L0`, `0.1/L1`); they live under `src/` because code imports them directly (decision 0038). |
 | [`web/`](./web) | A local site that renders all of the above. |
 
 ## What L0 is
