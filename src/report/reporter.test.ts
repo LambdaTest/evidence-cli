@@ -44,4 +44,9 @@ describe("reporters", () => {
     const out = capture(() => new HumanReporter(true).validation(REPORT));
     expect(out).toContain("✗");
   });
+
+  it("HumanReporter surfaces the pack's current status", () => {
+    const out = capture(() => new HumanReporter(false).validation(REPORT));
+    expect(out).toContain("finalized");
+  });
 });

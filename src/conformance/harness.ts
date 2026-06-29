@@ -18,6 +18,8 @@ export interface Fixture {
   name: string;
   /** absolute path to the <name>.evidence directory */
   packDir: string;
+  /** profile to validate against, inferred from the path (0.1/<profile>/…) */
+  profile: string;
   expected: Expected;
 }
 
@@ -43,7 +45,10 @@ export function discoverFixtures(fixturesRoot: string, roots: string[]): Fixture
       const packDir = path.join(root, entry);
       const base = entry.replace(/\.evidence$/, "");
       const sidecar = path.join(root, `${base}.expected.yaml`);
-      const name = path.relative(fixturesRoot, packDir).replace(/\.evidence$/, "");
+      const rel = path.relative(fixturesRoot, packDir);
+      const name = rel.replace(/\.evidence$/, "");
+      // path is <version>/<profile>/<category>/<pack>; the profile is segment 1.
+      const profile = rel.split(path.sep)[1] ?? "L0";
 
       let raw: string;
       try {
@@ -55,7 +60,7 @@ export function discoverFixtures(fixturesRoot: string, roots: string[]): Fixture
       }
 
       const expected = parseExpected(raw, name);
-      fixtures.push({ name, packDir, expected });
+      fixtures.push({ name, packDir, profile, expected });
     }
   }
   return fixtures;
