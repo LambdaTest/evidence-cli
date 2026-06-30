@@ -30,6 +30,12 @@ finalized. See decision [0035 — finalize targets the live directory](#/decisio
 4. Seals the pack to a `<name>.evidence` zip — a **flat** archive whose entries are
    the directory's contents (root-level `run.yaml`, `tests/…` beside it, no
    wrapping folder). See decision [0028 — zip internal layout](#/decisions).
+   Already-compressed artifacts (images, video, gzipped logs) are added with the
+   zip **STORE** method, not re-deflated — it saves nothing on entropy-coded bytes,
+   speeds up sealing, and leaves each artifact a contiguous, directly range-able
+   span. The archive is never outer-wrapped or solid-compressed, so the pack stays
+   **range-addressable** (the L0 YAML/definition entries may still DEFLATE). See
+   decision [0041 — range-addressable packs](#/decisions).
 
 The seal **replaces the live directory in place**: finalize builds the complete
 zip in memory, removes the `<name>.evidence/` directory, and writes the sealed
