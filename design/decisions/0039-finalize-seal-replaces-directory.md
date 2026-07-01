@@ -60,6 +60,13 @@ building the complete zip buffer in memory and only THEN removing the directory
 and writing the file. The window in which neither the full directory nor the full
 file exists is a single `writeFile` after an in-memory buffer is ready.
 
+> **Amended by [0042](0042-atomic-seal-in-place.md):** that remaining `writeFile`
+> window is now closed. The seal is atomic — write a fsynced sibling temp, rename
+> the directory aside, rename the temp into place, best-effort parent-dir fsync,
+> remove the aside — so a complete copy exists at every instant, and
+> `sweepIncomplete(parentDir)` recovers any leftover after a crash. The
+> seal-replaces-the-directory outcome below is unchanged.
+
 ## Consequences
 
 - `finalize(dir)` returns `{ totals, sealedPath }` where `sealedPath` is the

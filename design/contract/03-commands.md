@@ -37,12 +37,15 @@ finalized. See decision [0035 — finalize targets the live directory](#/decisio
    **range-addressable** (the L0 YAML/definition entries may still DEFLATE). See
    decision [0041 — range-addressable packs](#/decisions).
 
-The seal **replaces the live directory in place**: finalize builds the complete
-zip in memory, removes the `<name>.evidence/` directory, and writes the sealed
-`<name>.evidence` *file* at the exact path the directory occupied (the buffer is
-built before the directory is removed, so a mid-operation failure cannot lose
-data). Unzipping restores the tree. See decision
-[0039 — finalize seals in place](#/decisions).
+The seal **replaces the live directory in place**: finalize writes the sealed
+`<name>.evidence` *file* at the exact path the directory occupied. Unzipping
+restores the tree. The replacement is **atomic and recoverable** — finalize writes
+a fsynced sibling temp, renames the live directory aside, renames the temp into
+place, and removes the aside, so a complete copy exists at every instant and no
+crash (or power loss, with a best-effort parent-dir fsync) can lose or truncate
+the pack. After an interrupted run the host calls `sweepIncomplete(<parent>)` to
+recover any leftover. See decisions [0039 — finalize seals in place](#/decisions)
+and [0042 — atomic seal-in-place](#/decisions).
 
 ## `evidence index <dir>`
 
