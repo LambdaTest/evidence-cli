@@ -49,3 +49,8 @@ needlessly discard a useful, harmless slot many producers will want.
 - The run schema defines `environment` as an open object: known optional sub-keys
   (`producer`/`model`/`surfaces`/`ci`) are documented, none is required, and
   arbitrary additional key:value pairs are permitted.
+
+> **See also [0043](0043-environment-at-result-level.md):** the same `environment`
+> block is now also expressible at result level, to record a single test's
+> execution context. How the two levels relate is left to the consumer; this
+> run-level block's rules here are unchanged.

@@ -75,7 +75,29 @@
       "type": "boolean"
     },
     "tags": { "type": "array", "items": { "type": "string" } },
-    "requirements": { "type": "array", "items": { "type": "string" } }
+    "requirements": { "type": "array", "items": { "type": "string" } },
+    "environment": {
+      "description": "Optional per-test execution context — an OPEN map of key:value pairs, the SAME shape as run.yaml.environment (decision 0013). Records the environment a single test executed in (e.g. cross-browser, sharded, or merged evidence, where tests diverge). How this relates to the run-level environment — precedence, merge, inheritance — is left to the consumer that reads the pack; the format only carries the facts and the validator checks shape. Nothing here is required. See decision 0043.",
+      "type": "object",
+      "properties": {
+        "producer": {
+          "description": "The tool that executed this test; typically only recorded at run level, present here only if a test's producer differs.",
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "version": { "type": "string" }
+          },
+          "additionalProperties": true
+        },
+        "model": { "type": "string" },
+        "surfaces": { "type": "array", "items": { "type": "string" } },
+        "ci": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    }
   },
   "additionalProperties": true,
   "$defs": {
