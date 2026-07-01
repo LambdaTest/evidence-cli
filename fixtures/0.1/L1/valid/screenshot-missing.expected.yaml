@@ -1,0 +1,3 @@
+valid: true
+warnings: [l1.steps.screenshot_missing]
+description: a step folder without a screenshot is advisory (warning), never fails the pack

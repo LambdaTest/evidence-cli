@@ -21,6 +21,15 @@ a reader resolves the anchor and every relative `definition.path` identically.
 The pack `<name>` lives only in the file name, never as an internal path segment.
 See decision [0028 — zip internal layout](#/decisions).
 
+The sealed zip is also **range-addressable**: because the layout is flat and the
+archive is never wrapped in an outer compression stream or solid-compressed, a
+consumer on a blob store (S3/GCS/Azure) can read just the zip's central directory
+to get the entry list, then ranged-read **only** the entries it needs — `run.yaml`
+plus each `result.yaml` for a dashboard, the entry list alone for presence checks,
+one screenshot on demand for a viewer — without downloading a large (L1) pack
+whole. This is an access strategy, not a format change. See decision
+[0041 — range-addressable packs](#/decisions).
+
 **One pack = one run.** The top-level `run.yaml` is the **manifest anchor**: a
 directory (or zip) is a valid pack if and only if it has a top-level `run.yaml`.
 

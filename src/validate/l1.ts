@@ -1,6 +1,6 @@
 import { Codes } from "../contract";
 import type { Diagnostic } from "../contract";
-import { err } from "../diagnostics";
+import { err, warn } from "../diagnostics";
 import type { PackContainer } from "../pack/container";
 import { loadL1Schemas } from "../schemas/compile";
 import { parseYaml } from "../yaml";
@@ -107,7 +107,9 @@ async function checkSteps(
     const files = await c.listDir(`${dir}/${entry.name}`);
     const hasShot = files.some((f) => !f.isDir && /^screenshot\.[^.]+$/i.test(f.name));
     if (!hasShot) {
-      diags.push(err(Codes.L1_STEPS_SCREENSHOT_MISSING, `${dir}/${entry.name}`, `step folder "${entry.name}" has no screenshot.<ext>`));
+      // Advisory only (decision 0040): not every framework captures a frame per
+      // step; a missing screenshot never fails the pack.
+      diags.push(warn(Codes.L1_STEPS_SCREENSHOT_MISSING, `${dir}/${entry.name}`, `step folder "${entry.name}" has no screenshot.<ext>`));
     }
   }
 }

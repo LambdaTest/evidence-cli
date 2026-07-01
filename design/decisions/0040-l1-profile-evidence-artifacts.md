@@ -35,8 +35,9 @@ decision: >
   `logs/` directory with a `logs/meta.yaml` declaring at least one
   `{ name, file, format }` (both `name` and `format` are OPEN strings — see below)
   whose `file` exists and is contained; per test a `steps/` directory whose
-  subfolders are named `<ordinal>-<id>`, match a `result.yaml` step, and contain a
-  `screenshot.<ext>`; and one GLOBAL `coverage/` directory (existence only — its
+  subfolders are named `<ordinal>-<id>` and match a `result.yaml` step (a missing
+  `screenshot.<ext>` inside a folder is a WARNING, not an error — see the
+  amendment below); and one GLOBAL `coverage/` directory (existence only — its
   internals are open). Per-test `video` (an inline `video.<ext>` or a `video.yaml`
   with `url`) is OPTIONAL; a per-test `issues/` directory is reserved and
   unvalidated. Artifacts are OPAQUE (existence/naming/declared-format checked,
@@ -58,6 +59,17 @@ supersedes: []
 ---
 
 ## Reasoning
+
+> **Amendment (screenshot is advisory).** A missing `screenshot.<ext>` inside a
+> well-formed, matched `steps/<ordinal>-<id>/` folder is a **warning**
+> (`l1.steps.screenshot_missing`), not an error — so it never fails a pack
+> (`valid` flips only on errors). Not every framework captures a frame per step:
+> an API or unit run has none, and the opaque screenshot bytes carry no
+> pass/fail. This mirrors the advisory `status.disagrees_with_steps` warning and
+> the "presence, not vocabulary" stance of open `format`/`kind`/`type`. The
+> `steps/` **directory** stays a hard requirement at `finalized`, and folder-name
+> shape (`l1.steps.malformed_name`) and step-matching (`l1.steps.unmatched`) stay
+> hard errors — L1 still has per-step teeth, just not a mandated frame.
 
 [L0's mandatory cut](0015-result-yaml-mandatory-cut.md) recorded *that* something
 happened in a parseable shape and explicitly deferred "the rich forensics that
