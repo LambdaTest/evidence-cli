@@ -8,3 +8,4 @@ docs/superpowers/
 
 # Local manual-testing playground (range server + remote-read demo). Not tracked.
 local-testing/
+local-testing*.zip

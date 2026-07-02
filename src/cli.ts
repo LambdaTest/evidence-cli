@@ -9,7 +9,7 @@ const program = new Command();
 program
   .name("evidence")
   .description("Validate and finalize .evidence packs")
-  .version("0.0.0");
+  .version("0.1.0");
 
 program
   .command("validate")
