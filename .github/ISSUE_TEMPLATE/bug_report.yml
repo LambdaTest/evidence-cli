@@ -1,0 +1,65 @@
+name: Bug Report
+description: Report a bug in evidence-cli
+labels: ["bug"]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: evidence-cli version
+      description: "The @testmuai/evidence-cli version (from package.json, or `evidence --version`)."
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: usage
+    attributes:
+      label: How are you using it?
+      options:
+        - As a library (import)
+        - As the CLI (evidence …)
+        - Both
+    validations:
+      required: true
+
+  - type: dropdown
+    id: profile
+    attributes:
+      label: Profile
+      options:
+        - L0
+        - L1
+        - Not applicable
+    validations:
+      required: false
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the bug clearly.
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: Additional details
+      description: Steps to reproduce, expected vs actual, and a minimal pack if you can share one.
+      placeholder: |
+        Steps to reproduce:
+        1. ...
+
+        Expected: ...
+        Actual: ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Output / diagnostics
+      description: Paste the validator report (`--json`) or the error output.
+      render: shell
+    validations:
+      required: false

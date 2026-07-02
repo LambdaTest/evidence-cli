@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation
+    url: https://github.com/LambdaTest/evidence-cli#readme
+    about: Read the README and the design/ living spec before filing an issue.
+  - name: Discord
+    url: https://discord.gg/kanQPEx9
+    about: Questions and discussion with the community.
