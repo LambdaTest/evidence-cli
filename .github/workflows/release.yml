@@ -1,8 +1,11 @@
 name: Release
 
 # Publishes @testmuai/evidence-cli to npm when a GitHub Release is published.
-# Requires the NPM_TOKEN repository secret (an npm automation token with publish
-# rights to the @testmuai scope). Nothing publishes until a Release is cut.
+# The package is public (publishConfig.access) even though this source repo is
+# private; npm provenance is intentionally NOT used, since it requires a public
+# source repository. Requires the NPM_TOKEN repository secret (an npm automation
+# token with publish rights to the @testmuai scope). Nothing publishes until a
+# Release is cut.
 
 on:
   release:
@@ -10,7 +13,6 @@ on:
 
 permissions:
   contents: read
-  id-token: write # npm provenance
 
 jobs:
   publish:
