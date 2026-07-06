@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://evidence-cli.dev/schemas/0.1/L1/failure.schema.json",
+  "title": "steps/<ordinal>-<id>/failure.yaml (L1)",
+  "description": "The structured explanation of why one step did not pass, at tests/<id>/steps/<ordinal>-<id>/failure.yaml — authored by the framework (or a triage agent). Required core: `step` (anchored to the folder and a result.yaml step), `status` (verdict enum), and evidence-of-what (error.message, or expected+actual). File references resolve relative to the TEST ROOT tests/<id>/ (no '..', no leading '/', no scheme) and are checked for containment and existence by the validator, never parsed — the schema only requires them to be strings. The optional `triage` block is strictly shaped when present; free-form forensic blocks stay open. See decision 0044.",
+  "type": "object",
+  "required": ["step", "status"],
+  "anyOf": [
+    {
+      "description": "evidence-of-what: an error message…",
+      "properties": { "error": { "type": "object", "required": ["message"] } },
+      "required": ["error"]
+    },
+    {
+      "description": "…or both expected and actual.",
+      "required": ["expected", "actual"]
+    }
+  ],
+  "properties": {
+    "step": {
+      "description": "The step id. MUST equal the containing folder's <id> and match a result.yaml step — a validator cross-check (l1.failure.unmatched).",
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "description": "The step verdict — same vocabulary as result.yaml (decision 0006). Cross-checked against the matched step; disagreement is an advisory warning (l1.failure.status_disagrees).",
+      "enum": ["passed", "failed", "broken", "skipped"]
+    },
+    "expected": { "type": "string" },
+    "actual": { "type": "string" },
+    "error": {
+      "description": "The error at failure. `type` is an open string; `urls` are external locations (open, never checked).",
+      "type": "object",
+      "properties": {
+        "message": { "type": "string", "minLength": 1 },
+        "type": { "type": "string" },
+        "urls": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": true
+    },
+    "repro": {
+      "description": "How to reproduce. `definition`/`resolved` are test-root-relative file references (validator-checked).",
+      "type": "object",
+      "properties": {
+        "definition": { "type": "string", "minLength": 1 },
+        "resolved": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": true
+    },
+    "locator_context": {
+      "description": "Open block — selector forensics in the framework's own vocabulary.",
+      "type": "object",
+      "additionalProperties": true
+    },
+    "page_state": {
+      "description": "Page state at failure. `url` is an external URL (open); `dom`/`a11y`/`screenshot` are test-root-relative file references (validator-checked).",
+      "type": "object",
+      "properties": {
+        "url": { "type": "string" },
+        "dom": { "type": "string", "minLength": 1 },
+        "a11y": { "type": "string", "minLength": 1 },
+        "screenshot": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": true
+    },
+    "console_at_failure": {
+      "description": "`ref` is a test-root-relative file reference (validator-checked); the rest is open.",
+      "type": "object",
+      "properties": { "ref": { "type": "string", "minLength": 1 } },
+      "additionalProperties": true
+    },
+    "network_at_failure": {
+      "description": "`ref` is a test-root-relative file reference (validator-checked); the rest is open.",
+      "type": "object",
+      "properties": { "ref": { "type": "string", "minLength": 1 } },
+      "additionalProperties": true
+    },
+    "trajectory_refs": {
+      "description": "Open — producer-defined trajectory pointers.",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "triage": {
+      "description": "Optional post-hoc triage. Strictly shaped when present (decision 0044): closed lifecycle enums, required sub-fields, bounded confidence.",
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "description": "Triage lifecycle — closed enum (snake_case, decision 0036).",
+          "enum": ["untriaged", "triaged", "in_progress", "dismissed"]
+        },
+        "by": {
+          "description": "Who/what triaged. `kind` and `id` are open strings; `at` is required when the block is present.",
+          "type": "object",
+          "required": ["at"],
+          "properties": {
+            "kind": { "type": "string" },
+            "id": { "type": "string" },
+            "at": { "type": "string", "format": "date-time" }
+          },
+          "additionalProperties": true
+        },
+        "rca": {
+          "description": "Root-cause analysis. `root_cause` is required; `category` is an open string; `evidence` entries are test-root-relative file references (validator-checked).",
+          "type": "object",
+          "required": ["root_cause"],
+          "properties": {
+            "root_cause": { "type": "string", "minLength": 1 },
+            "category": { "type": "string" },
+            "hypothesis": { "type": "string" },
+            "evidence": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+            "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+          },
+          "additionalProperties": true
+        },
+        "suggested_fix": {
+          "description": "`patch` is a test-root-relative file reference (validator-checked); `summary`/`target` are open.",
+          "type": "object",
+          "properties": {
+            "summary": { "type": "string" },
+            "patch": { "type": "string", "minLength": 1 },
+            "target": { "type": "object", "additionalProperties": true }
+          },
+          "additionalProperties": true
+        },
+        "verification": {
+          "description": "Whether the suggested fix was checked: not yet, confirmed to resolve, or checked and did NOT resolve.",
+          "type": "object",
+          "required": ["status"],
+          "properties": {
+            "status": { "enum": ["not_verified", "verified", "refuted"] }
+          },
+          "additionalProperties": true
+        },
+        "linked_defects": {
+          "description": "Open strings — external defect ids.",
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

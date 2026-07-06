@@ -65,6 +65,20 @@ export const Codes = {
   L1_STEPS_SCREENSHOT_MISSING: "l1.steps.screenshot_missing",
   L1_COVERAGE_MISSING: "l1.coverage.missing",
   L1_VIDEO_INVALID: "l1.video.invalid",
+
+  // L1 failure records (decision 0044). Step-level records are shape-checked at
+  // any status; l1.failure.missing (advisory) and l1.failure_index.missing fire
+  // only when status: finalized.
+  L1_FAILURE_INVALID: "l1.failure.invalid",
+  L1_FAILURE_UNMATCHED: "l1.failure.unmatched",
+  L1_FAILURE_REF_ESCAPE: "l1.failure.ref_escape",
+  L1_FAILURE_REF_MISSING: "l1.failure.ref_missing",
+  L1_FAILURE_STATUS_DISAGREES: "l1.failure.status_disagrees",
+  L1_FAILURE_MISSING: "l1.failure.missing",
+  L1_FAILURE_INDEX_MISSING: "l1.failure_index.missing",
+  L1_FAILURE_INDEX_INVALID: "l1.failure_index.invalid",
+  L1_FAILURE_INDEX_DANGLING: "l1.failure_index.dangling",
+  L1_FAILURE_INDEX_INCOMPLETE: "l1.failure_index.incomplete",
 } as const;
 
 /**

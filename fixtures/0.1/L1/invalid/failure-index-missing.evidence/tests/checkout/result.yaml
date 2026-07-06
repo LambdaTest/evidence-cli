@@ -1,0 +1,9 @@
+evidence: "0.1"
+test: checkout
+status: passed
+definition:
+  path: test.md
+  sha256: "sha256:f8873179c6c5185a5ed76d5e0c67c5e9ddf0e6c49a2f319d6be69c13755d9d52"
+steps:
+  - { id: open-checkout, ordinal: 1, status: passed }
+  - { id: pay, ordinal: 2, status: passed }

@@ -1,0 +1,7 @@
+evidence: "0.1"
+run_id: 2026-07-06-failure-full
+status: finalized
+title: L1 pack with a triaged failure record
+started: 2026-07-06T09:00:00Z
+ended: 2026-07-06T09:01:00Z
+totals: { tests: 1, passed: 0, failed: 0, broken: 1, skipped: 0 }

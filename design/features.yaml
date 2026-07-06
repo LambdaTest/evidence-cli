@@ -45,7 +45,7 @@ features:
     spec: design/contract/03-commands.md
   - id: l1-profile
     title: L1 profile
-    blurb: The additive evidence-artifact layer — per-test logs/ and steps/ screenshots, global coverage/, optional video; opaque and validated by filesystem cross-checks.
+    blurb: The additive evidence-artifact layer — per-test logs/ and steps/ screenshots, global coverage/, optional video, and structured failure records (step-authored + finalize-indexed); opaque artifacts validated by filesystem cross-checks.
     spec: design/contract/04-L1.md
   - id: decision-system
     title: Decision system & viewer

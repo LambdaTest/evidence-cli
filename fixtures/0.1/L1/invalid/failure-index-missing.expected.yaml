@@ -1,0 +1,3 @@
+valid: false
+errors: [l1.failure_index.missing]
+description: finalize always writes the root failure.yaml (failures[] on a clean run); a finalized pack without it is invalid

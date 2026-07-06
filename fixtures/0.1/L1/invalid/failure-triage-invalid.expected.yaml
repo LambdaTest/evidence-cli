@@ -1,0 +1,3 @@
+valid: false
+errors: [l1.failure.invalid]
+description: triage is strictly shaped when present — status is a closed enum (untriaged|triaged|in_progress|dismissed)

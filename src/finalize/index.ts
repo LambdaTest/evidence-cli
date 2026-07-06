@@ -2,8 +2,18 @@ import { promises as fs } from "node:fs";
 import * as path from "node:path";
 import { createHash, randomBytes } from "node:crypto";
 import AdmZip from "adm-zip";
-import { parseYaml, parseDoc, stringifyDoc } from "../yaml";
+import { parseYaml, parseDoc, stringifyDoc, stringifyYaml } from "../yaml";
 import type { FinalizeResult, Totals, Verdict } from "../contract";
+
+/** One row of the generated run-level failure index (decision 0044). */
+interface FailureRow {
+  test: string;
+  ordinal: number;
+  step: string;
+  status: string;
+  path: string;
+  triage_status?: string;
+}
 
 export interface FinalizeOptions {
   /** RFC3339 timestamp to write as run.yaml.ended (caller-supplied for testability). */
@@ -25,6 +35,7 @@ export async function finalize(dir: string, opts: FinalizeOptions): Promise<Fina
     .sort();
 
   const totals: Totals = { tests: 0, passed: 0, failed: 0, broken: 0, skipped: 0 };
+  const failureRows: FailureRow[] = [];
 
   // Derive totals + write each definition.sha256 back into result.yaml.
   for (const id of testIds) {
@@ -44,7 +55,21 @@ export async function finalize(dir: string, opts: FinalizeOptions): Promise<Fina
       doc.setIn(["definition", "sha256"], hash);
       await fs.writeFile(resultPath, stringifyDoc(doc), "utf8");
     }
+
+    failureRows.push(...(await collectFailureRows(testsDir, id)));
   }
+
+  // Generate the run-level failure index (decision 0044) — finalize's one
+  // generative output beyond derived totals/hashes. Always written (a clean run
+  // carries failures: []), BEFORE the seal so it rides into the zip.
+  failureRows.sort((a, b) => (a.test === b.test ? a.ordinal - b.ordinal : a.test < b.test ? -1 : 1));
+  const untriaged = failureRows.filter((r) => !r.triage_status || r.triage_status === "untriaged").length;
+  const failureIndex = {
+    generated: opts.endedAt,
+    totals: { failures: failureRows.length, triaged: failureRows.length - untriaged, untriaged },
+    failures: failureRows,
+  };
+  await fs.writeFile(path.join(dir, "failure.yaml"), stringifyYaml(failureIndex), "utf8");
 
   // Write derived run-level fields back, preserving producer formatting.
   const runPath = path.join(dir, "run.yaml");
@@ -82,6 +107,49 @@ export async function finalize(dir: string, opts: FinalizeOptions): Promise<Fina
   await fs.rm(bakPath, { recursive: true, force: true }); // cleanup (non-critical)
 
   return { totals, sealedPath };
+}
+
+/**
+ * Lift one index row per steps/<ordinal>-<id>/failure.yaml (decision 0044).
+ * FAIL FAST on an unreadable record — a failure.yaml that does not parse, or
+ * whose `status` is not a string, throws (the posture finalize already takes
+ * toward a malformed result.yaml): sealing a pack whose index is knowingly
+ * broken helps nobody. finalize mirrors, it never validates — `status` and
+ * `triage.status` are lifted verbatim; deeper problems surface via `validate`.
+ */
+async function collectFailureRows(testsDir: string, id: string): Promise<FailureRow[]> {
+  const rows: FailureRow[] = [];
+  const stepsDir = path.join(testsDir, id, "steps");
+  const folders = (await fs.readdir(stepsDir, { withFileTypes: true }).catch(() => []))
+    .filter((e) => e.isDirectory())
+    .map((e) => e.name);
+  for (const folder of folders) {
+    const m = folder.match(/^(\d+)-(.+)$/);
+    if (!m) continue; // malformed folder names are a validate concern, not finalize's
+    const relPath = `tests/${id}/steps/${folder}/failure.yaml`;
+    const raw = await fs.readFile(path.join(stepsDir, folder, "failure.yaml"), "utf8").catch(() => null);
+    if (raw == null) continue;
+    let rec: any;
+    try {
+      rec = parseYaml(raw);
+    } catch (e: any) {
+      throw new Error(`finalize: ${relPath} is not valid YAML: ${e?.message ?? e}`);
+    }
+    if (typeof rec?.status !== "string" || rec.status.length === 0) {
+      throw new Error(`finalize: ${relPath} has no string \`status\` — cannot index it`);
+    }
+    const row: FailureRow = {
+      test: id,
+      ordinal: Number(m[1]),
+      step: m[2],
+      status: rec.status,
+      path: relPath,
+    };
+    const ts = rec?.triage?.status;
+    if (typeof ts === "string" && ts.length > 0) row.triage_status = ts;
+    rows.push(row);
+  }
+  return rows;
 }
 
 /**

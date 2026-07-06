@@ -1,0 +1,3 @@
+valid: false
+errors: [l1.failure_index.incomplete]
+description: the machine-generated index must mirror every step record — a gap means tampering or a stale index

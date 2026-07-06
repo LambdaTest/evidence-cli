@@ -1,0 +1,3 @@
+valid: false
+errors: [l1.failure.ref_missing]
+description: every referenced pack file must exist (contents stay opaque)

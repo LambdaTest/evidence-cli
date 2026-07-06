@@ -1,0 +1,2 @@
+valid: true
+description: a finalized pack with a broken step, its full failure record (strict triage), and the matching finalize-generated index

@@ -1,0 +1,5 @@
+evidence: "0.1"
+run_id: 2026-07-06-failure-triage
+status: running
+title: A triage block with an unknown lifecycle status
+started: 2026-07-06T09:00:00Z

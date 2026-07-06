@@ -1,0 +1,3 @@
+step: pay
+status: failed
+error: { message: timed out }

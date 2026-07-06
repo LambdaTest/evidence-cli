@@ -1,0 +1,5 @@
+step: pay
+status: broken
+error: { message: timed out }
+console_at_failure:
+  ref: ../../secrets.txt

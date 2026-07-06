@@ -11,6 +11,8 @@ export interface CompiledSchemas {
 export interface CompiledL1Schemas {
   logsMeta: ValidateFunction;
   video: ValidateFunction;
+  failure: ValidateFunction;
+  failureIndex: ValidateFunction;
 }
 
 const cache = new Map<string, CompiledSchemas>();
@@ -41,11 +43,13 @@ export function loadL1Schemas(version: string): CompiledL1Schemas {
   const hit = l1Cache.get(version);
   if (hit) return hit;
 
-  const { logsMeta, video } = getL1Schemas(version);
+  const { logsMeta, video, failure, failureIndex } = getL1Schemas(version);
   const ajv = newAjv();
   const compiled: CompiledL1Schemas = {
     logsMeta: ajv.compile(logsMeta),
     video: ajv.compile(video),
+    failure: ajv.compile(failure),
+    failureIndex: ajv.compile(failureIndex),
   };
   l1Cache.set(version, compiled);
   return compiled;

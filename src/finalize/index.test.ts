@@ -70,6 +70,78 @@ describe("finalize", () => {
   });
 });
 
+describe("finalize failure index (decision 0044)", () => {
+  async function readSealed(dir: string, entry: string): Promise<string> {
+    const AdmZip = (await import("adm-zip")).default;
+    return new AdmZip(dir).getEntry(entry)!.getData().toString("utf8");
+  }
+
+  it("writes an empty index on a clean run, sealed into the zip", async () => {
+    const dir = await stageCopy();
+    await finalize(dir, { endedAt: "2026-06-28T09:00:30Z" });
+    const idx = parseYaml(await readSealed(dir, "failure.yaml")) as any;
+    expect(idx.generated).toBe("2026-06-28T09:00:30Z");
+    expect(idx.totals).toEqual({ failures: 0, triaged: 0, untriaged: 0 });
+    expect(idx.failures).toEqual([]);
+  });
+
+  it("lifts one row per step record — sorted, with triage_status when present", async () => {
+    const dir = await stageCopy();
+    const steps = path.join(dir, "tests", "checkout", "steps");
+    await fs.mkdir(path.join(steps, "10-refund"), { recursive: true });
+    await fs.mkdir(path.join(steps, "2-pay"), { recursive: true });
+    await fs.writeFile(
+      path.join(steps, "10-refund", "failure.yaml"),
+      "step: refund\nstatus: failed\nerror: { message: no refund button }\n",
+    );
+    await fs.writeFile(
+      path.join(steps, "2-pay", "failure.yaml"),
+      "step: pay\nstatus: broken\nerror: { message: timeout }\ntriage: { status: triaged }\n",
+    );
+
+    await finalize(dir, { endedAt: "2026-06-28T09:00:30Z" });
+    const idx = parseYaml(await readSealed(dir, "failure.yaml")) as any;
+
+    expect(idx.totals).toEqual({ failures: 2, triaged: 1, untriaged: 1 });
+    // numeric ordinal sort (2 before 10), not lexicographic
+    expect(idx.failures).toEqual([
+      {
+        test: "checkout",
+        ordinal: 2,
+        step: "pay",
+        status: "broken",
+        path: "tests/checkout/steps/2-pay/failure.yaml",
+        triage_status: "triaged",
+      },
+      {
+        test: "checkout",
+        ordinal: 10,
+        step: "refund",
+        status: "failed",
+        path: "tests/checkout/steps/10-refund/failure.yaml",
+      },
+    ]);
+  });
+
+  it("fails fast on a step record that is not valid YAML", async () => {
+    const dir = await stageCopy();
+    const folder = path.join(dir, "tests", "checkout", "steps", "2-pay");
+    await fs.mkdir(folder, { recursive: true });
+    await fs.writeFile(path.join(folder, "failure.yaml"), "status: [unclosed\n");
+    await expect(finalize(dir, { endedAt: "2026-06-28T09:00:30Z" })).rejects.toThrow(/not valid YAML/);
+    // fail-fast happens before the seal — the live directory is untouched
+    expect((await fs.stat(dir)).isDirectory()).toBe(true);
+  });
+
+  it("fails fast on a step record without a string status", async () => {
+    const dir = await stageCopy();
+    const folder = path.join(dir, "tests", "checkout", "steps", "2-pay");
+    await fs.mkdir(folder, { recursive: true });
+    await fs.writeFile(path.join(folder, "failure.yaml"), "step: pay\nerror: { message: x }\n");
+    await expect(finalize(dir, { endedAt: "2026-06-28T09:00:30Z" })).rejects.toThrow(/no string `status`/);
+  });
+});
+
 describe("sweepIncomplete (crash recovery, 0042)", () => {
   let tmp: string | undefined;
   afterEach(async () => {

@@ -1,0 +1,7 @@
+evidence: "0.1"
+run_id: 2026-07-06-index-incomplete
+status: finalized
+title: An index that omits an existing record
+started: 2026-07-06T09:00:00Z
+ended: 2026-07-06T09:01:00Z
+totals: { tests: 1, passed: 0, failed: 0, broken: 1, skipped: 0 }
