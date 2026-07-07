@@ -1,0 +1,3 @@
+valid: true
+warnings: [l1.failure.status_disagrees]
+description: record status vs result.yaml step status is advisory, mirroring status.disagrees_with_steps

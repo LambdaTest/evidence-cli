@@ -1,0 +1,3 @@
+valid: false
+errors: [l1.failure.ref_escape]
+description: failure references resolve from the test root and must never escape (no '..')

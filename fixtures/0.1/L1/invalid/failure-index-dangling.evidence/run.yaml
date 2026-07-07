@@ -1,0 +1,7 @@
+evidence: "0.1"
+run_id: 2026-07-06-index-dangling
+status: finalized
+title: An index row pointing at a missing record
+started: 2026-07-06T09:00:00Z
+ended: 2026-07-06T09:01:00Z
+totals: { tests: 1, passed: 1, failed: 0, broken: 0, skipped: 0 }

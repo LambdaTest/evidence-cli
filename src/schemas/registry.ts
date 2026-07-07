@@ -2,6 +2,8 @@ import runL0 from "./0.1/L0/run.schema.json";
 import resultL0 from "./0.1/L0/result.schema.json";
 import logsMetaL1 from "./0.1/L1/logs-meta.schema.json";
 import videoL1 from "./0.1/L1/video.schema.json";
+import failureL1 from "./0.1/L1/failure.schema.json";
+import failureIndexL1 from "./0.1/L1/failure-index.schema.json";
 
 export interface SchemaPair {
   run: object;
@@ -12,6 +14,8 @@ export interface SchemaPair {
 export interface L1Schemas {
   logsMeta: object;
   video: object;
+  failure: object;
+  failureIndex: object;
 }
 
 // Version-first (decision 0038): one contract version contains its profile
@@ -23,7 +27,12 @@ const REGISTRY: Record<string, Record<string, SchemaPair>> = {
 };
 
 const L1_REGISTRY: Record<string, L1Schemas> = {
-  "0.1": { logsMeta: logsMetaL1 as object, video: videoL1 as object },
+  "0.1": {
+    logsMeta: logsMetaL1 as object,
+    video: videoL1 as object,
+    failure: failureL1 as object,
+    failureIndex: failureIndexL1 as object,
+  },
 };
 
 export function getSchemas(version: string, profile: string): SchemaPair {

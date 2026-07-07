@@ -1,0 +1,3 @@
+valid: false
+errors: [l1.failure.invalid]
+description: the required core is step + status + evidence-of-what (error.message, or expected+actual)

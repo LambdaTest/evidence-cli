@@ -1,0 +1,5 @@
+step: pay
+status: broken
+error: { message: timed out }
+page_state:
+  screenshot: steps/2-pay/screenshot.png

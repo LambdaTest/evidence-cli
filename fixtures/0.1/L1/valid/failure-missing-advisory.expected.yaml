@@ -1,0 +1,3 @@
+valid: true
+warnings: [l1.failure.missing]
+description: a failed/broken step with no failure.yaml warns but never fails the pack (decision 0044)

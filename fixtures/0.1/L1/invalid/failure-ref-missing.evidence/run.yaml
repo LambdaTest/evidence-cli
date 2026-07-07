@@ -1,0 +1,5 @@
+evidence: "0.1"
+run_id: 2026-07-06-failure-refmiss
+status: running
+title: A failure record referencing a missing file
+started: 2026-07-06T09:00:00Z

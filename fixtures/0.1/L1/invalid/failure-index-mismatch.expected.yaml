@@ -1,0 +1,3 @@
+valid: false
+errors: [l1.failure_index.invalid]
+description: a row's path must equal tests/<test>/steps/<ordinal>-<step>/failure.yaml — row/path disagreement is an error

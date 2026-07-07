@@ -1,0 +1,9 @@
+generated: 2026-07-06T09:01:00Z
+totals: { failures: 1, triaged: 1, untriaged: 0 }
+failures:
+  - test: checkout
+    ordinal: 2
+    step: pay
+    status: broken
+    path: tests/checkout/steps/2-pay/failure.yaml
+    triage_status: triaged

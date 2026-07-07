@@ -1,0 +1,3 @@
+valid: false
+errors: [l1.failure_index.dangling]
+description: every index pointer must resolve to an existing step failure.yaml

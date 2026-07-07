@@ -14,6 +14,9 @@ Initial public release of the `0.1` evidence contract.
   (derive totals + definition hashes and seal, atomically, to a flat zip).
 - **L1** — the additive evidence-artifact profile: per-test execution logs and
   step screenshots, and a global coverage directory (video optional).
+- **Failure records** — a structured per-step `failure.yaml` (expected/actual,
+  error, page state, strict triage block) plus a run-level failure index that
+  `finalize` generates at the pack root.
 - **Range-addressable packs** — read only the entries you need from a sealed pack
   on a blob store, without downloading the whole zip.
 - **Library + CLI** — `import { validate, finalize } from "@testmuai/evidence-cli"`,

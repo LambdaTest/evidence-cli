@@ -1,0 +1,24 @@
+step: pay
+status: broken
+expected: receipt screen shown with a charge id
+actual: payment API timed out after 30s
+page_state:
+  url: https://store.example/checkout
+  screenshot: steps/2-pay/screenshot.png
+console_at_failure:
+  ref: logs/console.ndjson
+  first_error: "net::ERR_TIMED_OUT api.stripe.com"
+error:
+  message: ERR_TIMED_OUT calling api.stripe.com
+  type: NetworkTimeout
+  urls: ["https://api.stripe.com/v1/payment_intents"]
+triage:
+  status: triaged
+  by: { kind: agent, id: claude, at: 2026-07-06T09:05:00Z }
+  rca:
+    root_cause: CI egress firewall blocked outbound 443
+    category: Infrastructure
+    evidence: [steps/2-pay/screenshot.png]
+    confidence: 0.8
+  verification: { status: not_verified }
+  linked_defects: [OPS-1]
