@@ -29,6 +29,11 @@ describe("failure.schema.json — required core", () => {
     expect(failure({ ...core, status: "exploded" })).toBe(false);
   });
 
+  it("accepts an optional title; rejects an empty one", () => {
+    expect(failure({ ...core, title: "Checkout page renders blank" })).toBe(true);
+    expect(failure({ ...core, title: "" })).toBe(false);
+  });
+
   it("keeps forensic blocks open (locator_context, trajectory_refs, extra keys)", () => {
     expect(
       failure({
@@ -89,6 +94,11 @@ describe("failure-index.schema.json", () => {
   it("accepts a well-formed index and an empty one", () => {
     expect(failureIndex({ generated: "2026-07-06T09:01:00Z", totals: { failures: 1 }, failures: [{ ...row, triage_status: "triaged" }] })).toBe(true);
     expect(failureIndex({ failures: [] })).toBe(true);
+  });
+
+  it("accepts an optional lifted title on a row; rejects an empty one", () => {
+    expect(failureIndex({ failures: [{ ...row, title: "Checkout page renders blank" }] })).toBe(true);
+    expect(failureIndex({ failures: [{ ...row, title: "" }] })).toBe(false);
   });
 
   it("rejects a row missing a required field or with a bad enum", () => {

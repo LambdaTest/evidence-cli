@@ -123,6 +123,37 @@ describe("finalize failure index (decision 0044)", () => {
     ]);
   });
 
+  it("lifts an optional title verbatim; omits it when absent, empty, or not a string", async () => {
+    const dir = await stageCopy();
+    const steps = path.join(dir, "tests", "checkout", "steps");
+    await fs.mkdir(path.join(steps, "1-open"), { recursive: true });
+    await fs.mkdir(path.join(steps, "2-pay"), { recursive: true });
+    await fs.mkdir(path.join(steps, "3-refund"), { recursive: true });
+    // (a) present — lifted verbatim
+    await fs.writeFile(
+      path.join(steps, "1-open", "failure.yaml"),
+      "step: open\nstatus: failed\ntitle: Checkout page renders blank\nerror: { message: blank }\n",
+    );
+    // (b) empty string — omitted, no `title: null` noise
+    await fs.writeFile(
+      path.join(steps, "2-pay", "failure.yaml"),
+      'step: pay\nstatus: broken\ntitle: ""\nerror: { message: timeout }\n',
+    );
+    // (c) an old record without title still indexes fine
+    await fs.writeFile(
+      path.join(steps, "3-refund", "failure.yaml"),
+      "step: refund\nstatus: failed\nerror: { message: no refund button }\n",
+    );
+
+    await finalize(dir, { endedAt: "2026-06-28T09:00:30Z" });
+    const idx = parseYaml(await readSealed(dir, "failure.yaml")) as any;
+
+    expect(idx.failures[0].title).toBe("Checkout page renders blank");
+    expect("title" in idx.failures[1]).toBe(false);
+    expect("title" in idx.failures[2]).toBe(false);
+    expect(idx.failures.map((r: any) => r.step)).toEqual(["open", "pay", "refund"]);
+  });
+
   it("fails fast on a step record that is not valid YAML", async () => {
     const dir = await stageCopy();
     const folder = path.join(dir, "tests", "checkout", "steps", "2-pay");

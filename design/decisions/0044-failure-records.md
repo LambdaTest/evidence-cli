@@ -73,6 +73,16 @@ supersedes: []
 
 ## Reasoning
 
+> **Amendment (optional `title`, 2026-07-07).** A step record MAY carry a
+> top-level `title` — a short defect-style *name* for the failure, typically
+> the investigation verdict's bug title. It is an **open string, never
+> cross-checked** (no new codes, no new required fields), and finalize **lifts
+> it verbatim** into the index row when it is a non-empty string — the same
+> mirror-never-validate posture as the `triage_status` lift. Rationale: triage
+> queues and dashboards need a *label*, not just a status — `rca.root_cause` is
+> a sentence, `title` is a name. A record-vs-row title mismatch is impossible
+> on a freshly finalized pack, since finalize generates the index.
+
 **Why not `issues/`.** The reserved directory imagined failures as a *sibling
 concept* beside steps. But a failure's forensics are *about a step* — the
 expected/actual, the page state, the console at the moment step N broke. Giving

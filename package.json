@@ -1,6 +1,6 @@
 {
   "name": "@testmuai/evidence-cli",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "An open, framework-agnostic format for what a test run produced — the .evidence pack, and the library + CLI that validate and seal it.",
   "license": "Apache-2.0",
   "author": "TestMu AI (formerly LambdaTest)",

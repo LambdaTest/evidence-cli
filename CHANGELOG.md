@@ -4,6 +4,14 @@ All notable changes to evidence-cli are documented here. This format follows
 [Keep a Changelog](https://keepachangelog.com/), and the project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [0.1.4] — 2026-07-07
+
+- **Failure `title`** — a step-level `failure.yaml` MAY carry a short
+  defect-style `title` (open string, never cross-checked); `finalize` lifts it
+  verbatim into the run-level failure index row, so triage queues and
+  dashboards get a name, not just a status. Purely additive — records without
+  a title index exactly as before.
+
 ## [0.1.0] — Unreleased
 
 Initial public release of the `0.1` evidence contract.
