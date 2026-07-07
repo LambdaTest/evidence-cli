@@ -1,5 +1,6 @@
 step: pay
 status: broken
+title: Payment API timeout on checkout
 expected: receipt screen shown with a charge id
 actual: payment API timed out after 30s
 page_state:

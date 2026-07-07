@@ -6,4 +6,5 @@ failures:
     step: pay
     status: broken
     path: tests/checkout/steps/2-pay/failure.yaml
+    title: Payment API timeout on checkout
     triage_status: triaged

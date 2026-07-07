@@ -26,6 +26,11 @@
       "description": "The step verdict — same vocabulary as result.yaml (decision 0006). Cross-checked against the matched step; disagreement is an advisory warning (l1.failure.status_disagrees).",
       "enum": ["passed", "failed", "broken", "skipped"]
     },
+    "title": {
+      "description": "Short defect-style name for the failure, authored by the framework (typically the investigation verdict's bug title). Optional; open string, never cross-checked.",
+      "type": "string",
+      "minLength": 1
+    },
     "expected": { "type": "string" },
     "actual": { "type": "string" },
     "error": {

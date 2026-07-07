@@ -12,6 +12,7 @@ interface FailureRow {
   step: string;
   status: string;
   path: string;
+  title?: string;
   triage_status?: string;
 }
 
@@ -145,6 +146,7 @@ async function collectFailureRows(testsDir: string, id: string): Promise<Failure
       status: rec.status,
       path: relPath,
     };
+    if (typeof rec?.title === "string" && rec.title.length > 0) row.title = rec.title;
     const ts = rec?.triage?.status;
     if (typeof ts === "string" && ts.length > 0) row.triage_status = ts;
     rows.push(row);

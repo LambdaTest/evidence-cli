@@ -38,6 +38,11 @@
           "triage_status": {
             "description": "Lifted verbatim from the record's triage.status when present.",
             "enum": ["untriaged", "triaged", "in_progress", "dismissed"]
+          },
+          "title": {
+            "description": "Lifted verbatim from the record's title when present.",
+            "type": "string",
+            "minLength": 1
           }
         },
         "additionalProperties": true
