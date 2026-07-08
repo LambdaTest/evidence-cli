@@ -32,6 +32,14 @@ describe("loadSchemas", () => {
     });
     expect(ok).toBe(false);
   });
+
+  it("run.yaml accepts an optional merged_from list of non-empty strings", () => {
+    const { run } = loadSchemas("0.1", "L0");
+    const base = { evidence: "0.1", run_id: "m", status: "running", title: "t", started: "2026-07-08T09:00:00Z" };
+    expect(run({ ...base, merged_from: ["a", "b"] })).toBe(true);
+    expect(run({ ...base, merged_from: [] })).toBe(false);
+    expect(run({ ...base, merged_from: [""] })).toBe(false);
+  });
 });
 
 describe("loadL1Schemas", () => {

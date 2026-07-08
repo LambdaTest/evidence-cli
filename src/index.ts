@@ -2,6 +2,8 @@ export { validate } from "./validate";
 export type { ValidateOptions } from "./validate";
 export { finalize, sweepIncomplete } from "./finalize";
 export type { FinalizeOptions, SweepResult } from "./finalize";
+export { merge } from "./merge";
+export type { MergeOptions } from "./merge";
 export { loadConfig, resolveProfile, configPath } from "./config";
 export type { EvidenceConfig } from "./config";
 export * from "./contract";

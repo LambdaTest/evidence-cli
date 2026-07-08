@@ -47,6 +47,10 @@ features:
     title: L1 profile
     blurb: The additive evidence-artifact layer — per-test logs/ and steps/ screenshots, global coverage/, optional video, and structured failure records (step-authored + finalize-indexed); opaque artifacts validated by filesystem cross-checks.
     spec: design/contract/04-L1.md
+  - id: merge
+    title: Merge
+    blurb: Policy-driven merging of N packs into one — declarative merge-rules gate packs and resolve test collisions; merge assembles, finalize derives and seals.
+    spec: design/contract/03-commands.md
   - id: decision-system
     title: Decision system & viewer
     blurb: Governance, the ADR format, schemas-as-source-of-truth, and the viewer.

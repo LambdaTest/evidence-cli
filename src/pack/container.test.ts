@@ -16,6 +16,23 @@ async function makeZip(): Promise<string> {
   return zipPath;
 }
 
+/** Stage a pack dir with a nested binary artifact (tests/checkout/steps/1-open/screenshot.png), then zip it flat. */
+async function stagePackWithScreenshot(): Promise<{ dirPath: string; zipPath: string }> {
+  const stageRoot = await fs.mkdtemp(path.join(os.tmpdir(), "evi-stage-"));
+  const dirPath = path.join(stageRoot, "staged.evidence");
+  await fs.cp(SMOKE, dirPath, { recursive: true });
+  const stepsDir = path.join(dirPath, "tests", "checkout", "steps", "1-open");
+  await fs.mkdir(stepsDir, { recursive: true });
+  await fs.writeFile(path.join(stepsDir, "screenshot.png"), Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x00, 0x01, 0x02, 0x03]));
+
+  const zipPath = path.join(stageRoot, "staged-zip.evidence");
+  const zip = new AdmZip();
+  zip.addLocalFolder(dirPath); // flat: entries are the directory's contents
+  zip.writeZip(zipPath);
+
+  return { dirPath, zipPath };
+}
+
 describe("PackContainer parity", () => {
   let zipPath: string;
 
@@ -85,5 +102,27 @@ describe("PackContainer primitives (dir == zip)", () => {
 
   afterAll(async () => {
     if (zipPath) await fs.rm(path.dirname(zipPath), { recursive: true, force: true });
+  });
+});
+
+describe("readFileBytes (pack-root-relative, dir/zip parity)", () => {
+  let stageRoot: string;
+
+  it("reads bytes at a root-relative path in both forms, null when absent", async () => {
+    const { dirPath, zipPath } = await stagePackWithScreenshot();
+    stageRoot = path.dirname(dirPath);
+    const dir = await openContainer(dirPath);
+    const zip = await openContainer(zipPath);
+
+    for (const c of [dir, zip]) {
+      const b = await c.readFileBytes("tests/checkout/steps/1-open/screenshot.png");
+      expect(b).not.toBeNull();
+      expect(b!.length).toBeGreaterThan(0);
+      expect(await c.readFileBytes("nope/missing.bin")).toBeNull();
+    }
+  });
+
+  afterAll(async () => {
+    if (stageRoot) await fs.rm(stageRoot, { recursive: true, force: true });
   });
 });

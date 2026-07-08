@@ -34,6 +34,22 @@ export interface FinalizeResult {
   sealedPath: string;
 }
 
+/** The outcome of `evidence merge` (decision 0045). Policy-sanctioned skips
+ * and discards land here, not in the pack — merged_from is the only in-pack
+ * trace of the merge. */
+export interface MergeReport {
+  packs: {
+    eligible: string[]; // run_ids, CLI order
+    skipped: { runId: string; rule: string; reason: string }[];
+  };
+  tests: {
+    merged: number;
+    collisions: { test: string; winner: string; rule: string }[];
+    discarded: string[];
+  };
+  output: { path: string; runId: string; finalized: boolean };
+}
+
 export const Codes = {
   MANIFEST_MISSING: "manifest.missing",
   MANIFEST_PARSE: "manifest.parse",
