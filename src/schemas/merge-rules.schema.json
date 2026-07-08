@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://evidence-cli.dev/schemas/merge-rules.schema.json",
+  "title": "merge-rules.yaml",
+  "description": "The declarative policy passed to `evidence merge` (--rules). TOOL INPUT, not pack contract — it lives beside the versioned 0.1/ tree because it configures a command rather than shaping a pack. Fixed knobs gate packs and set the default collision policy; the flat `rules` list adds generic {file, key, must, on_violation} predicates. Scope is implied by `file`: run.yaml rules gate PACKS (compared across all eligible packs), result.yaml rules resolve COLLISIONS (compared between the two colliding tests). Unlike pack declarations, unknown keys are rejected — a typo'd knob must fail loudly. See decision 0045.",
+  "type": "object",
+  "properties": {
+    "packs": {
+      "type": "object",
+      "properties": {
+        "require_status": {
+          "description": "Run status every input pack must have. Default finalized — shards arrive sealed.",
+          "enum": ["finalized", "running", "any"]
+        },
+        "require_valid": {
+          "description": "Validation profile every input pack must pass (any error diagnostic fails the gate), or off.",
+          "enum": ["L0", "L1", "off"]
+        },
+        "on_ineligible": {
+          "description": "What an ineligible pack does to the merge: abort the whole merge, or skip the pack (recorded in the report).",
+          "enum": ["abort", "skip"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "tests": {
+      "type": "object",
+      "properties": {
+        "on_collision": {
+          "description": "Default policy when two packs carry the same test id and no result.yaml rule fires. discard tombstones the id.",
+          "enum": ["error", "prefer_first", "prefer_latest", "discard"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "rules": {
+      "description": "Generic key predicates, evaluated in file order. `must: same` anchors on the first eligible pack; `must: different` keeps the first occurrence. Absent==absent counts as same; absent vs present counts as different.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["file", "key", "must", "on_violation"],
+        "properties": {
+          "file": { "enum": ["run.yaml", "result.yaml"] },
+          "key": {
+            "description": "Dot-path into the parsed YAML (e.g. environment.producer.name).",
+            "type": "string",
+            "minLength": 1
+          },
+          "must": { "enum": ["same", "different"] },
+          "on_violation": {
+            "description": "Action on violation. Scope-checked by the conditional below: pack rules (file: run.yaml) take abort|skip; collision rules (file: result.yaml) take error|prefer_first|prefer_latest|discard.",
+            "type": "string"
+          }
+        },
+        "if": { "properties": { "file": { "const": "run.yaml" } } },
+        "then": { "properties": { "on_violation": { "enum": ["abort", "skip"] } } },
+        "else": { "properties": { "on_violation": { "enum": ["error", "prefer_first", "prefer_latest", "discard"] } } },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
