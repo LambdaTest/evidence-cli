@@ -3,6 +3,7 @@ import * as path from "node:path";
 import { createHash, randomBytes } from "node:crypto";
 import AdmZip from "adm-zip";
 import { parseYaml, parseDoc, stringifyDoc, stringifyYaml } from "../yaml";
+import { retryTransient } from "../fs-retry";
 import type { FinalizeResult, Totals, Verdict } from "../contract";
 
 /** One row of the generated run-level failure index (decision 0044). */
@@ -102,10 +103,22 @@ export async function finalize(dir: string, opts: FinalizeOptions): Promise<Fina
   } finally {
     await fh.close();
   }
-  await fs.rename(dir, bakPath); // move the live directory aside (atomic)
-  await fs.rename(tmpPath, sealedPath); // install the sealed file (atomic)
+  // Both renames retry on transient Windows locks (AV/indexer handles inside
+  // the tree make directory renames EPERM there — see fs-retry.ts). Budget is
+  // deliberately generous (~15s): the dir aside blocks on a handle to ANYTHING
+  // in the tree, and the fresh zip is a prime real-time-scan target; a
+  // permanently stuck handle fails either way, so the wait only costs time on
+  // the already-failing path (graceful-fs's precedent for this is 60s).
+  const sealRetry = { attempts: 20 };
+  await retryTransient(() => fs.rename(dir, bakPath), sealRetry); // move the live directory aside (atomic)
+  await retryTransient(() => fs.rename(tmpPath, sealedPath), sealRetry); // install the sealed file (atomic)
   await fsyncDir(parent); // persist the directory-entry changes (best-effort)
-  await fs.rm(bakPath, { recursive: true, force: true }); // cleanup (non-critical)
+  try {
+    await fs.rm(bakPath, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+  } catch {
+    // cleanup is non-critical: the pack is sealed; a lingering .bak- aside is
+    // redundant and sweepIncomplete deletes it on the next startup.
+  }
 
   return { totals, sealedPath };
 }
@@ -205,16 +218,18 @@ export async function sweepIncomplete(parentDir: string): Promise<SweepResult> {
     const basePath = path.join(parentDir, base);
     const bakPath = path.join(parentDir, entry);
     if (await pathExists(basePath)) {
-      await fs.rm(bakPath, { recursive: true, force: true });
+      await fs.rm(bakPath, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
       removed.push(entry);
     } else {
-      await fs.rename(bakPath, basePath);
+      await retryTransient(() => fs.rename(bakPath, basePath));
       restored.push(base);
     }
   }
   for (const entry of entries) {
     if (!/\.evidence\.tmp-[0-9a-f]+$/.test(entry)) continue;
-    await fs.rm(path.join(parentDir, entry), { force: true });
+    // retryTransient, not rm's maxRetries: that option is IGNORED without
+    // recursive:true, and .tmp- is a plain file.
+    await retryTransient(() => fs.rm(path.join(parentDir, entry), { force: true }));
     removed.push(entry);
   }
   return { restored, removed };
