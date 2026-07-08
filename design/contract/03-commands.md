@@ -137,3 +137,187 @@ evidence-cli is built in TypeScript/Node and exposes `validate`/`finalize` as
 library functions, so kane-cli mounts it **in-process** as `kane-cli evidence`
 with shared types and no subprocess boundary. See decision
 [0019 — Runtime](#/decisions).
+
+## `evidence merge <pack...> --run-id <id> -o <out.evidence>`
+
+Assembles two or more evidence packs (sealed zips or live directories) into
+one live pack under a declarative **merge-rules** policy — the policy gates
+whole packs and resolves per-test collisions, merge or discard. Merge never
+writes a derived artifact: the existing `finalize` remains the sole producer
+of totals, hashes, the root failure index, and `ended` (opt in immediately via
+`--finalize`, or later, manually, on the assembled output). See decision
+[0045 — Merge command & merge rules](#/decisions).
+
+```bash
+evidence merge <pack...> --run-id <id> -o <out.evidence> \
+    [--rules merge-rules.yaml] [--title <t>] [--finalize]
+```
+
+- `<pack...>` — two or more packs; **CLI order is meaningful**: it anchors
+  `must: same` reference values, defines `prefer_first`, and tie-breaks
+  `prefer_latest`.
+- `--run-id` — **mandatory**; a usage error (exit `2`) without it. Merge takes
+  no clock reading and generates no random id, so identity is the caller's
+  supplied fact — the same testability precedent as `finalize`'s `endedAt`.
+- `-o` — output pack path, always a live `<name>.evidence/` directory. Refuses
+  to overwrite an existing path.
+- `--rules` — the merge-rules YAML (below). Omitted → strict defaults.
+- `--title` — the merged `run.yaml` title; default is the first eligible
+  pack's title.
+- `--finalize` — after assembling, runs the real `finalize` on the output with
+  `endedAt = max(source ended)` (fallback `max(source started)`) — the
+  truthful end of the logical run. Without the flag, a later manual
+  `finalize` stamps seal time instead (a documented difference).
+
+### The merge-rules file
+
+A flat rule list `{file, key, must, on_violation}` beside two fixed knob
+blocks. Every rule's `file` also fixes its **scope**: `run.yaml` rules are
+compared **across all eligible packs** and gate whole packs; `result.yaml`
+rules are compared **between two colliding tests** and resolve collisions.
+`key` is a dot-path into the parsed YAML.
+
+```yaml
+# merge-rules.yaml
+packs:
+  require_status: finalized     # finalized | running | any
+  require_valid: L0             # L0 | L1 | off
+  on_ineligible: abort          # abort | skip
+tests:
+  on_collision: error           # error | prefer_first | prefer_latest | discard
+rules:
+  - file: run.yaml              # scope: compared ACROSS all eligible packs
+    key: environment.producer.name
+    must: same                  # same | different
+    on_violation: abort         # abort | skip   (pack-scoped actions)
+  - file: run.yaml
+    key: run_id
+    must: different
+    on_violation: skip
+  - file: result.yaml           # scope: compared BETWEEN two colliding tests
+    key: environment.model
+    must: same
+    on_violation: discard       # error | prefer_first | prefer_latest | discard
+```
+
+Pack-scoped rules only allow pack actions (`abort`/`skip`); collision rules
+only allow collision actions (`error`/`prefer_first`/`prefer_latest`/
+`discard`) — enforced by the schema itself. `src/schemas/merge-rules.schema.json`
+validates the rules file; it lives **beside**, not under, the versioned `0.1/`
+tree (tool input, not pack contract), compiled through the same AJV path used
+elsewhere. A rules file that fails to parse or conform is a **usage error
+(exit `2`)** before any pack is opened.
+
+Omitting `--rules` uses the strict defaults — nothing dropped silently:
+
+```yaml
+packs: { require_status: finalized, require_valid: L0, on_ineligible: abort }
+tests: { on_collision: error }
+rules: []
+```
+
+### Pack gates — in order, cheap → expensive
+
+1. **Readable manifest** — `run.yaml` missing or unparseable → ineligible.
+2. **Version gate** — `evidence != "0.1"` → ineligible; never merge across
+   contract versions.
+3. **`require_status`** (default `finalized`) — `running`/`aborted` →
+   ineligible.
+4. **`require_valid`** (default `L0`; `L1` or `off` settable) — runs the
+   existing `validate`; any error diagnostic → ineligible.
+5. **Generic `run.yaml` rules** — `{file: run.yaml, key, must, on_violation}`.
+
+Ineligibility resolves per `packs.on_ineligible`: **`skip`** (drop the pack,
+record why in the report, continue) or **`abort`** (the whole merge fails,
+exit `1`). A rule's own `on_violation` overrides the global for that rule.
+Zero eligible packs is always an error; **one** eligible pack still merges (a
+valid single-source pack — CI scripts stay unconditional).
+
+Packs are processed one at a time, in CLI order: a pack must pass **all**
+gates and rules to join the eligible set, and rules compare only against
+**previously eligible** packs. A pack that anchors a `same` value but then
+fails a later rule never becomes eligible, and its anchor is discarded — the
+next fully-surviving pack anchors instead.
+
+### `must` semantics
+
+- **`same`** — the *first eligible pack* anchors the reference value; each
+  later pack that differs violates. Deterministic; no majority voting.
+- **`different`** — the first occurrence of a value keeps; a later pack
+  repeating it violates — e.g. `{file: run.yaml, key: run_id, must: different,
+  on_violation: skip}` dedupes a double-submitted shard automatically.
+- **Absent keys** — absent == absent counts as `same`; absent vs. present
+  counts as `different`.
+- Values compare by canonical deep equality (objects/arrays included).
+
+### Test-level collisions
+
+Each eligible pack's `tests/<id>` ids are claimed in CLI order; the first
+claimant is the **incumbent**, a later pack with the same id is a
+**collision**, resolved pairwise (incumbent vs. challenger) by the first
+collision rule that fires (in file order), else the `tests.on_collision`
+default.
+
+| Action | Meaning |
+| --- | --- |
+| `error` | abort the whole merge (exit `1`) — the strict default |
+| `prefer_first` | incumbent wins (CLI order) |
+| `prefer_latest` | the copy from the pack with the later `run.yaml` `ended` wins (fallback `started`; tie → CLI order) |
+| `discard` | drop the test **entirely** — both copies; the id is **tombstoned** so a third pack's copy cannot resurrect it |
+
+3+-way collisions resolve pairwise in CLI order: the winner of (1 vs 2) faces
+pack 3's copy, and so on; any `discard` verdict tombstones the id for good.
+The winner's entire `tests/<id>/` directory travels **whole** — definition,
+`result.yaml`, `logs/`, `steps/` (screenshots and failure records), video —
+the loser's tree is dropped completely, with no artifact-level mixing between
+copies. Folding collisions into `attempts[]` (retry semantics) is
+deliberately out of scope — see decision
+[0033 — attempts is a per-attempt outcome list](#/decisions).
+
+### `run.yaml` — per-key disposition
+
+| Key | Across the N inputs | Value in merged `run.yaml` |
+| --- | --- | --- |
+| `evidence` | must be same — hard version gate, not policy | `"0.1"` |
+| `run_id` | no constraint by default | **`--run-id`** (mandatory) |
+| `status` | gated by `require_status`, never compared | `running` (live until finalize) |
+| `title` | no constraint | first eligible pack's title; `--title` overrides |
+| `started` | no constraint — execution fact | `min(started)` across eligible packs |
+| `ended` | no constraint — execution fact | **not written by merge**; `--finalize` seals with `max(source ended)` (fallback `max(source started)`) |
+| `totals` | ignored — never compared, never summed | absent; `finalize` re-derives from the merged union |
+| `metrics` | no constraint — free-form semantics unknowable | **namespaced by flattening** into the metric name: `<i>-<run_id>/<name>` (1-based index over eligible packs in CLI order; skipped packs consume no ordinal), each original typed object intact |
+| `environment` | no built-in constraint; rules pick sub-keys | **common subset** stays run-level; divergent keys **pushed down** per test (per-test value wins where already present) |
+| `merged_from` *(new, additive)* | — | list of source `run_id`s, in CLI order |
+
+`coverage/` from each eligible source nests under `coverage/<i>-<run_id>/`
+(the same label used for metrics). The root `failure.yaml` index is
+**deliberately not copied** — the live merged pack has no root index (valid:
+presence is only required at `finalized`, decision
+[0044 — Failure records](#/decisions)); `finalize` regenerates it from the
+merged tree, exactly as it does for any other live pack.
+
+### Exit codes
+
+`0` merged (policy-sanctioned skips/discards included) · `1` abort/error
+(rule abort, collision `error`, zero eligible packs) · `2` usage (missing
+`--run-id`, unreadable/invalid rules file, output path exists).
+
+### `MergeReport`
+
+`src/merge/` exposes `merge(inputs, opts): Promise<MergeReport>`; the CLI
+prints it via the existing reporter conventions.
+
+```yaml
+packs:
+  eligible: [shard-a, shard-b]              # run_ids, CLI order
+  skipped:  [{ run_id: shard-a2, rule: "run.yaml run_id must different", reason: duplicate of shard-a }]
+tests:
+  merged: 214
+  collisions: [{ test: checkout, winner: shard-b, rule: tests.on_collision=prefer_latest }]
+  discarded: [flaky-login]
+output: { path: merged.evidence, run_id: nightly-2026-07-08, finalized: true }
+```
+
+Policy-sanctioned skips/discards exit `0` — the report carries the story. The
+pack itself stays clean: `merged_from` is the only in-pack trace of the
+merge.
