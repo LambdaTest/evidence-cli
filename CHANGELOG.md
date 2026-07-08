@@ -4,7 +4,7 @@ All notable changes to evidence-cli are documented here. This format follows
 [Keep a Changelog](https://keepachangelog.com/), and the project adheres to
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.1.5] — 2026-07-08
 
 - **Merge** — `evidence merge` combines N packs under a declarative merge-rules
   policy (pack gates + per-test collision resolution, generic
