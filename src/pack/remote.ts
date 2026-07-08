@@ -281,6 +281,10 @@ export class RemoteZipContainer implements PackContainer {
   async readText(rel: string): Promise<string | null> {
     return this.readEntryText(rel);
   }
+
+  async readFileBytes(rel: string): Promise<Buffer | null> {
+    return this.readEntryBytes(rel);
+  }
 }
 
 /**

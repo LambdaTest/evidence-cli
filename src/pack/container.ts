@@ -27,6 +27,8 @@ export interface PackContainer {
   listDir(rel: string): Promise<DirEntry[]>;
   /** Read a pack-root-relative text file, or null if absent. */
   readText(rel: string): Promise<string | null>;
+  /** Read a pack-root-relative file's bytes, or null if absent (decision 0045: tree copy for merge). */
+  readFileBytes(rel: string): Promise<Buffer | null>;
 }
 
 function stripEvidence(base: string): string {
@@ -110,6 +112,14 @@ export class DirectoryContainer implements PackContainer {
   async readText(rel: string): Promise<string | null> {
     return readFileOrNull(path.join(this.root, rel));
   }
+
+  async readFileBytes(rel: string): Promise<Buffer | null> {
+    try {
+      return await fs.readFile(path.join(this.root, rel));
+    } catch {
+      return null;
+    }
+  }
 }
 
 export class ZipContainer implements PackContainer {
@@ -190,6 +200,11 @@ export class ZipContainer implements PackContainer {
   async readText(rel: string): Promise<string | null> {
     const e = this.zip.getEntry(rel);
     return e ? e.getData().toString("utf8") : null;
+  }
+
+  async readFileBytes(rel: string): Promise<Buffer | null> {
+    const e = this.zip.getEntry(rel);
+    return e ? e.getData() : null;
   }
 }
 

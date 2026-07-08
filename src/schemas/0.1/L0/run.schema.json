@@ -75,6 +75,12 @@
         "additionalProperties": true
       }
     },
+    "merged_from": {
+      "description": "Present only on a pack produced by `evidence merge`: the source run_ids, in CLI order. The additive slice of deferred lineage (0014). See decision 0045.",
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
     "environment": {
       "description": "Optional provenance/context block — an OPEN map of key:value pairs. The keys below are conventional, none is required, and any additional key:value pairs are allowed. A non-browser framework (unit, API) may legitimately omit model/surfaces — or the whole block — entirely. See decision 0013.",
       "type": "object",
