@@ -1,9 +1,10 @@
 import pc from "picocolors";
-import type { ValidationReport, FinalizeResult, Severity } from "../contract";
+import type { ValidationReport, FinalizeResult, MergeReport, Severity } from "../contract";
 
 export interface Reporter {
   validation(report: ValidationReport): void;
   finalize(result: FinalizeResult): void;
+  merge(report: MergeReport): void;
   usageError(message: string): void;
 }
 
@@ -13,6 +14,9 @@ export class JsonReporter implements Reporter {
   }
   finalize(result: FinalizeResult): void {
     process.stdout.write(JSON.stringify(result, null, 2) + "\n");
+  }
+  merge(report: MergeReport): void {
+    process.stdout.write(JSON.stringify(report, null, 2) + "\n");
   }
   usageError(message: string): void {
     process.stderr.write(JSON.stringify({ error: message }, null, 2) + "\n");
@@ -56,6 +60,23 @@ export class HumanReporter implements Reporter {
     const t = result.totals;
     process.stdout.write(this.paint(`${this.sym("ok")} sealed ${result.sealedPath}`, "ok") + "\n");
     process.stdout.write(`  totals: tests=${t.tests} passed=${t.passed} failed=${t.failed} broken=${t.broken} skipped=${t.skipped}\n`);
+  }
+
+  merge(report: MergeReport): void {
+    for (const s of report.packs.skipped) {
+      process.stdout.write(this.paint(`${this.sym("warning")} skipped pack "${s.runId}": ${s.reason} [${s.rule}]`, "warning") + "\n");
+    }
+    for (const c of report.tests.collisions) {
+      const outcome = c.winner ? `winner ${c.winner}` : "discarded";
+      process.stdout.write(`  collision ${c.test}: ${outcome} [${c.rule}]\n`);
+    }
+    if (report.tests.discarded.length > 0) {
+      process.stdout.write(this.paint(`${this.sym("warning")} discarded tests: ${report.tests.discarded.join(", ")}`, "warning") + "\n");
+    }
+    const sealed = report.output.finalized ? ", sealed" : "";
+    process.stdout.write(
+      this.paint(`${this.sym("ok")} merged ${report.output.path} (run_id ${report.output.runId}, ${report.tests.merged} test(s)${sealed})`, "ok") + "\n",
+    );
   }
 
   usageError(message: string): void {
