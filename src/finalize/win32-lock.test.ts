@@ -89,6 +89,28 @@ describe("finalize under transient Windows locks", () => {
 });
 
 describe("sweepIncomplete under transient Windows locks", () => {
+  it("removes a stale .tmp despite a transient EPERM on its rm", async () => {
+    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "evi-win32-sweep-"));
+    work = tmp;
+    await fs.writeFile(path.join(tmp, "run.evidence.tmp-999"), "half-zip");
+
+    const realRm = fs.rm.bind(fs);
+    let failures = 0;
+    vi.spyOn(fs, "rm").mockImplementation(async (target, opts) => {
+      if (String(target).includes(".tmp-") && failures < 2) {
+        failures++;
+        throw eperm();
+      }
+      return realRm(target, opts);
+    });
+
+    const res = await sweepIncomplete(tmp);
+
+    expect(failures).toBe(2);
+    expect(res.removed).toContain("run.evidence.tmp-999");
+    expect(await fs.readdir(tmp)).toEqual([]);
+  });
+
   it("restores a .bak despite a transient EPERM on the restore rename", async () => {
     const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "evi-win32-sweep-"));
     work = tmp;
