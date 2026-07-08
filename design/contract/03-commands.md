@@ -6,16 +6,17 @@ profile: L0
 
 # Commands & config (L0)
 
-Stage one ships three commands, all operating on the pack's internal tree. Only
-`validate` is container-agnostic: `finalize` and `index` take the **live**
-`<name>.evidence/` directory, while `validate` accepts **either** a directory or a
-sealed `.evidence` zip.
+evidence-cli ships four commands, all operating on the pack's internal tree.
+`finalize` and `index` take the **live** `<name>.evidence/` directory, `validate`
+accepts **either** a directory or a sealed `.evidence` zip, and `merge` reads N
+packs (either form) and writes a new live directory.
 
 | Command | Input | Mutates? |
 | --- | --- | --- |
 | `finalize` | live `<name>.evidence/` directory only | yes — derives + seals |
 | `index` | live `<name>.evidence/` directory only | yes — only optional `*.md` renders |
 | `validate` | a directory **or** a sealed `.evidence` zip | no — read-only |
+| `merge` | N packs (directories or sealed zips) | no — sources read-only; writes a **new** live pack |
 
 ## `evidence finalize <dir>`
 
