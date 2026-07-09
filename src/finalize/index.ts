@@ -15,6 +15,7 @@ interface FailureRow {
   path: string;
   title?: string;
   triage_status?: string;
+  severity?: string;
 }
 
 export interface FinalizeOptions {
@@ -162,6 +163,8 @@ async function collectFailureRows(testsDir: string, id: string): Promise<Failure
     if (typeof rec?.title === "string" && rec.title.length > 0) row.title = rec.title;
     const ts = rec?.triage?.status;
     if (typeof ts === "string" && ts.length > 0) row.triage_status = ts;
+    const sev = rec?.triage?.severity;
+    if (typeof sev === "string" && sev.length > 0) row.severity = sev;
     rows.push(row);
   }
   return rows;

@@ -43,6 +43,10 @@
             "description": "Lifted verbatim from the record's title when present.",
             "type": "string",
             "minLength": 1
+          },
+          "severity": {
+            "description": "Lifted verbatim from the record's triage.severity when present.",
+            "enum": ["critical", "major", "minor", "cosmetic"]
           }
         },
         "additionalProperties": true

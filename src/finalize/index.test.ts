@@ -154,6 +154,29 @@ describe("finalize failure index (decision 0044)", () => {
     expect(idx.failures.map((r: any) => r.step)).toEqual(["open", "pay", "refund"]);
   });
 
+  it("lifts triage.severity verbatim; omits it when absent", async () => {
+    const dir = await stageCopy();
+    const steps = path.join(dir, "tests", "checkout", "steps");
+    await fs.mkdir(path.join(steps, "1-open"), { recursive: true });
+    await fs.mkdir(path.join(steps, "2-pay"), { recursive: true });
+    await fs.writeFile(
+      path.join(steps, "1-open", "failure.yaml"),
+      "step: open\nstatus: broken\nerror: { message: boom }\ntriage: { status: triaged, severity: major }\n",
+    );
+    // a record without severity produces a row with no severity key
+    await fs.writeFile(
+      path.join(steps, "2-pay", "failure.yaml"),
+      "step: pay\nstatus: failed\nerror: { message: timeout }\ntriage: { status: triaged }\n",
+    );
+
+    await finalize(dir, { endedAt: "2026-06-28T09:00:30Z" });
+    const idx = parseYaml(await readSealed(dir, "failure.yaml")) as any;
+
+    expect(idx.failures[0].severity).toBe("major");
+    expect(idx.failures[0].triage_status).toBe("triaged");
+    expect("severity" in idx.failures[1]).toBe(false);
+  });
+
   it("fails fast on a step record that is not valid YAML", async () => {
     const dir = await stageCopy();
     const folder = path.join(dir, "tests", "checkout", "steps", "2-pay");

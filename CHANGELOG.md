@@ -4,6 +4,12 @@ All notable changes to evidence-cli are documented here. This format follows
 [Keep a Changelog](https://keepachangelog.com/), and the project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [0.1.6] — Unreleased
+
+- **Failure `severity`** — a record's `triage` block MAY carry a closed-enum
+  `severity` (`critical|major|minor|cosmetic`); `finalize` lifts it verbatim
+  into the run-level failure index row. Purely additive.
+
 ## [0.1.5] — 2026-07-08
 
 - **Merge** — `evidence merge` combines N packs under a declarative merge-rules

@@ -94,6 +94,10 @@
           "description": "Triage lifecycle — closed enum (snake_case, decision 0036).",
           "enum": ["untriaged", "triaged", "in_progress", "dismissed"]
         },
+        "severity": {
+          "description": "Investigation-assessed defect severity — closed enum. Lifted into the failure-index row by finalize.",
+          "enum": ["critical", "major", "minor", "cosmetic"]
+        },
         "by": {
           "description": "Who/what triaged. `kind` and `id` are open strings; `at` is required when the block is present.",
           "type": "object",
