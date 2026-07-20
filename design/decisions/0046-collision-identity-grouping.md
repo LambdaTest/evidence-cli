@@ -44,7 +44,7 @@ decision: >
   counts as SAME, absent-vs-present counts as DIFFERENT. Two copies have the
   SAME IDENTITY when every listed key compares equal. `keys` are the
   CALLER'S FACT — evidence-cli never interprets them and ships no default
-  set, so a producer's identity vocabulary (a TMS test uuid, a commit sha, a
+  set, so a producer's identity vocabulary (a test-manager id, a commit sha, a
   browser name) stays in the producer's policy file and the tool stays
   vendor-neutral.
   RESOLUTION ORDER on a collision is fixed and does NOT change 0045's first
