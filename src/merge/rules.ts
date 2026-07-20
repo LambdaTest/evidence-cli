@@ -6,6 +6,20 @@ import { parseYaml } from "../yaml";
 
 export type PackAction = "abort" | "skip";
 export type CollisionAction = "error" | "prefer_first" | "prefer_latest" | "discard";
+export type SameAction = "nest" | "prefer_latest" | "prefer_first" | "error";
+export type DifferentAction = "split" | "error";
+
+/**
+ * Optional identity policy (decision 0046). `keys` are dot-paths into
+ * result.yaml naming what makes two copies of a test id THE SAME test; the
+ * caller owns that vocabulary — evidence-cli never interprets a key and ships
+ * no default set. Absent, merge behaves exactly as 0045 specifies.
+ */
+export interface IdentityPolicy {
+  keys: string[];
+  on_same: SameAction;
+  on_different: DifferentAction;
+}
 
 export interface KeyRule {
   file: "run.yaml" | "result.yaml";
@@ -16,7 +30,7 @@ export interface KeyRule {
 
 export interface MergeRules {
   packs: { require_status: "finalized" | "running" | "any"; require_valid: "L0" | "L1" | "off"; on_ineligible: PackAction };
-  tests: { on_collision: CollisionAction };
+  tests: { on_collision: CollisionAction; identity?: IdentityPolicy };
   rules: KeyRule[];
 }
 

@@ -44,7 +44,10 @@ export interface MergeReport {
   };
   tests: {
     merged: number;
-    collisions: { test: string; winner: string; rule: string }[];
+    // `action`/`folder` are present only for 0046's shape-changing outcomes;
+    // the three original fields are unconditional, so existing --json
+    // consumers keep parsing unchanged.
+    collisions: { test: string; winner: string; rule: string; action?: "nest" | "split"; folder?: string }[];
     discarded: string[];
   };
   output: { path: string; runId: string; finalized: boolean };

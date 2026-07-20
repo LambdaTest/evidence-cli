@@ -67,7 +67,10 @@ export class HumanReporter implements Reporter {
       process.stdout.write(this.paint(`${this.sym("warning")} skipped pack "${s.runId}": ${s.reason} [${s.rule}]`, "warning") + "\n");
     }
     for (const c of report.tests.collisions) {
-      const outcome = c.winner ? `winner ${c.winner}` : "discarded";
+      let outcome: string;
+      if (c.action === "nest") outcome = `nested into ${c.folder}, latest ${c.winner}`;
+      else if (c.action === "split") outcome = `split into ${c.folder}`;
+      else outcome = c.winner ? `winner ${c.winner}` : "discarded";
       process.stdout.write(`  collision ${c.test}: ${outcome} [${c.rule}]\n`);
     }
     if (report.tests.discarded.length > 0) {

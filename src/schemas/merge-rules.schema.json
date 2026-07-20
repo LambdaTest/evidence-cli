@@ -29,6 +29,22 @@
         "on_collision": {
           "description": "Default policy when two packs carry the same test id and no result.yaml rule fires. discard tombstones the id.",
           "enum": ["error", "prefer_first", "prefer_latest", "discard"]
+        },
+        "identity": {
+          "description": "Optional identity policy (decision 0046). Runs only when no result.yaml rule fired, so guard rules still abort first. `keys` name what makes two copies of a test id THE SAME test — the caller's vocabulary; evidence-cli never interprets a key. Same identity resolves by on_same (nest keeps every copy: latest canonical, superseded archived as 1/, 2/ …); different identity by on_different (split allocates a suffixed sibling folder).",
+          "type": "object",
+          "required": ["keys", "on_same", "on_different"],
+          "properties": {
+            "keys": {
+              "description": "Dot-paths into the parsed result.yaml, compared by canonical deep equality. Absent==absent counts as same, matching the generic rules.",
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "on_same": { "enum": ["nest", "prefer_latest", "prefer_first", "error"] },
+            "on_different": { "enum": ["split", "error"] }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
