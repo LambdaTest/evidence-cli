@@ -58,6 +58,46 @@ describe("merge()", () => {
     expect(v.status).toBe("running");
   });
 
+  it("identity rules nest supersessions and split distinct tests, end to end", async () => {
+    const ex = (commit: string) => ({ externalId: { commit_id: commit, test_id: "T1" } });
+    const a = await sealCopy(
+      await stagePack({ runId: "a", ended: "2026-07-08T09:00:00Z", l1: true, tests: { checkout: ex("abc") } }),
+    );
+    const b = await sealCopy(
+      await stagePack({ runId: "b", ended: "2026-07-08T10:00:00Z", l1: true, tests: { checkout: ex("abc") } }),
+    );
+    const c = await sealCopy(
+      await stagePack({ runId: "c", ended: "2026-07-08T11:00:00Z", l1: true, tests: { checkout: ex("zzz") } }),
+    );
+    const out = await outPath();
+    const report = await merge([a, b, c], {
+      runId: "nightly",
+      out,
+      finalize: true,
+      rulesPath: await writeRules(
+        "tests:\n  on_collision: error\n  identity:\n    keys: [external_id.commit_id, external_id.test_id]\n    on_same: nest\n    on_different: split\n",
+      ),
+    });
+
+    // two top-level tests: the nested group and the split sibling
+    expect(report.tests.merged).toBe(2);
+    expect(report.tests.collisions).toEqual([
+      { test: "checkout", winner: "b", rule: "tests.identity.on_same=nest", action: "nest", folder: "checkout" },
+      { test: "checkout", winner: "c", rule: "tests.identity.on_different=split", action: "split", folder: "checkout-1" },
+    ]);
+
+    const zip = new AdmZip(out);
+    const entry = (p: string) => zip.getEntry(p)?.getData().toString("utf8");
+    // the archive rode into the seal, and totals counted only the two top-level tests
+    expect(entry("tests/checkout/1/result.yaml")).toContain("test: checkout");
+    expect(entry("tests/checkout-1/result.yaml")).toContain("test: checkout-1");
+    const run = parseYaml(entry("run.yaml")!) as any;
+    expect(run.totals).toEqual({ tests: 2, passed: 2, failed: 0, broken: 0, skipped: 0 });
+
+    const v = await validate(out, { profile: "L1" });
+    expect(v.valid).toBe(true);
+  });
+
   it("propagates USAGE for a bad rules file before opening packs", async () => {
     const out = await outPath();
     await expect(

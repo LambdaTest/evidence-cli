@@ -27,8 +27,8 @@ export interface MergeOptions {
 export async function merge(inputs: string[], opts: MergeOptions): Promise<MergeReport> {
   const rules = await loadRules(opts.rulesPath); // USAGE errors fire before any pack opens
   const { eligible, skipped } = await gatePacks(inputs, rules);
-  const { union, collisions, discarded } = await resolveCollisions(eligible, rules);
-  await assemble(opts.out, { runId: opts.runId, title: opts.title }, eligible, union);
+  const { groups, collisions, discarded } = await resolveCollisions(eligible, rules);
+  await assemble(opts.out, { runId: opts.runId, title: opts.title }, eligible, groups);
 
   let finalized = false;
   if (opts.finalize) {
@@ -38,7 +38,7 @@ export async function merge(inputs: string[], opts: MergeOptions): Promise<Merge
 
   return {
     packs: { eligible: eligible.map((p) => p.run.run_id), skipped },
-    tests: { merged: union.length, collisions, discarded },
+    tests: { merged: groups.length, collisions, discarded },
     output: { path: opts.out, runId: opts.runId, finalized },
   };
 }

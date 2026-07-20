@@ -4,6 +4,27 @@ All notable changes to evidence-cli are documented here. This format follows
 [Keep a Changelog](https://keepachangelog.com/), and the project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [0.1.7] — 2026-07-20
+
+- **Merge identity grouping** — an optional `tests.identity` block in
+  merge-rules turns a test-id collision from "pick one winner" into "group by
+  identity". `keys` (dot-paths into `result.yaml`, the caller's vocabulary) decide
+  sameness; `on_same: nest` keeps every copy — the latest run holds the canonical
+  `tests/<id>/` and superseded runs are archived beneath it as `1/`, `2/` …
+  oldest first — while `on_different: split` gives a distinct test its own
+  sibling `tests/<id>-1/`. Guard rules still resolve first, so a
+  `must: same` + `error` rule can never be downgraded into a split. Nested
+  copies are inert to totals, the failure index and validation.
+  `MergeReport` collisions gain optional `action`/`folder`. Purely additive —
+  absent the block, merge behaves exactly as before. See decision 0046.
+
+## [0.1.6] — 2026-07-19
+
+- **Windows seal reliability** — `finalize` retries transient lock errors
+  (`EPERM`/`EACCES`/`EBUSY`) around the atomic seal, with `.tmp` removal
+  retries and a ~15s seal-rename budget, so a scanner or indexer holding a
+  handle no longer fails the seal.
+
 ## [0.1.5] — 2026-07-08
 
 - **Merge** — `evidence merge` combines N packs under a declarative merge-rules

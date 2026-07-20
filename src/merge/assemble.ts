@@ -4,7 +4,8 @@ import { CONTRACT_VERSION } from "../contract";
 import type { PackContainer } from "../pack/container";
 import { parseDoc, parseYaml, stringifyDoc, stringifyYaml } from "../yaml";
 import type { EligiblePack } from "./gates";
-import type { UnionEntry } from "./collide";
+import { orderMembers } from "./collide";
+import type { TestGroup } from "./collide";
 import { deepEqual, getKey } from "./rules";
 
 export interface AssembleOptions {
@@ -22,7 +23,7 @@ export async function assemble(
   outDir: string,
   opts: AssembleOptions,
   eligible: EligiblePack[],
-  union: UnionEntry[],
+  groups: TestGroup[],
 ): Promise<void> {
   try {
     await fs.access(outDir);
@@ -34,9 +35,33 @@ export async function assemble(
   }
   await fs.mkdir(outDir, { recursive: true });
 
-  // Winners' whole trees + per-source coverage nesting.
-  for (const entry of union) {
-    await copyTree(entry.source.container, `tests/${entry.testId}`, path.join(outDir, "tests", entry.testId));
+  // Each group's members, whole-tree: the latest run takes the canonical
+  // tests/<folder>/ exactly as an uncontested test does, and every superseded
+  // member is archived beneath it as 1/, 2/ … oldest first (decision 0046).
+  // `written` is the per-copy record the environment push-down works from.
+  const written: { pack: EligiblePack; resultPath: string }[] = [];
+  for (const group of groups) {
+    const ordered = orderMembers(group.members);
+    const canonical = ordered[ordered.length - 1];
+    const groupDir = path.join(outDir, "tests", group.folder);
+    await copyTree(canonical.container, `tests/${group.baseId}`, groupDir);
+    written.push({ pack: canonical, resultPath: path.join(groupDir, "result.yaml") });
+
+    for (let i = 0; i < ordered.length - 1; i++) {
+      const nestedDir = path.join(groupDir, String(i + 1));
+      await copyTree(ordered[i].container, `tests/${group.baseId}`, nestedDir);
+      written.push({ pack: ordered[i], resultPath: path.join(nestedDir, "result.yaml") });
+    }
+
+    // A split folder must satisfy 0031's test-id/directory equality. A NESTED
+    // copy is not validated and keeps its original id — the archive stays
+    // truthful about what it was.
+    if (group.folder !== group.baseId) {
+      await editResult(path.join(groupDir, "result.yaml"), (doc) => {
+        doc.set("test", group.folder);
+        return true;
+      });
+    }
   }
   for (const pack of eligible) {
     if (await pack.container.isDir("coverage")) {
@@ -54,21 +79,22 @@ export async function assemble(
     if (envs.every((e) => key in e && deepEqual(e[key], first))) commonEnv[key] = first;
     else divergent.add(key);
   }
-  for (const entry of union) {
-    const sourceEnv = entry.source.run?.environment ?? {};
+  // Applied to EVERY copy written, canonical and nested alike, each against
+  // its own source pack — the divergent keys are what let an archived copy be
+  // read standalone, which is the reason for keeping it at all.
+  for (const { pack, resultPath } of written) {
+    const sourceEnv = pack.run?.environment ?? {};
     const pushable = [...divergent].filter((k) => k in sourceEnv);
     if (pushable.length === 0) continue;
-    const resultPath = path.join(outDir, "tests", entry.testId, "result.yaml");
-    const raw = await fs.readFile(resultPath, "utf8");
-    const parsed = parseYaml(raw);
-    const doc = parseDoc(raw);
-    let dirty = false;
-    for (const key of pushable) {
-      if (getKey(parsed, `environment.${key}`) !== undefined) continue; // per-test value wins
-      doc.setIn(["environment", key], sourceEnv[key]);
-      dirty = true;
-    }
-    if (dirty) await fs.writeFile(resultPath, stringifyDoc(doc), "utf8");
+    await editResult(resultPath, (doc, parsed) => {
+      let dirty = false;
+      for (const key of pushable) {
+        if (getKey(parsed, `environment.${key}`) !== undefined) continue; // per-test value wins
+        doc.setIn(["environment", key], sourceEnv[key]);
+        dirty = true;
+      }
+      return dirty;
+    });
   }
 
   // Metrics: namespaced by flattening into the name — <label>/<name> — so the
@@ -96,6 +122,17 @@ export async function assemble(
   if (Object.keys(metrics).length > 0) run.metrics = metrics;
   if (Object.keys(commonEnv).length > 0) run.environment = commonEnv;
   await fs.writeFile(path.join(outDir, "run.yaml"), stringifyYaml(run), "utf8");
+}
+
+/**
+ * Edit a copied result.yaml through the comment-preserving document path, so
+ * the definition file is never touched and hash checks stay green. The mutator
+ * returns whether it changed anything; false skips the write entirely.
+ */
+async function editResult(resultPath: string, mutate: (doc: any, parsed: unknown) => boolean): Promise<void> {
+  const raw = await fs.readFile(resultPath, "utf8");
+  const doc = parseDoc(raw);
+  if (mutate(doc, parseYaml(raw))) await fs.writeFile(resultPath, stringifyDoc(doc), "utf8");
 }
 
 /** Recursively copy a container subtree (dir or zip source) to the filesystem. */

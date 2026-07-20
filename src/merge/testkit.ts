@@ -13,6 +13,7 @@ import { parseYaml } from "../yaml";
 export interface StageTestSpec {
   status?: string; // test verdict; the 2-pay step carries the same status
   environment?: any; // result-level environment block
+  externalId?: any; // result-level external_id block (open map)
   failure?: string; // content of steps/2-pay/failure.yaml
 }
 
@@ -49,6 +50,7 @@ export async function stagePack(spec: StagePackSpec): Promise<string> {
     const status = t.status ?? "passed";
     let result = `evidence: "0.1"\ntest: ${id}\nstatus: ${status}\ndefinition:\n  path: test.md\nsteps:\n  - { id: open, ordinal: 1, status: passed }\n  - { id: pay, ordinal: 2, status: ${status} }\n`;
     if (t.environment) result += `environment: ${JSON.stringify(t.environment)}\n`;
+    if (t.externalId) result += `external_id: ${JSON.stringify(t.externalId)}\n`;
     await fs.writeFile(path.join(testDir, "result.yaml"), result);
 
     if (spec.l1) {

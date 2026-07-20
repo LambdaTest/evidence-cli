@@ -186,6 +186,12 @@ packs:
   on_ineligible: abort          # abort | skip
 tests:
   on_collision: error           # error | prefer_first | prefer_latest | discard
+  identity:                     # OPTIONAL (0046); absent → 0045 behaviour, unchanged
+    keys:                       # dot-paths into result.yaml — the caller's vocabulary
+      - external_id.commit_id
+      - external_id.test_id
+    on_same: nest               # nest | prefer_latest | prefer_first | error
+    on_different: split         # split | error
 rules:
   - file: run.yaml              # scope: compared ACROSS all eligible packs
     key: environment.producer.name
@@ -275,6 +281,36 @@ copies. Folding collisions into `attempts[]` (retry semantics) is
 deliberately out of scope — see decision
 [0033 — attempts is a per-attempt outcome list](#/decisions).
 
+### Identity grouping (optional, 0046)
+
+When `tests.identity` is configured, a collision that violates **no**
+`result.yaml` rule is resolved by **grouping** instead of by picking a winner —
+guard rules still abort first, so a `must: same` + `error` rule can never be
+downgraded into a split. Two copies have the same identity when **every** key
+in `keys` compares equal under the canonical deep equality above (absent ==
+absent counts as same). The challenger is matched against each existing group
+of that id **in allocation order**; the first match absorbs it (`on_same`), and
+no match allocates a new folder (`on_different`).
+
+| Action | Meaning |
+| --- | --- |
+| `on_same: nest` | keep **every** copy: the latest run takes the canonical `tests/<id>/`, each superseded run is archived whole beneath it as `1/`, `2/` … oldest first (by `ended`, fallback `started`; ties → CLI order) |
+| `on_different: split` | the copy lands in a **new sibling** `tests/<id>-1/`, `-2/` … the first group keeps the unsuffixed name |
+
+Suffixes are allocated against the union of every eligible pack's test ids, so
+a split never steals a name some pack legitimately owns — if `<id>-1` exists as
+a real test, the split takes `<id>-2`. A split folder's `result.yaml` `test`
+field is **rewritten** to equal its directory (the L0 cross-check requires the
+equality); a nested copy keeps its original id, since nothing validates it and
+the archive stays truthful. `discard` tombstones the **base id** — every group
+of it goes, split siblings included.
+
+Nested copies are **inert**: totals walk only top-level `tests/*`, the failure
+index reads only `tests/<id>/steps/`, and the L1 step checks enumerate only
+`<test>/steps/`. An archive therefore changes no count and fails no check. Note
+that `nest` retains artifacts `prefer_latest` would discard, so a merged pack
+grows with the number of runs kept.
+
 ### `run.yaml` — per-key disposition
 
 | Key | Across the N inputs | Value in merged `run.yaml` |
@@ -313,11 +349,20 @@ packs:
   eligible: [shard-a, shard-b]              # run_ids, CLI order
   skipped:  [{ run_id: shard-a2, rule: "run.yaml run_id must different", reason: duplicate of shard-a }]
 tests:
-  merged: 214
-  collisions: [{ test: checkout, winner: shard-b, rule: tests.on_collision=prefer_latest }]
+  merged: 214                               # TOP-LEVEL test folders (= groups)
+  collisions:
+    - { test: checkout, winner: shard-b, rule: tests.on_collision=prefer_latest }
+    # 0046 outcomes carry the shape they took and where the copy landed:
+    - { test: login, winner: shard-c, rule: tests.identity.on_same=nest, action: nest, folder: login }
+    - { test: login, winner: shard-d, rule: tests.identity.on_different=split, action: split, folder: login-1 }
   discarded: [flaky-login]
 output: { path: merged.evidence, run_id: nightly-2026-07-08, finalized: true }
 ```
+
+`action` and `folder` appear only on 0046's shape-changing outcomes; the other
+three fields are unconditional, so existing `--json` consumers keep parsing
+unchanged. `winner` is the canonical member for `nest` and the absorbed
+challenger for `split`.
 
 Policy-sanctioned skips/discards exit `0` — the report carries the story. The
 pack itself stays clean: `merged_from` is the only in-pack trace of the

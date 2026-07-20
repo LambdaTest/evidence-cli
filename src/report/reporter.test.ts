@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { JsonReporter, HumanReporter } from "./reporter";
-import type { ValidationReport } from "../contract";
+import type { MergeReport, ValidationReport } from "../contract";
 
 const REPORT: ValidationReport = {
   valid: false,
@@ -43,6 +43,26 @@ describe("reporters", () => {
   it("HumanReporter (TTY) uses the ✗ glyph", () => {
     const out = capture(() => new HumanReporter(true).validation(REPORT));
     expect(out).toContain("✗");
+  });
+
+  it("HumanReporter names the folder for nest and split outcomes", () => {
+    const merged: MergeReport = {
+      packs: { eligible: ["a", "b", "c"], skipped: [] },
+      tests: {
+        merged: 2,
+        collisions: [
+          { test: "checkout", winner: "b", rule: "tests.identity.on_same=nest", action: "nest", folder: "checkout" },
+          { test: "checkout", winner: "c", rule: "tests.identity.on_different=split", action: "split", folder: "checkout-1" },
+          { test: "login", winner: "a", rule: "tests.on_collision=prefer_first" },
+        ],
+        discarded: [],
+      },
+      output: { path: "/out/m.evidence", runId: "nightly", finalized: false },
+    };
+    const out = capture(() => new HumanReporter(false).merge(merged));
+    expect(out).toContain("collision checkout: nested into checkout, latest b [tests.identity.on_same=nest]");
+    expect(out).toContain("collision checkout: split into checkout-1 [tests.identity.on_different=split]");
+    expect(out).toContain("collision login: winner a [tests.on_collision=prefer_first]"); // unchanged
   });
 
   it("HumanReporter surfaces the pack's current status", () => {

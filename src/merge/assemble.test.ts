@@ -10,7 +10,7 @@ import { stagePack, sealCopy } from "./testkit";
 import { parseYaml } from "../yaml";
 import { validate } from "../validate";
 
-async function stagePair(): Promise<{ out: string; eligible: any[]; union: any[] }> {
+async function stagePair(): Promise<{ out: string; eligible: any[]; groups: any[] }> {
   const a = await sealCopy(
     await stagePack({
       runId: "a",
@@ -33,15 +33,101 @@ async function stagePair(): Promise<{ out: string; eligible: any[]; union: any[]
     }),
   );
   const { eligible } = await gatePacks([a, b], DEFAULT_RULES);
-  const { union } = await resolveCollisions(eligible, DEFAULT_RULES);
+  const { groups } = await resolveCollisions(eligible, DEFAULT_RULES);
   const out = path.join(await fs.mkdtemp(path.join(os.tmpdir(), "evi-asm-")), "m.evidence");
-  return { out, eligible, union };
+  return { out, eligible, groups };
 }
+
+const IDENTITY_RULES: any = {
+  ...DEFAULT_RULES,
+  tests: {
+    on_collision: "error",
+    identity: { keys: ["external_id.commit_id"], on_same: "nest", on_different: "split" },
+  },
+};
+
+/** Stage N packs that all claim `login`, resolve them under the identity policy. */
+async function stageGrouped(specs: any[]): Promise<{ out: string; eligible: any[]; groups: any[] }> {
+  const paths: string[] = [];
+  for (const s of specs) paths.push(await sealCopy(await stagePack({ l1: true, ...s })));
+  const { eligible } = await gatePacks(paths, IDENTITY_RULES);
+  const { groups } = await resolveCollisions(eligible, IDENTITY_RULES);
+  const out = path.join(await fs.mkdtemp(path.join(os.tmpdir(), "evi-asm-")), "m.evidence");
+  return { out, eligible, groups };
+}
+
+const readResult = async (out: string, rel: string): Promise<any> =>
+  parseYaml(await fs.readFile(path.join(out, "tests", rel, "result.yaml"), "utf8"));
+
+describe("assemble — identity grouping (0046)", () => {
+  it("keeps the latest member canonical and nests superseded ones oldest-first", async () => {
+    // CLI order deliberately differs from chronological order
+    const { out, eligible, groups } = await stageGrouped([
+      { runId: "b", ended: "2026-07-08T10:00:00Z", tests: { login: { externalId: { commit_id: "abc", session_id: "s-b" } } } },
+      { runId: "a", ended: "2026-07-08T09:00:00Z", tests: { login: { externalId: { commit_id: "abc", session_id: "s-a" } } } },
+      { runId: "c", ended: "2026-07-08T11:00:00Z", tests: { login: { externalId: { commit_id: "abc", session_id: "s-c" } } } },
+    ]);
+    await assemble(out, { runId: "nightly" }, eligible, groups);
+
+    expect((await readResult(out, "login")).external_id.session_id).toBe("s-c"); // latest
+    expect((await readResult(out, "login/1")).external_id.session_id).toBe("s-a"); // oldest
+    expect((await readResult(out, "login/2")).external_id.session_id).toBe("s-b");
+    // nested copies carry their whole tree
+    await fs.access(path.join(out, "tests/login/1/test.md"));
+    await fs.access(path.join(out, "tests/login/1/logs/console.ndjson"));
+    await fs.access(path.join(out, "tests/login/1/steps/2-pay/screenshot.png"));
+  });
+
+  it("rewrites test: in a split folder, leaves it untouched in a nested copy", async () => {
+    const { out, eligible, groups } = await stageGrouped([
+      { runId: "a", ended: "2026-07-08T09:00:00Z", tests: { login: { externalId: { commit_id: "abc" } } } },
+      { runId: "b", ended: "2026-07-08T10:00:00Z", tests: { login: { externalId: { commit_id: "abc" } } } },
+      { runId: "c", ended: "2026-07-08T11:00:00Z", tests: { login: { externalId: { commit_id: "zzz" } } } },
+    ]);
+    await assemble(out, { runId: "nightly" }, eligible, groups);
+
+    expect((await readResult(out, "login")).test).toBe("login");
+    expect((await readResult(out, "login/1")).test).toBe("login"); // archive stays truthful
+    expect((await readResult(out, "login-1")).test).toBe("login-1"); // must equal its directory
+  });
+
+  it("pushes divergent environment down into nested copies from their own source", async () => {
+    const { out, eligible, groups } = await stageGrouped([
+      {
+        runId: "a",
+        ended: "2026-07-08T09:00:00Z",
+        environment: { producer: { name: "kane" }, ci: { shard: "1" } },
+        tests: { login: { externalId: { commit_id: "abc" } } },
+      },
+      {
+        runId: "b",
+        ended: "2026-07-08T10:00:00Z",
+        environment: { producer: { name: "kane" }, ci: { shard: "2" } },
+        tests: { login: { externalId: { commit_id: "abc" } } },
+      },
+    ]);
+    await assemble(out, { runId: "nightly" }, eligible, groups);
+
+    expect((await readResult(out, "login")).environment.ci).toEqual({ shard: "2" }); // canonical = pack b
+    expect((await readResult(out, "login/1")).environment.ci).toEqual({ shard: "1" }); // nested = pack a
+  });
+
+  it("a pack with nested and split folders validates clean at L0", async () => {
+    const { out, eligible, groups } = await stageGrouped([
+      { runId: "a", ended: "2026-07-08T09:00:00Z", tests: { login: { externalId: { commit_id: "abc" } } } },
+      { runId: "b", ended: "2026-07-08T10:00:00Z", tests: { login: { externalId: { commit_id: "abc" } } } },
+      { runId: "c", ended: "2026-07-08T11:00:00Z", tests: { login: { externalId: { commit_id: "zzz" } } } },
+    ]);
+    await assemble(out, { runId: "nightly" }, eligible, groups);
+    const report = await validate(out, { profile: "L0" });
+    expect(report.valid).toBe(true);
+  });
+});
 
 describe("assemble", () => {
   it("synthesizes run.yaml, pushes divergent env down, namespaces coverage/metrics, copies whole trees", async () => {
-    const { out, eligible, union } = await stagePair();
-    await assemble(out, { runId: "nightly" }, eligible, union);
+    const { out, eligible, groups } = await stagePair();
+    await assemble(out, { runId: "nightly" }, eligible, groups);
 
     const run = parseYaml(await fs.readFile(path.join(out, "run.yaml"), "utf8")) as any;
     expect(run).toMatchObject({ evidence: "0.1", run_id: "nightly", status: "running", title: "t-a" });
@@ -70,22 +156,22 @@ describe("assemble", () => {
   });
 
   it("the assembled pack validates clean at L0 while running", async () => {
-    const { out, eligible, union } = await stagePair();
-    await assemble(out, { runId: "nightly" }, eligible, union);
+    const { out, eligible, groups } = await stagePair();
+    await assemble(out, { runId: "nightly" }, eligible, groups);
     const report = await validate(out, { profile: "L0" });
     expect(report.valid).toBe(true);
     expect(report.status).toBe("running");
   });
 
   it("refuses to overwrite an existing output path (USAGE)", async () => {
-    const { out, eligible, union } = await stagePair();
+    const { out, eligible, groups } = await stagePair();
     await fs.mkdir(out, { recursive: true });
-    await expect(assemble(out, { runId: "nightly" }, eligible, union)).rejects.toMatchObject({ code: "USAGE" });
+    await expect(assemble(out, { runId: "nightly" }, eligible, groups)).rejects.toMatchObject({ code: "USAGE" });
   });
 
   it("--title overrides the first pack's title", async () => {
-    const { out, eligible, union } = await stagePair();
-    await assemble(out, { runId: "nightly", title: "Nightly regression" }, eligible, union);
+    const { out, eligible, groups } = await stagePair();
+    await assemble(out, { runId: "nightly", title: "Nightly regression" }, eligible, groups);
     const run = parseYaml(await fs.readFile(path.join(out, "run.yaml"), "utf8")) as any;
     expect(run.title).toBe("Nightly regression");
   });
