@@ -117,6 +117,13 @@ decision: >
   run_id for `nest` and the absorbed challenger's for `split`. Merge remains
   DETERMINISTIC — every ordering derives from pack metadata and CLI order,
   no clock and no randomness are read.
+governs:
+  - design/contract/03-commands.md
+  - src/schemas/merge-rules.schema.json
+  - src/merge
+feature: [merge]
+depends_on: [45, 44, 43, 40, 33, 31]
+supersedes: []
 ---
 
 ## Reasoning
