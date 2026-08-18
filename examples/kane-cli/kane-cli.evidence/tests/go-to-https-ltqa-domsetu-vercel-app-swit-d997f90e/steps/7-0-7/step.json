@@ -1,0 +1,20 @@
+{
+  "kind": "click",
+  "status": "passed",
+  "summary": "click: Clicking View Cart (1) button",
+  "duration_ms": 715.5,
+  "url": "https://ltqa-domsetu.vercel.app/ecommerce/checkout?domComplexity=nested-iframe",
+  "action_id": "69a01c27-4875-472b-96e5-de81d1be741e",
+  "coordinates": {
+    "x": 684,
+    "y": 476
+  },
+  "element_rect": {
+    "x": 641,
+    "y": 468,
+    "width": 87,
+    "height": 16
+  },
+  "ordinal": 7,
+  "id": "0-7"
+}

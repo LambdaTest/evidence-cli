@@ -1,0 +1,20 @@
+{
+  "kind": "click",
+  "status": "passed",
+  "summary": "click: Clicking the Checkout button in the Order Summary card",
+  "duration_ms": 5483.2,
+  "url": "https://ltqa-domsetu.vercel.app/ecommerce/checkout?domComplexity=nested-iframe",
+  "action_id": "6ea027a4-a75d-4db6-9393-e9b2e7c71be0",
+  "coordinates": {
+    "x": 968,
+    "y": 566
+  },
+  "element_rect": {
+    "x": 756,
+    "y": 557,
+    "width": 424,
+    "height": 18
+  },
+  "ordinal": 8,
+  "id": "0-8"
+}

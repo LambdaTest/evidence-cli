@@ -1,0 +1,20 @@
+{
+  "kind": "select",
+  "status": "passed",
+  "summary": "select: Selecting Nested iFrame DOM complexity mode",
+  "duration_ms": 5929.5,
+  "url": "https://ltqa-domsetu.vercel.app/",
+  "action_id": "a94ff4d0-534a-4513-806b-1682ae6ef644",
+  "coordinates": {
+    "x": 1474,
+    "y": 31
+  },
+  "element_rect": {
+    "x": 1404,
+    "y": 13,
+    "width": 140,
+    "height": 36
+  },
+  "ordinal": 2,
+  "id": "0-2"
+}

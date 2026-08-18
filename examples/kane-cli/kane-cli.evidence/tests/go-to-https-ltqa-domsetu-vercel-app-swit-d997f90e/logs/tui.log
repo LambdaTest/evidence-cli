@@ -1,0 +1,19 @@
+[2026-08-18 10:23:22] SESSION START session_id=00000000-0000-4000-8000-000000000000
+[2026-08-18 10:23:22] CONFIG model=v16-alpha env=prod profile=demo
+[2026-08-18 10:23:24] AUTH_RESOLVE_OK Auth resolved {"username":"demo-user","org_id":0,"user_id":0}
+[2026-08-18 10:23:24] BOOT_RESOLVE_OK Boot identity attached {"username":"demo-user","org_id":0,"plan":"demo"}
+[2026-08-18 10:24:13] COMMAND go to https://ltqa-domsetu.vercel.app/ switch to nested iframe and complete the checkout flow
+[2026-08-18 10:24:14] CLASSIFY_VERDICT Objective classified {"session_target":"web","target":"web","confidence":0.9}
+[2026-08-18 10:24:16] CHROME LAUNCH port=9222 endpoint=http://127.0.0.1:9222
+[2026-08-18 10:24:17] ATM_CREATE_OK Test created {"test_id":"00000000-0000-4000-8000-000000000001"}
+[2026-08-18 10:24:17] VAR_PUSH_OK Variable pushed {"name":"qaNestedFlag1786691368596"}
+[2026-08-18 10:24:18] SECRET_PUSH_OK Secret pushed {"key":"CVV"}
+[2026-08-18 10:24:25] STEP_START Step 1 started {"index":1,"objective":"Step 1"}
+[2026-08-18 10:24:25] STEP_EVENT Step 1 action {"index":1,"phase":"action","action_type":"navigate","detail":"Navigate to https://ltqa-domsetu.vercel.app/"}
+[2026-08-18 10:24:25] STEP_END Step 1 passed {"index":1,"status":"passed","summary":"navigate: Navigate to https://ltqa-domsetu.vercel.app/"}
+[2026-08-18 10:25:02] STEP_END Step 4 passed {"index":4,"status":"passed","summary":"click: E-Commerce Checkout module link"}
+[2026-08-18 10:26:10] STEP_END Step 15 passed {"index":15,"status":"passed","summary":"fill: card number input"}
+[2026-08-18 10:26:41] STEP_END Step 17 passed {"index":17,"status":"passed","summary":"fill: CVV input"}
+[2026-08-18 10:28:58] PIPELINE_CONVERT_VARS Variables for template resolution {"keys":["global.qaNestedFlag1786691368596","secrets.user.CVV"]}
+[2026-08-18 10:28:59] RUN 0 END status=passed steps=27
+[2026-08-18 10:28:59] SESSION END status=finalized totals={"tests":1,"passed":1,"failed":0,"broken":0,"skipped":0}

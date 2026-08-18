@@ -1,0 +1,20 @@
+{
+  "kind": "type",
+  "status": "passed",
+  "summary": "type: Type \"123 Main St\" into \"123 Main St\"",
+  "duration_ms": 89.9,
+  "url": "https://ltqa-domsetu.vercel.app/ecommerce/checkout?domComplexity=nested-iframe",
+  "action_id": "d054c361-b685-45e8-a847-ed397532ca0c",
+  "coordinates": {
+    "x": 923,
+    "y": 287
+  },
+  "element_rect": {
+    "x": 632,
+    "y": 279,
+    "width": 583,
+    "height": 16
+  },
+  "ordinal": 16,
+  "id": "0-16"
+}

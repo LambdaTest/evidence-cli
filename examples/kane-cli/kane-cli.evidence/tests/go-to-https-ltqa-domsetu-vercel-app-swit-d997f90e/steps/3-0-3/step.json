@@ -1,0 +1,10 @@
+{
+  "kind": "scroll",
+  "status": "passed",
+  "summary": "scroll: Scrolling into view",
+  "duration_ms": 7124.3,
+  "url": "https://ltqa-domsetu.vercel.app/?domComplexity=nested-iframe",
+  "action_id": "922f9bff-2e3c-483c-bd50-552c0a307a86",
+  "ordinal": 3,
+  "id": "0-3"
+}

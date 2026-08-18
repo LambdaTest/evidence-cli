@@ -2,6 +2,9 @@
 node_modules/
 dist/
 
+# macOS Finder metadata.
+.DS_Store
+
 # Working specs / brainstorming artifacts — not part of the tracked living spec.
 # The durable governance record lives in design/decisions/.
 docs/superpowers/

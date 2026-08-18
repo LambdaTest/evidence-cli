@@ -1,0 +1,20 @@
+{
+  "kind": "click",
+  "status": "passed",
+  "summary": "click: Clicking Continue to Payment button in the shipping form",
+  "duration_ms": 6868.9,
+  "url": "https://ltqa-domsetu.vercel.app/ecommerce/checkout?domComplexity=nested-iframe",
+  "action_id": "71b188f6-888c-4819-befa-528050f66edb",
+  "coordinates": {
+    "x": 855,
+    "y": 835
+  },
+  "element_rect": {
+    "x": 785,
+    "y": 826,
+    "width": 140,
+    "height": 18
+  },
+  "ordinal": 20,
+  "id": "0-20"
+}

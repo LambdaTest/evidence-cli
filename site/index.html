@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>evidence-cli · one shape for what a test run produced</title>
+    <meta
+      name="description"
+      content="An open, framework-agnostic format for what a test run produced — the .evidence pack, plus the library and CLI that validate and seal it. Readable by a CI dashboard, an auditor, or a human, whatever framework wrote it."
+    />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+
+    <!-- Open Graph / social -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="evidence-cli — one shape for what a test run produced" />
+    <meta
+      property="og:description"
+      content="An open, framework-agnostic format for test-run evidence. One .evidence pack, readable by a dashboard, an auditor, or a human."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- ============ NAV ============ -->
+    <header class="topnav">
+      <div class="topnav-inner">
+        <a class="brand" href="#top">
+          <span class="dot"></span>
+          <span class="mono">evidence-cli</span>
+        </a>
+        <span class="ver">v0.1.7 · contract 0.1</span>
+        <nav class="navlinks">
+          <a class="nav-hide" href="#pack">The pack</a>
+          <a class="nav-hide" href="#example">Live example</a>
+          <a class="nav-hide" href="#profiles">Profiles</a>
+          <a href="https://github.com/LambdaTest/evidence-cli/tree/main/design">Design log</a>
+          <a href="https://www.npmjs.com/package/@testmuai/evidence-cli">npm</a>
+          <a class="cta" href="https://github.com/LambdaTest/evidence-cli">GitHub ↗</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="top">
+      <!-- ============ HERO ============ -->
+      <section class="hero">
+        <div class="wrap">
+          <span class="pill"
+            ><span class="spark">◆</span> Open format · Apache-2.0 · framework-agnostic</span
+          >
+          <h1>One shape for <span class="grad">what a test run produced</span></h1>
+          <p class="sub">
+            A browser agent, a Playwright suite, a Jest run, an API check — whatever made it, the
+            <b>.evidence</b> pack is one readable, sealable format. Understandable by a CI dashboard,
+            an auditor, or a human, without knowing the framework that wrote it.
+          </p>
+
+          <div class="install" aria-label="Install command">
+            <code id="install-cmd"
+              ><span class="prompt">$ </span>npm install -g @testmuai/evidence-cli</code
+            >
+            <button id="copy-btn" type="button" aria-label="Copy install command">Copy</button>
+          </div>
+
+          <div class="cta-row">
+            <a class="btn primary" href="https://github.com/LambdaTest/evidence-cli"
+              >View on GitHub</a
+            >
+            <a class="btn ghost" href="#example">See a live pack</a>
+          </div>
+
+          <div class="frameworks">
+            <span class="fw-live"><b>kane-cli</b> already emits it</span> · point any of these at the
+            same shape
+            <div class="row">
+              <span>Playwright</span> · <span>Cypress</span> · <span>Selenium</span> ·
+              <span>Jest</span> · <span>Vitest</span> · <span>API suites</span> ·
+              <span>Browser &amp; mobile agents</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ THE PACK ============ -->
+      <section id="pack">
+        <div class="wrap two-col">
+          <div class="prose">
+            <p class="eyebrow">The problem → the pack</p>
+            <h2>Every framework reports differently. Read one shape instead.</h2>
+            <p>
+              A pack is a <code>&lt;name&gt;.evidence/</code> directory (it zips to a
+              <code>&lt;name&gt;.evidence</code> file), anchored by a top-level
+              <code>run.yaml</code>. At <b>L0</b> — the minimal profile — only three artifacts are
+              load-bearing.
+            </p>
+            <p>
+              evidence-cli knows <b>nothing</b> about any framework's definition format. It
+              references and hashes the definition; it never parses it. The format scales by
+              <em>adding</em> optional files and profiles — never by rewriting the core.
+            </p>
+            <div>
+              <span class="tag">run identity</span>
+              <span class="tag">lifecycle</span>
+              <span class="tag">derived totals</span>
+              <span class="tag">hashed definitions</span>
+            </div>
+          </div>
+          <pre class="fig" aria-label="L0 evidence pack layout">
+<span class="path">&lt;name&gt;.evidence/</span>
+  <span class="req">run.yaml</span>                 <span class="c"># required — manifest anchor</span>
+  <span class="path">tests/</span><span class="path">&lt;id&gt;/</span>
+    <span class="req">&lt;definition&gt;</span>           <span class="c"># required, OPAQUE — the framework's own artifact</span>
+                            <span class="c">#   (a Markdown spec, *.spec.ts, an API suite, …)</span>
+    <span class="req">result.yaml</span>             <span class="c"># required — structured per-step outcomes</span></pre>
+        </div>
+      </section>
+
+      <!-- ============ LIVE EXAMPLE (reserved for evidence.lambdatest.com iframe) ============ -->
+      <section id="example" class="example">
+        <div class="wrap">
+          <p class="eyebrow">Try it yourself</p>
+          <h2>Download a sample pack, drop it in the viewer</h2>
+          <p class="lead" style="margin: 0 auto">
+            Grab the real <code>.evidence</code> pack that <b>kane-cli</b> produced from a browser
+            run — a 27-step, nested-iframe e-commerce checkout — and drop it straight into the viewer
+            at <code>evidence.lambdatest.com</code> to see it rendered.
+          </p>
+
+          <div class="try-steps">
+            <a class="btn primary" href="kane-cli.evidence" download="kane-cli.evidence">
+              ⬇ Download sample <code>.evidence</code> <span class="sz">(2.8&nbsp;MB)</span>
+            </a>
+            <span class="try-then">then drag it into the viewer ↓</span>
+          </div>
+
+          <div class="frame-shell">
+            <div class="frame-bar">
+              <span class="lights"><i></i><i></i><i></i></span>
+              <span class="addr">evidence.lambdatest.com</span>
+              <a class="frame-open" href="https://evidence.lambdatest.com" target="_blank" rel="noopener">
+                Open in a new tab ↗
+              </a>
+            </div>
+            <div class="frame-viewport">
+              <!--
+                The hosted viewer's home state. Users download the sample pack
+                (kane-cli.evidence, served next to this page — a relative link, so
+                it works on any host) and drop it into the viewer to see it render.
+                No ?pack= URL, so nothing 404s on a local or pre-deploy preview.
+              -->
+              <iframe
+                src="https://evidence.lambdatest.com"
+                title="evidence.lambdatest.com — the .evidence pack viewer"
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+              ></iframe>
+            </div>
+          </div>
+
+          <p class="frame-caption">
+            The sample is a real pack — 27 steps, 27 screenshots, a 110-request HAR. Drop it into the
+            viewer above, or
+            <a href="https://evidence.lambdatest.com" target="_blank" rel="noopener"
+              >open the viewer full-screen ↗</a
+            >.
+          </p>
+
+          <!-- Reference-producer pitch: kane-cli already implements the format; the
+               example is the template others copy, and emitting the same shape earns
+               the same hosted viewer for free. -->
+          <div class="producer-note">
+            <div class="producer-note-head">
+              <span class="badge">Reference producer</span>
+              <h3><code>kane-cli</code> already speaks this format</h3>
+            </div>
+            <p>
+              The pack above wasn't made for a demo — <b>kane-cli</b> emits it on every run. It's the
+              worked example: <code>run.yaml</code>, <code>result.yaml</code>, the opaque definition,
+              and the L1 artifacts, with a walkthrough of who writes what.
+            </p>
+            <p class="producer-punch">
+              Point your own framework — Playwright, Jest, an API suite, anything — at the example and
+              emit the <b>same shape</b>. There's <b>no viewer to build</b>: any pack that conforms
+              loads in <code>evidence.lambdatest.com</code>, exactly like this one.
+            </p>
+            <div class="producer-links">
+              <a
+                class="btn ghost"
+                href="https://github.com/LambdaTest/evidence-cli/tree/main/examples/kane-cli"
+                >Browse the example ↗</a
+              >
+              <a
+                class="btn ghost"
+                href="https://github.com/LambdaTest/evidence-cli/blob/main/examples/kane-cli/overview.md"
+                >Read the producer walkthrough ↗</a
+              >
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ PROFILES ============ -->
+      <section id="profiles">
+        <div class="wrap">
+          <p class="eyebrow" style="text-align: center">Profiles — a ladder on one 0.1 contract</p>
+          <h2 style="text-align: center">Start minimal. Add layers, never rewrites.</h2>
+          <p class="lead" style="margin: 0 auto; text-align: center">
+            A profile only <em>adds</em> requirements — it never changes the version. Only a
+            breaking change to an existing meaning bumps <code>evidence</code> (0.1 → 0.2).
+          </p>
+          <div class="grid-2">
+            <div class="card l0">
+              <div class="lvl"><span class="chip">L0</span> the neutral core</div>
+              <h3>Framework-agnostic minimum</h3>
+              <p>The smallest thing that's still complete — three load-bearing artifacts.</p>
+              <ul>
+                <li><b>run.yaml</b> — run identity, lifecycle, derived totals</li>
+                <li><b>definition</b> — the framework's own opaque artifact, hashed</li>
+                <li><b>result.yaml</b> — structured per-step outcomes</li>
+              </ul>
+            </div>
+            <div class="card l1">
+              <div class="lvl"><span class="chip">L1</span> purely additive</div>
+              <h3>L0 + captured artifacts</h3>
+              <p>Everything in L0, plus the evidence the run actually captured.</p>
+              <ul>
+                <li><b>execution logs</b> — per-test, with metadata</li>
+                <li><b>step screenshots</b> + a global coverage directory</li>
+                <li><b>video</b> — optional</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ TWO WAYS TO USE ============ -->
+      <section id="use">
+        <div class="wrap">
+          <div class="usage-head">
+            <p class="eyebrow">Two ways to use it</p>
+            <h2>A library and a CLI, same core</h2>
+            <p class="lead">
+              <code>validate</code> checks a pack against a profile; <code>finalize</code> rolls up
+              totals, hashes definitions, and seals the directory into a flat, range-addressable
+              <code>.evidence</code> zip — atomically.
+            </p>
+          </div>
+
+          <div class="code-tabs">
+            <div class="code-block">
+              <div class="label">library · TypeScript</div>
+              <pre class="fig"><span class="kw">import</span> { validate, finalize } <span class="kw">from</span> <span class="str">"@testmuai/evidence-cli"</span>;
+
+<span class="c">// Validate a directory or a sealed .evidence zip.</span>
+<span class="kw">const</span> report = <span class="kw">await</span> <span class="fn">validate</span>(<span class="str">"my-run.evidence"</span>, { profile: <span class="str">"L1"</span> });
+<span class="kw">if</span> (!report.valid) {
+  <span class="kw">for</span> (<span class="kw">const</span> d <span class="kw">of</span> report.diagnostics)
+    console.<span class="fn">error</span>(<span class="str">`${d.severity} ${d.location}: ${d.message}`</span>);
+}
+
+<span class="c">// Seal a live directory into a sealed .evidence zip.</span>
+<span class="kw">const</span> { totals, sealedPath } = <span class="kw">await</span> <span class="fn">finalize</span>(<span class="str">"my-run.evidence"</span>, {
+  endedAt: <span class="kw">new</span> <span class="fn">Date</span>().<span class="fn">toISOString</span>(),
+});</pre>
+            </div>
+            <div class="code-block">
+              <div class="label">CLI · shell</div>
+              <pre class="fig"><span class="c"># check a directory OR a sealed .evidence zip</span>
+<span class="fn">evidence</span> validate my-run.evidence <span class="path">--profile</span> L0
+
+<span class="c"># L1 = L0 + the captured-artifact layer</span>
+<span class="fn">evidence</span> validate my-run.evidence <span class="path">--profile</span> L1
+
+<span class="c"># roll up totals, hash definitions, seal → .evidence</span>
+<span class="fn">evidence</span> finalize my-run.evidence/
+
+<span class="c"># machine-readable report</span>
+<span class="fn">evidence</span> validate my-run.evidence <span class="path">--json</span></pre>
+            </div>
+          </div>
+
+          <p class="exit">
+            exit codes &nbsp;<span class="ok">0</span> <b>valid</b> &nbsp;·&nbsp;
+            <span class="bad">1</span> <b>invalid</b> &nbsp;·&nbsp; <span class="warn">2</span>
+            <b>usage error</b>
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <!-- ============ FOOTER ============ -->
+    <footer>
+      <div class="wrap">
+        <div class="foot-top">
+          <div class="foot-brand">
+            <a class="brand" href="#top">
+              <span class="dot"></span>
+              <span class="mono">evidence-cli</span>
+            </a>
+            <p>
+              An open, framework-agnostic format for what a test run produced — the
+              <code>.evidence</code> pack, and the library + CLI that validate and seal it.
+            </p>
+          </div>
+          <div class="foot-links">
+            <div class="col">
+              <h4>Project</h4>
+              <a href="https://github.com/LambdaTest/evidence-cli">GitHub</a>
+              <a href="https://www.npmjs.com/package/@testmuai/evidence-cli">npm package</a>
+              <a href="https://github.com/LambdaTest/evidence-cli/blob/main/CHANGELOG.md"
+                >Changelog</a
+              >
+            </div>
+            <div class="col">
+              <h4>Spec</h4>
+              <a href="https://github.com/LambdaTest/evidence-cli/tree/main/design">Design log</a>
+              <a href="https://github.com/LambdaTest/evidence-cli/tree/main/design/contract"
+                >Contract</a
+              >
+              <a href="https://github.com/LambdaTest/evidence-cli/tree/main/src/schemas"
+                >JSON Schemas</a
+              >
+            </div>
+            <div class="col">
+              <h4>Community</h4>
+              <a href="https://discord.gg/kanQPEx9">Discord</a>
+              <a href="https://github.com/LambdaTest/evidence-cli/issues/new/choose">Report an issue</a>
+              <a href="https://github.com/LambdaTest/evidence-cli/blob/main/CONTRIBUTING.md"
+                >Contributing</a
+              >
+            </div>
+          </div>
+        </div>
+        <div class="foot-bottom">
+          <span>Apache-2.0 © LambdaTest Inc.</span>
+          <span class="rebrand"
+            >🚀 LambdaTest is now <b>TestMu AI</b> —
+            <a href="https://www.testmuai.com">testmuai.com</a></span
+          >
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Copy-to-clipboard for the install command.
+      (function () {
+        var btn = document.getElementById('copy-btn');
+        if (!btn) return;
+        var cmd = 'npm install -g @testmuai/evidence-cli';
+        btn.addEventListener('click', function () {
+          var done = function () {
+            btn.textContent = 'Copied';
+            btn.classList.add('copied');
+            setTimeout(function () {
+              btn.textContent = 'Copy';
+              btn.classList.remove('copied');
+            }, 1600);
+          };
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(cmd).then(done, done);
+          } else {
+            // Fallback for older / non-secure contexts.
+            var ta = document.createElement('textarea');
+            ta.value = cmd;
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+              document.execCommand('copy');
+            } catch (e) {}
+            document.body.removeChild(ta);
+            done();
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>

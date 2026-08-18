@@ -1,0 +1,10 @@
+{
+  "kind": "",
+  "status": "passed",
+  "summary": "wait: Waiting briefly on the order confirmation page",
+  "duration_ms": 4145.8,
+  "url": "https://ltqa-domsetu.vercel.app/ecommerce/checkout?domComplexity=nested-iframe",
+  "action_id": "ca029407-4216-4eb4-af85-d7f338793ca4",
+  "ordinal": 27,
+  "id": "0-27"
+}

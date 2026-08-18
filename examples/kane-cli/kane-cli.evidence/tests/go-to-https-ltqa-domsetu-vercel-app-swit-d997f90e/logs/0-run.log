@@ -1,0 +1,642 @@
+[2026-08-18 15:54:25] [testmu]   [STEP 1] Navigate to https://ltqa-domsetu.vercel.app/
+[2026-08-18 15:54:32] [testmu]   [STEP 2] PRIMARY: DOM complexity mode selector; role=combobox; text="Switch DOM Complexity Mode" | HINTS: position=top-right header; current value=Standard DOM
+[2026-08-18 15:54:40] [testmu]   [STEP 3] Scroll target into view
+
+============================================================
+  Starting Browser Runner: switch to nested iframe and complete the checkout flow
+============================================================
+
+⏱️  [browser_startup] completed in 0.000s
+[BrowserRunner] [Codegen] Imported codegen pipeline successfully
+[BrowserRunner] [Codegen] ActionExecutor attached to browser, tracing to: screenshots
+[BrowserRunner] Custom event dispatcher enabled: @v16 → child agent, @v16-until → retry loop
+[BrowserRunner] [Codegen] Re-pointed to session dir: /var/folders/sv/r45fst5j05lbcvmmd8kgv7xw0000gq/T/v16-run-0-7ilpypm_/run-test
+[BrowserRunner] cm_init_parallel: starting LLM extraction
+[BrowserRunner] Starting-Node: CM-Init (Checkpoint Extraction)
+[BrowserRunner] Starting-Node: navigate Step: 1 -> https://ltqa-domsetu.vercel.app/
+
+──────────────────────────────────────────────────
+  Step 1/50
+──────────────────────────────────────────────────
+[BrowserRunner] CM-Init Call 1: task plan
+⏱️  [step_1_navigate] completed in 0.337s
+⏱️  [step_1_screenshot] completed in 0.176s
+⏱️  [step_1_accessibility] completed in 0.056s
+⏱️  [step_1_total] completed in 0.571s
+[BrowserRunner] CM-Init Call 1: is_atomic=False, task_steps=[{'task': 'Switch to the nested iframe', 'cps': []}, {'task': 'Complete the checkout flow', 'cps': []}], constraints=[]
+[BrowserRunner] CM-Init: 0 v3 (NL-only) checkpoint(s)
+[BrowserRunner] CM-Init: Structured objective (2 steps, 0 constraints)
+[BrowserRunner] Screenshot: Waiting 500ms for page to settle
+[BrowserRunner] Starting-Node: screenshot Step: 2
+
+──────────────────────────────────────────────────
+  Step 2/50
+──────────────────────────────────────────────────
+⏱️  [step_2_screenshot] completed in 0.086s
+⏱️  [step_2_ax_document] completed in 0.021s
+[BrowserRunner] AX document: 113 referenceable elements
+⏱️  [step_2_accessibility] completed in 0.022s
+[BrowserRunner] Starting-Node: CM (Checkpoint Manager) Step: 2
+[BrowserRunner] CM: 0 checkpoints, 0 pending
+[BrowserRunner] CM:REPORT    all_passed=True, passed=[], failed=[]
+[BrowserRunner] CM: no assertion this step
+[BrowserRunner] Starting-Node: AP text-mode (pull loop) Step: 2
+[BrowserRunner] Starting-Node: PM (Page Manager) Step: 2
+[BrowserRunner] PM: Analyzing 2 screenshots
+⏱️  [step_2_page_observer_api] completed in 2.129s
+[BrowserRunner] PM: needs_input | blocker=none | confidence=0.98
+[BrowserRunner] AP(text) decision: continue - Switching modes is required before entering the nested iframe flow.
+[BrowserRunner] AP(text) action: select - PRIMARY: DOM complexity mode selector; role=combobox; text="Switch DOM Complexity Mode" | HINTS: position=top-right header; current value=Standard DOM
+[BrowserRunner] AP(text): target_element ref=e9
+[BrowserRunner] Merge: ap_action (select with target) — Tier 3
+[BrowserRunner] Starting-Node: dom_action Step: 2
+⏱️  [step_2_prepare_ref_action] completed in 0.014s
+⏱️  [step_2_enrich_locator] completed in 0.046s
+[BrowserRunner] DOM Action: Grounded ref 'e9' -> playwright (internal:label="Switch DOM Complexity Mode"i)
+[BrowserRunner] DOM Action: Trying locator internal:label="Switch DOM Complexity Mode"i
+⏱️  [step_2_dom_action] completed in 0.123s
+[BrowserRunner] DOM Action: Selected 'Nested iFrame' via DOM locator: internal:label="Switch DOM Complexity Mode"i — success
+⏱️  [step_2_total] completed in 6.036s
+[BrowserRunner] Screenshot: Waiting 500ms for page to settle
+[BrowserRunner] Starting-Node: screenshot Step: 3
+
+──────────────────────────────────────────────────
+  Step 3/50
+──────────────────────────────────────────────────
+⏱️  [step_3_screenshot] completed in 0.117s
+⏱️  [step_3_ax_document] completed in 0.024s
+[BrowserRunner] AX document: 117 referenceable elements
+⏱️  [step_3_accessibility] completed in 0.025s
+[BrowserRunner] Starting-Node: CM (Checkpoint Manager) Step: 3
+[BrowserRunner] CM: 0 checkpoints, 0 pending
+[BrowserRunner] CM: completed task steps: [1]
+[BrowserRunner] CM:REPORT    all_passed=True, passed=[], failed=[]
+[BrowserRunner] CM: no assertion this step
+[BrowserRunner] Starting-Node: AP text-mode (pull loop) Step: 3
+[BrowserRunner] Starting-Node: PM (Page Manager) Step: 3
+[BrowserRunner] PM: Analyzing 2 screenshots
+⏱️  [step_3_page_observer_api] completed in 2.592s
+[BrowserRunner] PM: needs_input | blocker=none | confidence=0.97
+⏱️  [step_3_pull_1] completed in 3.456s
+[BrowserRunner] AP(text) decision: continue - Open the checkout scenario inside nested iframe mode.
+[BrowserRunner] AP(text) action: click - PRIMARY: E-Commerce Checkout module link; role=link; text="E-Commerce Checkout Complete checkout flow — product browse, cart, shipping, payment, confirmation." | HINTS: container=automation scenarios 
+[BrowserRunner] AP(text): target_element ref=e89
+[BrowserRunner] Merge: ap_action (click with target) — Tier 3
+[BrowserRunner] DOM Action: Scrolled target into view (delta_y=2px)
+[BrowserRunner] Screenshot: Waiting 500ms for page to settle
+[BrowserRunner] Starting-Node: screenshot Step: 4
+
+──────────────────────────────────────────────────
+  Step 4/50
+──────────────────────────────────────────────────
+⏱️  [step_4_screenshot] completed in 0.119s
+⏱️  [step_4_ax_document] completed in 0.094s
+[BrowserRunner] AX document: 117 referenceable elements
+⏱️  [step_4_accessibility] completed in 0.095s
+[BrowserRunner] Starting-Node: CM (Checkpoint Manager) Step: 4
+[BrowserRunner] CM: 0 checkpoints, 0 pending
+[BrowserRunner] CM: completed task steps: [1]
+[BrowserRunner] CM:REPORT    all_passed=True, passed=[], failed=[]
+[BrowserRunner] CM: no assertion this step
+[BrowserRunner] Starting-Node: dom_action Step: 4
+⏱️  [step_4_prepare_ref_action] completed in 0.008s
+[BrowserRunner] DOM Action: Grounded ref 'e89' -> playwright (internal:role=link[name="E-Commerce Checkout Complete"i])
+[BrowserRunner] DOM Action: Trying locator internal:role=link[name="E-Commerce Checkout Complete"i]
+⏱️  [step_4_dom_action] completed in 0.785s
+[BrowserRunner] DOM Action: Clicked via DOM locator: internal:role=link[name="E-Commerce Checkout Complete"i] — success
+⏱️  [step_4_total] completed in 1.015s
+[BrowserRunner] Screenshot: Waiting 500ms for page to settle
+[BrowserRunner] Starting-Node: screenshot Step: 5
+
+──────────────────────────────────────────────────
+  Step 5/50
+──────────────────────────────────────────────────
+⏱️  [step_5_screenshot] completed in 0.080s
+⏱️  [step_5_ax_document] completed in 0.032s
+[BrowserRunner] AX document: 194 referenceable elements
+⏱️  [step_5_accessibility] completed in 0.034s
+[BrowserRunner] Starting-Node: CM (Checkpoint Manager) Step: 5
+[BrowserRunner] CM: 0 checkpoints, 0 pending
+[BrowserRunner] CM: completed task steps: [1]
+[BrowserRunner] CM:REPORT    all_passed=True, passed=[], failed=[]
+[BrowserRunner] CM: no assertion this step
+[BrowserRunner] Starting-Node: AP text-mode (pull loop) Step: 5
+[BrowserRunner] Starting-Node: PM (Page Manager) Step: 5
+[BrowserRunner] PM: Analyzing 2 screenshots
+[BrowserRunner] AP(text) decision: continue - Adding an item enables the cart and starts checkout.
+[2026-08-18 15:54:58] [testmu]   [STEP 4] Scroll target into view
+[2026-08-18 15:55:13] [testmu]   [STEP 5] Scroll target into view
+[BrowserRunner] AP(text) action: click - PRIMARY: Add to Cart button for Wireless Headphones; role=button; text="Add to Cart" | HINTS: container=Wireless Headphones product card; near top of product list inside nested iframe checkout page
+[BrowserRunner] AP(text): target_element ref=e80
+⏱️  [step_5_page_observer_api] completed in 9.134s
+[BrowserRunner] PM: needs_input | blocker=none | confidence=0.96
+[BrowserRunner] Merge: ap_action (click with target) — Tier 3
+[BrowserRunner] Starting-Node: dom_action Step: 5
+⏱️  [step_5_prepare_ref_action] completed in 0.011s
+⏱️  [step_5_enrich_locator] completed in 0.055s
+[BrowserRunner] DOM Action: Grounded ref 'e80' -> playwright (internal:testid=[data-testid="add-to-cart-p1"s])
+[BrowserRunner] DOM Action: Trying locator internal:testid=[data-testid="add-to-cart-p1"s]
+⏱️  [step_5_dom_action] completed in 0.557s
+[BrowserRunner] DOM Action: Clicked via DOM locator: internal:testid=[data-testid="add-to-cart-p1"s] — success
+⏱️  [step_5_total] completed in 10.133s
+[BrowserRunner] Screenshot: Waiting 500ms for page to settle
+[BrowserRunner] Starting-Node: screenshot Step: 6
+
+──────────────────────────────────────────────────
+  Step 6/50
+──────────────────────────────────────────────────
+⏱️  [step_6_screenshot] completed in 0.107s
+⏱️  [step_6_ax_document] completed in 0.039s
+[BrowserRunner] AX document: 197 referenceable elements
+⏱️  [step_6_accessibility] completed in 0.041s
+[BrowserRunner] Starting-Node: CM (Checkpoint Manager) Step: 6
+[BrowserRunner] CM: 0 checkpoints, 0 pending
+[BrowserRunner] CM: completed task steps: [1]
+[BrowserRunner] CM:REPORT    all_passed=True, passed=[], failed=[]
+[BrowserRunner] CM: no assertion this step
+[BrowserRunner] Starting-Node: AP text-mode (pull loop) Step: 6
+[BrowserRunner] Starting-Node: PM (Page Manager) Step: 6
+[BrowserRunner] PM: Analyzing 2 screenshots
+[BrowserRunner] AP(text) decision: continue - Proceed from browsing to the cart with the added item.
+[BrowserRunner] AP(text) action: click - PRIMARY: View Cart button; role=button; text="View Cart (1)" | HINTS: above product cards on the checkout page inside nested iframe
+[BrowserRunner] AP(text): target_element ref=e68
+⏱️  [step_6_page_observer_api] completed in 3.967s
+[BrowserRunner] PM: needs_input | blocker=none | confidence=0.94
+[BrowserRunner] Merge: ap_action (click with target) — Tier 3
+[BrowserRunner] DOM Action: Scrolled target into view (delta_y=0px)
+[BrowserRunner] Screenshot: Waiting 500ms for page to settle
+[BrowserRunner] Starting-Node: screenshot Step: 7
+
+──────────────────────────────────────────────────
+  Step 7/50
+──────────────────────────────────────────────────
+⏱️  [step_7_screenshot] completed in 0.127s
+⏱️  [step_7_ax_document] completed in 0.055s
+[BrowserRunner] AX document: 197 referenceable elements
+⏱️  [step_7_accessibility] completed in 0.058s
+[BrowserRunner] Starting-Node: CM (Checkpoint Manager) Step: 7
+[BrowserRunner] CM: 0 checkpoints, 0 pending
+[BrowserRunner] CM: completed task steps: [1]
+[BrowserRunner] CM:REPORT    all_passed=True, passed=[], failed=[]
+[BrowserRunner] CM: no assertion this step
+[BrowserRunner] Starting-Node: dom_action Step: 7
+⏱️  [step_7_prepare_ref_action] completed in 0.015s
+[BrowserRunner] DOM Action: Grounded ref 'e68' -> playwright (internal:testid=[data-testid="go-to-cart"s])
+[BrowserRunner] DOM Action: Trying locator internal:testid=[data-testid="go-to-cart"s]
+⏱️  [step_7_dom_action] completed in 0.552s
+[BrowserRunner] DOM Action: Clicked via DOM locator: internal:testid=[data-testid="go-to-cart"s] — success
+⏱️  [step_7_total] completed in 0.902s
+[BrowserRunner] Screenshot: Waiting 500ms for page to settle
+[BrowserRunner] Starting-Node: screenshot Step: 8
+
+──────────────────────────────────────────────────
+  Step 8/50
+──────────────────────────────────────────────────
+⏱️  [step_8_screenshot] completed in 0.093s
+⏱️  [step_8_ax_document] completed in 0.028s
+[BrowserRunner] AX document: 96 referenceable elements
+⏱️  [step_8_accessibility] completed in 0.030s
+[BrowserRunner] Starting-Node: CM (Checkpoint Manager) Step: 8
+[BrowserRunner] CM: 0 checkpoints, 0 pending
+[BrowserRunner] CM: completed task steps: [1]
+[BrowserRunner] CM:REPORT    all_passed=True, passed=[], failed=[]
+[BrowserRunner] CM: no assertion this step
+[BrowserRunner] Starting-Node: AP text-mode (pull loop) Step: 8
+[BrowserRunner] Starting-Node: PM (Page Manager) Step: 8
+[BrowserRunner] PM: Analyzing 2 screenshots
+⏱️  [step_8_page_observer_api] completed in 2.314s
+[BrowserRunner] PM: needs_input | blocker=none | confidence=0.98
+[BrowserRunner] AP(text) decision: continue - Move from cart to the shipping step of checkout.
+[BrowserRunner] AP(text) action: click - PRIMARY: Checkout button; role=button; text="Checkout" | HINTS: container=Order Summary on cart page inside nested iframe; position=bottom-right of summary card
+[BrowserRunner] AP(text): target_element ref=e90
+[BrowserRunner] Merge: ap_action (click with target) — Tier 3
+[BrowserRunner] Starting-Node: dom_action Step: 8
+⏱️  [step_8_prepare_ref_action] completed in 0.018s
+⏱️  [step_8_enrich_locator] completed in 0.057s
+[BrowserRunner] DOM Action: Grounded ref 'e90' -> playwright (internal:testid=[data-testid="proceed-to-shipping"s])
+[BrowserRunner] DOM Action: Trying locator internal:testid=[data-testid="proceed-to-shipping"s]
+⏱️  [step_8_dom_action] completed in 0.677s
+[BrowserRunner] DOM Action: Clicked via DOM locator: internal:testid=[data-testid="proceed-to-shipping"s] — success
+⏱️  [step_8_total] completed in 5.605s
+[BrowserRunner] Screenshot: Waiting 500ms for page to settle
+[BrowserRunner] Starting-Node: screenshot Step: 9
+
+──────────────────────────────────────────────────
+  Step 9/50
+──────────────────────────────────────────────────
+⏱️  [step_9_screenshot] completed in 0.098s
+⏱️  [step_9_ax_document] completed in 0.030s
+[BrowserRunner] AX document: 120 referenceable elements
+⏱️  [step_9_accessibility] completed in 0.032s
+[BrowserRunner] Starting-Node: CM (Checkpoint Manager) Step: 9
+[BrowserRunner] CM: 0 checkpoints, 0 pending
+[BrowserRunner] CM: completed task steps: [1]
+[BrowserRunner] CM:REPORT    all_passed=True, passed=[], failed=[]
+[BrowserRunner] CM: no assertion this step
+[BrowserRunner] Starting-Node: AP text-mode (pull loop) Step: 9
+[BrowserRunner] Starting-Node: PM (Page Manager) Step: 9
+[BrowserRunner] PM: Analyzing 2 screenshots
+⏱️  [step_9_page_observer_api] completed in 2.693s
+[BrowserRunner] PM: needs_input | blocker=none | confidence=0.97
+⏱️  [step_9_pull_1] completed in 2.910s
+[BrowserRunner] AP(text) decision: continue - Advance the checkout from shipping to payment.
+[BrowserRunner] AP(text) action: click - PRIMARY: Continue to Payment button; role=button; text="Continue to Payment" | HINTS: below shipping method options on the shipping form inside nested iframe
+[BrowserRunner] AP(text): target_element ref=e114
+[BrowserRunner] Merge: ap_action (click with target) — Tier 3
+[BrowserRunner] DOM Action: Scrolled target into view (delta_y=0px)
+[BrowserRunner] Screenshot: Waiting 500ms for page to settle
+[BrowserRunner] Starting-Node: screenshot Step: 10
+
+──────────────────────────────────────────────────[2026-08-18 15:55:28] [testmu]   [STEP 6] PRIMARY: first name input; role=textbox; text="John" | HINTS: top field in shipping form
+[2026-08-18 15:55:29] [testmu]   [STEP 7] PRIMARY: last name input; role=textbox; text="Doe" | HINTS: second field in shipping form
+[2026-08-18 15:55:30] [testmu]   [STEP 8] PRIMARY: email input; role=textbox; text="john@example.com" | HINTS: third field in shipping form
+[2026-08-18 15:55:31] [testmu]   [STEP 9] PRIMARY: phone input; role=textbox; text="(555) 123-4567" | HINTS: fourth field in shipping form
+
+  Step 10/50
+──────────────────────────────────────────────────
+⏱️  [step_10_screenshot] completed in 0.108s
+⏱️  [step_10_ax_document] completed in 0.030s
+[BrowserRunner] AX document: 120 referenceable elements
+⏱️  [step_10_accessibility] completed in 0.032s
+[BrowserRunner] Starting-Node: CM (Checkpoint Manager) Step: 10
+[BrowserRunner] CM: 0 checkpoints, 0 pending
+[BrowserRunner] CM: completed task steps: [1]
+[BrowserRunner] CM:REPORT    all_passed=True, passed=[], failed=[]
+[BrowserRunner] CM: no assertion this step
+[BrowserRunner] Starting-Node: dom_action Step: 10
+⏱️  [step_10_prepare_ref_action] completed in 0.010s
+[BrowserRunner] DOM Action: Grounded ref 'e114' -> playwright (internal:testid=[data-testid="proceed-to-payment"s])
+[BrowserRunner] DOM Action: Trying locator internal:testid=[data-testid="proceed-to-payment"s]
+⏱️  [step_10_dom_action] completed in 0.545s
+[BrowserRunner] DOM Action: Clicked via DOM locator: internal:testid=[data-testid="proceed-to-payment"s] — success
+⏱️  [step_10_total] completed in 0.921s
+[BrowserRunner] Screenshot: Waiting 500ms for page to settle
+[BrowserRunner] Starting-Node: screenshot Step: 11
+
+──────────────────────────────────────────────────
+  Step 11/50
+──────────────────────────────────────────────────
+⏱️  [step_11_screenshot] completed in 0.106s
+⏱️  [step_11_ax_document] completed in 0.029s
+[BrowserRunner] AX document: 128 referenceable elements
+⏱️  [step_11_accessibility] completed in 0.032s
+[BrowserRunner] Starting-Node: CM (Checkpoint Manager) Step: 11
+[BrowserRunner] CM: 0 checkpoints, 0 pending
+[BrowserRunner] CM: completed task steps: [1]
+[BrowserRunner] CM:REPORT    all_passed=True, passed=[], failed=[]
+[BrowserRunner] CM: no assertion this step
+[BrowserRunner] Starting-Node: AP text-mode (pull loop) Step: 11
+[BrowserRunner] Starting-Node: PM (Page Manager) Step: 11
+[BrowserRunner] PM: Analyzing 2 screenshots
+⏱️  [step_11_page_observer_api] completed in 2.250s
+[BrowserRunner] PM: needs_input | blocker=none | confidence=0.96
+⏱️  [step_11_pull_1] completed in 5.921s
+[BrowserRunner] AP(text): queue_actions accepted — queued plan (8 steps): type "John"; type "Doe"; type "john@example.com"; type "(555) 123-4567"; type "123 Main St"; type "New York"; type "NY"; type "10001"
+[BrowserRunner] Merge: ap_direct (wait) — Tier 3
+[BrowserRunner] Starting-Node: action Step: 11
+[BrowserRunner] Action: Executing wait
+⏱️  [step_11_action] completed in 1.040s
+⏱️  [step_11_total] completed in 11.594s
+[BrowserRunner] Action: wait completed - Waited 1000ms
+[BrowserRunner] Screenshot: Waiting 500ms for page to settle
+[BrowserRunner] Starting-Node: screenshot Step: 12
+
+──────────────────────────────────────────────────
+  Step 12/50
+──────────────────────────────────────────────────
+⏱️  [step_12_screenshot] completed in 0.189s
+⏱️  [step_12_ax_document] completed in 0.033s
+[BrowserRunner] AX document: 128 referenceable elements
+⏱️  [step_12_accessibility] completed in 0.036s
+[BrowserRunner] Starting-Node: CM (Checkpoint Manager) Step: 12
+[BrowserRunner] CM: 0 checkpoints, 0 pending
+[BrowserRunner] CM: completed task steps: [1]
+[BrowserRunner] CM:REPORT    all_passed=True, passed=[], failed=[]
+[BrowserRunner] CM: no assertion this step
+[BrowserRunner] Starting-Node: queue_execute Step: 12
+⏱️  [step_12_prepare_ref_action] completed in 0.009s
+⏱️  [step_12_enrich_locator] completed in 0.014s
+⏱️  [step_12_queue_action] completed in 0.064s
+[BrowserRunner] Screenshot: Waiting 500ms for page to settle
+[BrowserRunner] Starting-Node: screenshot Step: 13
+
+──────────────────────────────────────────────────
+  Step 13/50
+──────────────────────────────────────────────────
+⏱️  [step_13_screenshot] completed in 0.104s
+⏱️  [step_13_ax_document] completed in 0.028s
+[BrowserRunner] AX document: 128 referenceable elements
+⏱️  [step_13_accessibility] completed in 0.030s
+[BrowserRunner] Starting-Node: CM (Checkpoint Manager) Step: 13
+[BrowserRunner] CM: 0 checkpoints, 0 pending
+[BrowserRunner] CM: completed task steps: [1]
+[BrowserRunner] CM:REPORT    all_passed=True, passed=[], failed=[]
+[BrowserRunner] CM: no assertion this step
+[BrowserRunner] Starting-Node: queue_execute Step: 13
+⏱️  [step_13_prepare_ref_action] completed in 0.006s
+⏱️  [step_13_enrich_locator] completed in 0.014s
+⏱️  [step_13_queue_action] completed in 0.037s
+[BrowserRunner] Screenshot: Waiting 500ms for page to settle
+[BrowserRunner] Starting-Node: screenshot Step: 14
+
+──────────────────────────────────────────────────
+  Step 14/50
+──────────────────────────────────────────────────
+⏱️  [step_14_screenshot] completed in 0.099s
+⏱️  [step_14_ax_document] completed in 0.026s
+[BrowserRunner] AX document: 128 referenceable elements
+⏱️  [step_14_accessibility] completed in 0.029s
+[BrowserRunner] Starting-Node: CM (Checkpoint Manager) Step: 14
+[BrowserRunner] CM: 0 checkpoints, 0 pending
+[BrowserRunner] CM: completed task steps: [1]
+[BrowserRunner] CM:REPORT    all_passed=True, passed=[], failed=[]
+[BrowserRunner] CM: no assertion this step
+[BrowserRunner] Starting-Node: queue_execute Step: 14
+⏱️  [step_14_prepare_ref_action] completed in 0.008s
+⏱️  [step_14_enrich_locator] completed in 0.015s
+⏱️  [step_14_queue_action] completed in 0.035s
+[BrowserRunner] Screenshot: Waiting 500ms for page to settle
+[BrowserRunner] Starting-Node: screenshot Step: 15
+
+──────────────────────────────────────────────────
+  Step 15/50
+──────────────────────────────────────────────────
+⏱️  [step_15_screenshot] completed in 0.094s
+⏱️  [step_15_ax_document] completed in 0.031s
+[BrowserRunner] AX document: 128 referenceable elements
+⏱️  [step_15_accessibility] completed in 0.033s
+[BrowserRunner] Starting-Node: CM (Checkpoint Manager) Step: 15
+[BrowserRunner] CM: 0 checkpoints, 0 pending
+[BrowserRunner] CM: completed task steps: [1]
+[BrowserRunner] CM:REPORT    all_passed=True, passed=[], failed=[]
+[BrowserRunner] CM: no assertion this step
+[BrowserRunner] Starting-Node: queue_execute Step: 15
+⏱️  [step_15_prepare_ref_action] completed in 0.006s
+⏱️  [step_15_enrich_locator] completed in 0.015s
+⏱️  [step_15_queue_action] completed in 0.038s
+[BrowserRunner] Screenshot: Waiting 500ms for page to settle
+[BrowserRunner] Starting-Node: screenshot Step: 16
+
+──────────────────────────────────────────────────
+  Step 16/50
+──────────────────────────────────────────────────
+⏱️  [step_16_screenshot] completed in 0.096s
+⏱️  [step_16_ax_document] completed in 0.028s
+[BrowserRunner] AX document: 128 referenceable elements
+⏱️  [step_16_accessibility] completed in 0.030s
+[BrowserRunner] Starting-Node: CM (Checkpoint Manager) Step: 16
+[BrowserRunner] CM: 0 checkpoints, 0 pending
+[BrowserRunner] CM: completed task steps: [1]
+[2026-08-18 15:55:31] [testmu]   [STEP 10] PRIMARY: address input; role=textbox; text="123 Main St" | HINTS: address field in shipping form
+[2026-08-18 15:55:32] [testmu]   [STEP 11] PRIMARY: city input; role=textbox; text="New York" | HINTS: city field in shipping form
+[2026-08-18 15:55:33] [testmu]   [STEP 12] PRIMARY: state input; role=textbox; text="NY" | HINTS: state field in shipping form
+[2026-08-18 15:55:34] [testmu]   [STEP 13] PRIMARY: zip code input; role=textbox; text="10001" | HINTS: zip code field in shipping form
+[BrowserRunner] CM:REPORT    all_passed=True, passed=[], failed=[]
+[BrowserRunner] CM: no assertion this step
+[BrowserRunner] Starting-Node: queue_execute Step: 16
+⏱️  [step_16_prepare_ref_action] completed in 0.009s
+⏱️  [step_16_enrich_locator] completed in 0.024s
+⏱️  [step_16_queue_action] completed in 0.035s
+[BrowserRunner] Screenshot: Waiting 500ms for page to settle
+[BrowserRunner] Starting-Node: screenshot Step: 17
+
+──────────────────────────────────────────────────
+  Step 17/50
+──────────────────────────────────────────────────
+⏱️  [step_17_screenshot] completed in 0.088s
+⏱️  [step_17_ax_document] completed in 0.025s
+[BrowserRunner] AX document: 128 referenceable elements
+⏱️  [step_17_accessibility] completed in 0.026s
+[BrowserRunner] Starting-Node: CM (Checkpoint Manager) Step: 17
+[BrowserRunner] CM: 0 checkpoints, 0 pending
+[BrowserRunner] CM: completed task steps: [1]
+[BrowserRunner] CM:REPORT    all_passed=True, passed=[], failed=[]
+[BrowserRunner] CM: no assertion this step
+[BrowserRunner] Starting-Node: queue_execute Step: 17
+⏱️  [step_17_prepare_ref_action] completed in 0.006s
+⏱️  [step_17_enrich_locator] completed in 0.013s
+⏱️  [step_17_queue_action] completed in 0.032s
+[BrowserRunner] Screenshot: Waiting 500ms for page to settle
+[BrowserRunner] Starting-Node: screenshot Step: 18
+
+──────────────────────────────────────────────────
+  Step 18/50
+──────────────────────────────────────────────────
+⏱️  [step_18_screenshot] completed in 0.102s
+⏱️  [step_18_ax_document] completed in 0.026s
+[BrowserRunner] AX document: 128 referenceable elements
+⏱️  [step_18_accessibility] completed in 0.027s
+[BrowserRunner] Starting-Node: CM (Checkpoint Manager) Step: 18
+[BrowserRunner] CM: 0 checkpoints, 0 pending
+[BrowserRunner] CM: completed task steps: [1]
+[BrowserRunner] CM:REPORT    all_passed=True, passed=[], failed=[]
+[BrowserRunner] CM: no assertion this step
+[BrowserRunner] Starting-Node: queue_execute Step: 18
+⏱️  [step_18_prepare_ref_action] completed in 0.006s
+⏱️  [step_18_enrich_locator] completed in 0.014s
+⏱️  [step_18_queue_action] completed in 0.036s
+[BrowserRunner] Screenshot: Waiting 500ms for page to settle
+[BrowserRunner] Starting-Node: screenshot Step: 19
+
+──────────────────────────────────────────────────
+  Step 19/50
+──────────────────────────────────────────────────
+⏱️  [step_19_screenshot] completed in 0.091s
+⏱️  [step_19_ax_document] completed in 0.028s
+[BrowserRunner] AX document: 128 referenceable elements
+⏱️  [step_19_accessibility] completed in 0.030s
+[BrowserRunner] Starting-Node: CM (Checkpoint Manager) Step: 19
+[BrowserRunner] CM: 0 checkpoints, 0 pending
+[BrowserRunner] CM: completed task steps: [1]
+[BrowserRunner] CM:REPORT    all_passed=True, passed=[], failed=[]
+[BrowserRunner] CM: no assertion this step
+[BrowserRunner] Starting-Node: queue_execute Step: 19
+⏱️  [step_19_prepare_ref_action] completed in 0.006s
+⏱️  [step_19_enrich_locator] completed in 0.012s
+⏱️  [step_19_queue_action] completed in 0.031s
+[BrowserRunner] Screenshot: Waiting 500ms for page to settle
+[BrowserRunner] Starting-Node: screenshot Step: 20
+
+──────────────────────────────────────────────────
+  Step 20/50
+──────────────────────────────────────────────────
+⏱️  [step_20_screenshot] completed in 0.093s
+⏱️  [step_20_ax_document] completed in 0.026s
+[BrowserRunner] AX document: 128 referenceable elements
+⏱️  [step_20_accessibility] completed in 0.028s
+[BrowserRunner] Starting-Node: CM (Checkpoint Manager) Step: 20
+[BrowserRunner] CM: 0 checkpoints, 0 pending
+[BrowserRunner] CM: completed task steps: [1]
+[BrowserRunner] CM:REPORT    all_passed=True, passed=[], failed=[]
+[BrowserRunner] CM: no assertion this step
+[BrowserRunner] Starting-Node: AP text-mode (pull loop) Step: 20
+[BrowserRunner] Starting-Node: PM (Page Manager) Step: 20
+[BrowserRunner] PM: Analyzing 2 screenshots
+⏱️  [step_20_page_observer_api] completed in 2.324s
+[BrowserRunner] PM: needs_input | blocker=none | confidence=0.95
+⏱️  [step_20_pull_1] completed in 2.901s
+[BrowserRunner] AP(text) decision: continue - The shipping form is filled, so continue to payment.
+[BrowserRunner] AP(text) action: click - PRIMARY: Continue to Payment button; role=button; text="Continue to Payment" | HINTS: bottom of shipping form below shipping method options inside nested iframe
+[BrowserRunner] AP(text): target_element ref=e122
+[BrowserRunner] Merge: ap_action (click with target) — Tier 3
+[BrowserRunner] Starting-Node: dom_action Step: 20
+⏱️  [step_20_prepare_ref_action] completed in 0.008s
+⏱️  [step_20_enrich_locator] completed in 0.023s
+[BrowserRunner] DOM Action: Grounded ref 'e122' -> playwright (internal:testid=[data-testid="proceed-to-payment"s])
+[BrowserRunner] DOM Action: Trying locator internal:testid=[data-testid="proceed-to-payment"s]
+⏱️  [step_20_dom_action] completed in 0.552s
+[BrowserRunner] DOM Action: Clicked via DOM locator: internal:testid=[data-testid="proceed-to-payment"s] — success
+⏱️  [step_20_total] completed in 6.990s
+[BrowserRunner] Screenshot: Waiting 500ms for page to settle
+[BrowserRunner] Starting-Node: screenshot Step: 21
+
+──────────────────────────────────────────────────
+  Step 21/50
+──────────────────────────────────────────────────
+⏱️  [step_21_screenshot] completed in 0.104s
+⏱️  [step_21_ax_document] completed in 0.026s
+[BrowserRunner] AX document: 99 referenceable elements
+⏱️  [step_21_accessibility] completed in 0.028s
+[BrowserRunner] Starting-Node: CM (Checkpoint Manager) Step: 21
+[BrowserRunner] CM: 0 checkpoints, 0 pending
+[BrowserRunner] CM: completed task steps: [1]
+[BrowserRunner] CM:REPORT    all_passed=True, passed=[], failed=[]
+[BrowserRunner] CM: no assertion this step
+[BrowserRunner] Starting-Node: AP text-mode (pull loop) Step: 21
+[BrowserRunner] Starting-Node: PM (Page Manager) Step: 21
+[BrowserRunner] PM: Analyzing 2 screenshots
+⏱️  [step_21_page_observer_api] completed in 2.482s
+[BrowserRunner] PM: needs_input | blocker=none | confidence=0.96
+[BrowserRunner] AP(text): queue_actions accepted — queued plan (5 steps): type "John Doe"; type "1234 5678 9012 3456"; type "MM/YY"; type "123"; click "Place Order"
+[BrowserRunner] Merge: ap_direct (wait) — Tier 3
+[BrowserRunner] Starting-Node: action Step: 21
+[BrowserRunner] Action: Executing wait
+⏱️  [step_21_action] completed in 1.012s
+⏱️  [step_21_total] completed in 6.605s
+[BrowserRunner] Action: wait completed - Waited 1000ms
+[BrowserRunner] Screenshot: Waiting 500ms for page to settle
+[BrowserRunner] Starting-Node: screenshot Step: 22
+
+──────────────────────────────────────────────────
+  Step 22/50
+──────────────────────────────────────────────────
+⏱️  [step_22_screenshot] completed in 0.151s
+⏱️  [step_22_ax_document] completed in 0.026s
+[BrowserRunner] AX document: 99 referenceable elements
+⏱️  [step_22_accessibility] completed in 0.028s
+[2026-08-18 15:55:49] [testmu]   [STEP 14] PRIMARY: cardholder name input; role=textbox; text="John Doe" | HINTS: first payment field under credit card graphic
+[2026-08-18 15:55:50] [testmu]   [STEP 15] PRIMARY: card number input; role=textbox; text="1234 5678 9012 3456" | HINTS: second payment field
+[2026-08-18 15:55:51] [testmu]   [STEP 16] PRIMARY: expiry date input; role=textbox; text="MM/YY" | HINTS: left field in expiry/CVV row
+[2026-08-18 15:55:52] [testmu]   [STEP 17] PRIMARY: CVV input; role=textbox; text="123" | HINTS: right field in expiry/CVV row
+[BrowserRunner] Starting-Node: CM (Checkpoint Manager) Step: 22
+[BrowserRunner] CM: 0 checkpoints, 0 pending
+[BrowserRunner] CM: completed task steps: [1]
+[BrowserRunner] CM:REPORT    all_passed=True, passed=[], failed=[]
+[BrowserRunner] CM: no assertion this step
+[BrowserRunner] Starting-Node: queue_execute Step: 22
+⏱️  [step_22_prepare_ref_action] completed in 0.005s
+⏱️  [step_22_enrich_locator] completed in 0.014s
+⏱️  [step_22_queue_action] completed in 0.036s
+[BrowserRunner] Screenshot: Waiting 500ms for page to settle
+[BrowserRunner] Starting-Node: screenshot Step: 23
+
+──────────────────────────────────────────────────
+  Step 23/50
+──────────────────────────────────────────────────
+⏱️  [step_23_screenshot] completed in 0.113s
+⏱️  [step_23_ax_document] completed in 0.024s
+[BrowserRunner] AX document: 100 referenceable elements
+⏱️  [step_23_accessibility] completed in 0.026s
+[BrowserRunner] Starting-Node: CM (Checkpoint Manager) Step: 23
+[BrowserRunner] CM: 0 checkpoints, 0 pending
+[BrowserRunner] CM: completed task steps: [1]
+[BrowserRunner] CM:REPORT    all_passed=True, passed=[], failed=[]
+[BrowserRunner] CM: no assertion this step
+[BrowserRunner] Starting-Node: queue_execute Step: 23
+⏱️  [step_23_prepare_ref_action] completed in 0.008s
+⏱️  [step_23_enrich_locator] completed in 0.019s
+⏱️  [step_23_queue_action] completed in 0.037s
+[BrowserRunner] Screenshot: Waiting 500ms for page to settle
+[BrowserRunner] Starting-Node: screenshot Step: 24
+
+──────────────────────────────────────────────────
+  Step 24/50
+──────────────────────────────────────────────────
+⏱️  [step_24_screenshot] completed in 0.099s
+⏱️  [step_24_ax_document] completed in 0.132s
+[BrowserRunner] AX document: 101 referenceable elements
+⏱️  [step_24_accessibility] completed in 0.134s
+[BrowserRunner] Starting-Node: CM (Checkpoint Manager) Step: 24
+[BrowserRunner] CM: 0 checkpoints, 0 pending
+[BrowserRunner] CM: completed task steps: [1]
+[BrowserRunner] CM:REPORT    all_passed=True, passed=[], failed=[]
+[BrowserRunner] CM: no assertion this step
+[BrowserRunner] Starting-Node: queue_execute Step: 24
+⏱️  [step_24_prepare_ref_action] completed in 0.006s
+⏱️  [step_24_enrich_locator] completed in 0.012s
+⏱️  [step_24_queue_action] completed in 0.033s
+[BrowserRunner] Screenshot: Waiting 500ms for page to settle
+[BrowserRunner] Starting-Node: screenshot Step: 25
+
+──────────────────────────────────────────────────
+  Step 25/50
+──────────────────────────────────────────────────
+⏱️  [step_25_screenshot] completed in 0.085s
+⏱️  [step_25_ax_document] completed in 0.022s
+[BrowserRunner] AX document: 102 referenceable elements
+⏱️  [step_25_accessibility] completed in 0.024s
+[BrowserRunner] Starting-Node: CM (Checkpoint Manager) Step: 25
+[BrowserRunner] CM: 0 checkpoints, 0 pending
+[BrowserRunner] CM: completed task steps: [1]
+[BrowserRunner] CM:REPORT    all_passed=True, passed=[], failed=[]
+[BrowserRunner] CM: no assertion this step
+[BrowserRunner] Starting-Node: queue_execute Step: 25
+⏱️  [step_25_prepare_ref_action] completed in 0.006s
+⏱️  [step_25_enrich_locator] completed in 0.012s
+⏱️  [step_25_queue_action] completed in 0.034s
+[BrowserRunner] Screenshot: Waiting 500ms for page to settle
+[BrowserRunner] Starting-Node: screenshot Step: 26
+
+──────────────────────────────────────────────────
+  Step 26/50
+──────────────────────────────────────────────────
+⏱️  [step_26_screenshot] completed in 0.098s
+⏱️  [step_26_ax_document] completed in 0.022s
+[BrowserRunner] AX document: 103 referenceable elements
+⏱️  [step_26_accessibility] completed in 0.024s
+[BrowserRunner] Starting-Node: CM (Checkpoint Manager) Step: 26
+[BrowserRunner] CM: 0 checkpoints, 0 pending
+[BrowserRunner] CM: completed task steps: [1]
+[BrowserRunner] CM:REPORT    all_passed=True, passed=[], failed=[]
+[BrowserRunner] CM: no assertion this step
+[BrowserRunner] Starting-Node: queue_execute Step: 26
+⏱️  [step_26_prepare_ref_action] completed in 0.005s
+⏱️  [step_26_enrich_locator] completed in 0.013s
+⏱️  [step_26_queue_action] completed in 0.538s
+[BrowserRunner] Screenshot: Waiting 500ms for page to settle
+[BrowserRunner] Starting-Node: screenshot Step: 27
+
+──────────────────────────────────────────────────
+  Step 27/50
+──────────────────────────────────────────────────
+⏱️  [step_27_screenshot] completed in 0.089s
+⏱️  [step_27_ax_document] completed in 0.021s
+[BrowserRunner] AX document: 105 referenceable elements
+⏱️  [step_27_accessibility] completed in 0.023s
+[BrowserRunner] Starting-Node: CM (Checkpoint Manager) Step: 27
+[BrowserRunner] CM: 0 checkpoints, 0 pending
+[BrowserRunner] CM: completed task steps: [1]
+[BrowserRunner] CM:REPORT    all_passed=True, passed=[], failed=[]
+[BrowserRunner] CM: no assertion this step
+[BrowserRunner] Starting-Node: AP text-mode (pull loop) Step: 27
+[BrowserRunner] Starting-Node: PM (Page Manager) Step: 27
+[BrowserRunner] PM: Analyzing 2 screenshots
+⏱️  [step_27_page_observer_api] completed in 2.395s
+[BrowserRunner] PM: complete | blocker=none | confidence=0.99
+[BrowserRunner] AP(text) decision: complete - The nested iframe checkout flow is fully completed and confirmed.
+[BrowserRunner] AP(text) action: wait - PRIMARY: wait briefly on the order confirmation page
+[BrowserRunner] Merge: consensus_complete — Tier 2
+[BrowserRunner] [summary] one_liner='completed checkout on ltqa-domsetu.vercel.app'
+⏱️  [graph_execution] completed in 95.299s
+[BrowserRunner] ✓ Objective completed in 27 steps
+⏱️  [total_execution] completed in 96.141s

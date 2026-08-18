@@ -1,0 +1,10 @@
+{
+  "kind": "navigate",
+  "status": "passed",
+  "summary": "navigate: Navigate to https://ltqa-domsetu.vercel.app/",
+  "duration_ms": 1.2,
+  "url": "https://ltqa-domsetu.vercel.app/",
+  "action_id": "3605a30c-d2e8-479e-a42e-a2ff7fc0bb34",
+  "ordinal": 1,
+  "id": "0-1"
+}
