@@ -7,7 +7,7 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 [![CI](https://github.com/LambdaTest/evidence-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/LambdaTest/evidence-cli/actions/workflows/ci.yml)
 ![Node](https://img.shields.io/badge/node-%3E%3D18-brightgreen)
-[![Discord](https://img.shields.io/badge/Discord-Join%20the%20community-5865F2?logo=discord&logoColor=white)](https://discord.gg/kanQPEx9)
+[![Discord](https://img.shields.io/badge/Discord-Join%20the%20community-5865F2?logo=discord&logoColor=white)](https://discord.gg/SqVMtNeWEf)
 
 One shape, whatever made it — a browser agent, a Playwright suite, a Jest run, an
 API check. An evidence pack is readable by a CI dashboard, an auditor, or a human
