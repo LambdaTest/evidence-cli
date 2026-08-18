@@ -1,0 +1,10 @@
+{
+  "kind": "scroll",
+  "status": "passed",
+  "summary": "scroll: Scrolling to bring the target into view",
+  "duration_ms": 7189.8,
+  "url": "https://ltqa-domsetu.vercel.app/ecommerce/checkout?domComplexity=nested-iframe",
+  "action_id": "ad783985-0f20-4b09-9962-89d610fa6adb",
+  "ordinal": 9,
+  "id": "0-9"
+}

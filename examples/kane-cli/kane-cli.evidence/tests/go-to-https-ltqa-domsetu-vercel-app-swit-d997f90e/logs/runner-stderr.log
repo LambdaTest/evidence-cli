@@ -1,0 +1,22 @@
+/Users/demo-user/.cache/v16-runner/0.8.3/langgraph/checkpoint/base/__init__.py:17: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+(node:41812) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[ap-mode] ap_mode='v2' multi_action=True (queue_actions ADVERTISED) scroll_steps=True
+[ap-text] step=2 turn: calls=['decide_action'] decide(status=continue,select,ref=e9,instr='PRIMARY: DOM complexity mode selector; role=combobox; text="Switch DOM Complexit',rationale='Switching modes is required before entering the nested iframe flow.')
+[ap-text] step=3 turn: calls=['grep_page'] grep('E-Commerce Checkout|ecommerce/checkout',role=link)
+[ap-text] step=3 pull-result[grep_page]: "1 matches for 'E-Commerce Checkout|ecommerce/checkout'" (len=446)
+[ap-text] step=3 pull-turn: calls=['decide_action'] decide(status=continue,click,ref=e89,instr='PRIMARY: E-Commerce Checkout module link; role=link; text="E-Commerce Checkout C',rationale='Open the checkout scenario inside nested iframe mode.')
+[ap-text] step=5 turn: calls=['decide_action'] decide(status=continue,click,ref=e80,instr='PRIMARY: Add to Cart button for Wireless Headphones; role=button; text="Add to C',rationale='Adding an item enables the cart and starts checkout.')
+[ap-text] step=6 turn: calls=['decide_action'] decide(status=continue,click,ref=e68,instr='PRIMARY: View Cart button; role=button; text="View Cart (1)" | HINTS: above prod',rationale='Proceed from browsing to the cart with the added item.')
+[ap-text] step=8 turn: calls=['decide_action'] decide(status=continue,click,ref=e90,instr='PRIMARY: Checkout button; role=button; text="Checkout" | HINTS: container=Order ',rationale='Move from cart to the shipping step of checkout.')
+[ap-text] step=9 turn: calls=['grep_page'] grep('Continue to Payment|Next|Continue|Payment|Back',role=button)
+[ap-text] step=9 pull-result[grep_page]: "3 matches for 'Continue to Payment|Next|Continue|Payment|Back'" (len=595)
+[ap-text] step=9 pull-turn: calls=['decide_action'] decide(status=continue,click,ref=e114,instr='PRIMARY: Continue to Payment button; role=button; text="Continue to Payment" | H',rationale='Advance the checkout from shipping to payment.')
+[ap-text] step=11 turn: calls=['grep_page'] grep('Continue to Payment|Back to Cart',role=button)
+[ap-text] step=11 pull-result[grep_page]: "2 matches for 'Continue to Payment|Back to Cart'" (len=291)
+[ap-text] step=11 pull-turn: calls=['queue_actions']
+[ap-text] step=20 turn: calls=['grep_page'] grep('Continue to Payment',role=button)
+[ap-text] step=20 pull-result[grep_page]: "1 matches for 'Continue to Payment'" (len=160)
+[ap-text] step=20 pull-turn: calls=['decide_action'] decide(status=continue,click,ref=e122,instr='PRIMARY: Continue to Payment button; role=button; text="Continue to Payment" | H',rationale='The shipping form is filled, so continue to payment.')
+[ap-text] step=21 turn: calls=['queue_actions']
+[ap-text] step=27 turn: calls=['decide_action'] decide(status=complete,wait,ref=None,instr='PRIMARY: wait briefly on the order confirmation page',rationale='The nested iframe checkout flow is fully completed and confirmed.')

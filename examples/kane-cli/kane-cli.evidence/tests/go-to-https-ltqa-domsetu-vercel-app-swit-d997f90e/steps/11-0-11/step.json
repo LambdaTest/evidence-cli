@@ -1,0 +1,10 @@
+{
+  "kind": "wait",
+  "status": "passed",
+  "summary": "wait: queued plan (8 steps): type \"John\"; type \"Doe\"; type \"john@example.com\"; type \"(",
+  "duration_ms": 11465.2,
+  "url": "https://ltqa-domsetu.vercel.app/ecommerce/checkout?domComplexity=nested-iframe",
+  "action_id": "6e01af54-abcc-4a10-84a5-d2e43f01da34",
+  "ordinal": 11,
+  "id": "0-11"
+}

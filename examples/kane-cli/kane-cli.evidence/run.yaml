@@ -1,0 +1,21 @@
+evidence: '0.1'
+run_id: 11cb54e5-1466-4a35-995a-7ab0bdff4be1
+status: finalized
+title: go to https://ltqa-domsetu.vercel.app/ switch to nested iframe and
+  complete the checkout flow
+started: '2026-08-18T10:24:18.014Z'
+environment:
+  producer:
+    name: kane-cli
+    version: 0.8.3
+  run_kind: author
+  origin: inline
+  pid: 41605
+  saved: true
+ended: 2026-08-18T10:28:59.365Z
+totals:
+  tests: 1
+  passed: 1
+  failed: 0
+  broken: 0
+  skipped: 0

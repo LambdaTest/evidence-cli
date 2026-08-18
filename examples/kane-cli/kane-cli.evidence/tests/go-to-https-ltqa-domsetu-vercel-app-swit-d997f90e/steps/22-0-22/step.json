@@ -1,0 +1,20 @@
+{
+  "kind": "type",
+  "status": "passed",
+  "summary": "type: Type \"John Doe\" into \"John Doe\"",
+  "duration_ms": 68.0,
+  "url": "https://ltqa-domsetu.vercel.app/ecommerce/checkout?domComplexity=nested-iframe",
+  "action_id": "0551cd36-6af4-4d2f-9fb2-0b262524ec64",
+  "coordinates": {
+    "x": 923,
+    "y": 394
+  },
+  "element_rect": {
+    "x": 657,
+    "y": 386,
+    "width": 533,
+    "height": 16
+  },
+  "ordinal": 22,
+  "id": "0-22"
+}

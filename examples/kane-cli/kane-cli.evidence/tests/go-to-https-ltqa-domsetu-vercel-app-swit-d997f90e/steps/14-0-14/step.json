@@ -1,0 +1,20 @@
+{
+  "kind": "type",
+  "status": "passed",
+  "summary": "type: Type \"john@example.com\" into \"john@example.com\"",
+  "duration_ms": 70.6,
+  "url": "https://ltqa-domsetu.vercel.app/ecommerce/checkout?domComplexity=nested-iframe",
+  "action_id": "3b5e6067-be24-4e15-b8e6-afce45ac1325",
+  "coordinates": {
+    "x": 923,
+    "y": 162
+  },
+  "element_rect": {
+    "x": 632,
+    "y": 154,
+    "width": 583,
+    "height": 16
+  },
+  "ordinal": 14,
+  "id": "0-14"
+}

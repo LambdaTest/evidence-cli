@@ -1,0 +1,20 @@
+{
+  "kind": "click",
+  "status": "passed",
+  "summary": "click: Clicking E-Commerce Checkout module link in the automation scenarios grid",
+  "duration_ms": 800.4,
+  "url": "https://ltqa-domsetu.vercel.app/?domComplexity=nested-iframe",
+  "action_id": "9bf560c7-29f9-4c09-8b88-86e057ed22ec",
+  "coordinates": {
+    "x": 723,
+    "y": 476
+  },
+  "element_rect": {
+    "x": 591,
+    "y": 377,
+    "width": 264,
+    "height": 199
+  },
+  "ordinal": 4,
+  "id": "0-4"
+}

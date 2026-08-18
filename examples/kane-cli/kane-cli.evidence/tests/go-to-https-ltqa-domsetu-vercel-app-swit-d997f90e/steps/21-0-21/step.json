@@ -1,0 +1,10 @@
+{
+  "kind": "wait",
+  "status": "passed",
+  "summary": "wait: queued plan (5 steps): type \"John Doe\"; type \"1234 5678 9012 3456\"; type \"MM/YY\"",
+  "duration_ms": 6474.4,
+  "url": "https://ltqa-domsetu.vercel.app/ecommerce/checkout?domComplexity=nested-iframe",
+  "action_id": "a5b9745d-67e4-4079-ab4c-3bd5513a940d",
+  "ordinal": 21,
+  "id": "0-21"
+}

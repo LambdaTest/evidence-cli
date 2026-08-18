@@ -1,0 +1,19 @@
+logs:
+  - name: 0-actions
+    file: 0-actions.ndjson
+    format: ndjson
+  - name: 0-console
+    file: 0-console.ndjson
+    format: ndjson
+  - name: 0-network
+    file: 0-network.har
+    format: har
+  - name: 0-run
+    file: 0-run.log
+    format: log
+  - name: runner-stderr
+    file: runner-stderr.log
+    format: log
+  - name: tui
+    file: tui.log
+    format: log

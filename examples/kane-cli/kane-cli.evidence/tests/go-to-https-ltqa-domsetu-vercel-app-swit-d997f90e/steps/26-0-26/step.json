@@ -1,0 +1,20 @@
+{
+  "kind": "click",
+  "status": "passed",
+  "summary": "click: Click \"Place Order\"",
+  "duration_ms": 572.1,
+  "url": "https://ltqa-domsetu.vercel.app/ecommerce/checkout?domComplexity=nested-iframe",
+  "action_id": "ca029407-4216-4eb4-af85-d7f338793ca4",
+  "coordinates": {
+    "x": 774,
+    "y": 674
+  },
+  "element_rect": {
+    "x": 735,
+    "y": 665,
+    "width": 79,
+    "height": 18
+  },
+  "ordinal": 26,
+  "id": "0-26"
+}

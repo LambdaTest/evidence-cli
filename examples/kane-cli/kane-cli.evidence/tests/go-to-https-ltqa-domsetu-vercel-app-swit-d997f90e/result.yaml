@@ -1,0 +1,190 @@
+evidence: '0.1'
+test: go-to-https-ltqa-domsetu-vercel-app-swit-d997f90e
+status: passed
+duration_ms: 281319
+definition:
+  path: test.md
+  sha256: sha256:0348db56e63263869912f2451c3b1d322c118fbc36afbb57a9a7c529d3cf2f90
+definition_id: sha256:11af6affc301401c90d61ee004c961c466d5eddfa91ad7da0e5c9439b53c767d
+external_id:
+  session_id: 00000000-0000-4000-8000-000000000000
+  commit_id: 00000000-0000-4000-8000-000000000000
+  test_id: 00000000-0000-4000-8000-000000000001
+  testcase_id: 01EXAMPLE000TESTCASE0000000
+  project_id: 01EXAMPLE000PROJECT00000000
+  folder_id: 01EXAMPLE000FOLDER000000000
+  org_id: '000000'
+  session_name: kane-cli-demo
+  user_name: demo-user
+  user_email: demo-user@example.com
+  execution_id: 11cb54e5-1466-4a35-995a-7ab0bdff4be1
+environment:
+  model: v16-alpha
+  os: macOS
+  browser: Chrome
+  browser_version: '151'
+  resolution: 1800x953
+  platform: Desktop
+  platform_type: web
+  os_version: '26.3'
+steps:
+  - id: 0-1
+    ordinal: 1
+    status: passed
+    kind: navigate
+    duration_ms: 0
+    action_id: 3605a30c-d2e8-479e-a42e-a2ff7fc0bb34
+  - id: 0-2
+    ordinal: 2
+    status: passed
+    kind: select
+    duration_ms: 5900
+    action_id: a94ff4d0-534a-4513-806b-1682ae6ef644
+  - id: 0-3
+    ordinal: 3
+    status: passed
+    kind: scroll
+    duration_ms: 7100
+    action_id: 922f9bff-2e3c-483c-bd50-552c0a307a86
+  - id: 0-4
+    ordinal: 4
+    status: passed
+    kind: click
+    duration_ms: 800
+    action_id: 9bf560c7-29f9-4c09-8b88-86e057ed22ec
+  - id: 0-5
+    ordinal: 5
+    status: passed
+    kind: click
+    duration_ms: 10000
+    action_id: b4847476-636c-4d04-8da1-a853d3d561a2
+  - id: 0-6
+    ordinal: 6
+    status: passed
+    kind: scroll
+    duration_ms: 4700
+    action_id: 69baba04-a267-4b30-99b3-34ba7efa3f98
+  - id: 0-7
+    ordinal: 7
+    status: passed
+    kind: click
+    duration_ms: 700
+    action_id: 69a01c27-4875-472b-96e5-de81d1be741e
+  - id: 0-8
+    ordinal: 8
+    status: passed
+    kind: click
+    duration_ms: 5500
+    action_id: 6ea027a4-a75d-4db6-9393-e9b2e7c71be0
+  - id: 0-9
+    ordinal: 9
+    status: passed
+    kind: scroll
+    duration_ms: 7200
+    action_id: ad783985-0f20-4b09-9962-89d610fa6adb
+  - id: 0-10
+    ordinal: 10
+    status: passed
+    kind: click
+    duration_ms: 800
+    action_id: e77e49f8-71c6-4699-a5ef-5b7c02659468
+  - id: 0-11
+    ordinal: 11
+    status: passed
+    kind: wait
+    duration_ms: 11500
+    action_id: 6e01af54-abcc-4a10-84a5-d2e43f01da34
+  - id: 0-12
+    ordinal: 12
+    status: passed
+    kind: type
+    duration_ms: 100
+    action_id: 91e0a5c7-6c33-4d55-9043-237cd06714fb
+  - id: 0-13
+    ordinal: 13
+    status: passed
+    kind: type
+    duration_ms: 100
+    action_id: 9cce0d4d-34dc-439c-b320-b0d16fe01452
+  - id: 0-14
+    ordinal: 14
+    status: passed
+    kind: type
+    duration_ms: 100
+    action_id: 3b5e6067-be24-4e15-b8e6-afce45ac1325
+  - id: 0-15
+    ordinal: 15
+    status: passed
+    kind: type
+    duration_ms: 100
+    action_id: be89f5c7-375d-4f4a-bfba-a9c2a4084607
+  - id: 0-16
+    ordinal: 16
+    status: passed
+    kind: type
+    duration_ms: 100
+    action_id: d054c361-b685-45e8-a847-ed397532ca0c
+  - id: 0-17
+    ordinal: 17
+    status: passed
+    kind: type
+    duration_ms: 100
+    action_id: c0e2148f-3a22-4b9a-9e54-589516fc09af
+  - id: 0-18
+    ordinal: 18
+    status: passed
+    kind: type
+    duration_ms: 100
+    action_id: c592d10c-7ab9-48af-b996-3e479e515ab9
+  - id: 0-19
+    ordinal: 19
+    status: passed
+    kind: type
+    duration_ms: 100
+    action_id: 268dc7d5-69d0-45df-810a-456322636118
+  - id: 0-20
+    ordinal: 20
+    status: passed
+    kind: click
+    duration_ms: 6900
+    action_id: 71b188f6-888c-4819-befa-528050f66edb
+  - id: 0-21
+    ordinal: 21
+    status: passed
+    kind: wait
+    duration_ms: 6500
+    action_id: a5b9745d-67e4-4079-ab4c-3bd5513a940d
+  - id: 0-22
+    ordinal: 22
+    status: passed
+    kind: type
+    duration_ms: 100
+    action_id: 0551cd36-6af4-4d2f-9fb2-0b262524ec64
+  - id: 0-23
+    ordinal: 23
+    status: passed
+    kind: type
+    duration_ms: 100
+    action_id: ca68d01d-3a51-4811-8b9c-57893821c33c
+  - id: 0-24
+    ordinal: 24
+    status: passed
+    kind: type
+    duration_ms: 100
+    action_id: 1fd78d34-f848-47d3-aeac-5a0cc3f84f70
+  - id: 0-25
+    ordinal: 25
+    status: passed
+    kind: type
+    duration_ms: 100
+    action_id: d66f4c96-73f4-4eb2-8b06-f95107d9d177
+  - id: 0-26
+    ordinal: 26
+    status: passed
+    kind: click
+    duration_ms: 600
+    action_id: ca029407-4216-4eb4-af85-d7f338793ca4
+  - id: 0-27
+    ordinal: 27
+    status: passed
+    duration_ms: 4100

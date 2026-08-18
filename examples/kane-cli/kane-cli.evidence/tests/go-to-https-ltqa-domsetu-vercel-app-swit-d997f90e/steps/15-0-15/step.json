@@ -1,0 +1,20 @@
+{
+  "kind": "type",
+  "status": "passed",
+  "summary": "type: Type \"(555) 123-4567\" into \"(555) 123-4567\"",
+  "duration_ms": 74.2,
+  "url": "https://ltqa-domsetu.vercel.app/ecommerce/checkout?domComplexity=nested-iframe",
+  "action_id": "be89f5c7-375d-4f4a-bfba-a9c2a4084607",
+  "coordinates": {
+    "x": 923,
+    "y": 224
+  },
+  "element_rect": {
+    "x": 632,
+    "y": 216,
+    "width": 583,
+    "height": 16
+  },
+  "ordinal": 15,
+  "id": "0-15"
+}

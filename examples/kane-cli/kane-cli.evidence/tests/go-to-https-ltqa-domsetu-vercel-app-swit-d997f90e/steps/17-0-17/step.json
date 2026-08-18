@@ -1,0 +1,20 @@
+{
+  "kind": "type",
+  "status": "passed",
+  "summary": "type: Type \"New York\" into \"New York\"",
+  "duration_ms": 65.8,
+  "url": "https://ltqa-domsetu.vercel.app/ecommerce/checkout?domComplexity=nested-iframe",
+  "action_id": "c0e2148f-3a22-4b9a-9e54-589516fc09af",
+  "coordinates": {
+    "x": 923,
+    "y": 349
+  },
+  "element_rect": {
+    "x": 632,
+    "y": 341,
+    "width": 583,
+    "height": 16
+  },
+  "ordinal": 17,
+  "id": "0-17"
+}

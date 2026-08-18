@@ -1,0 +1,20 @@
+{
+  "kind": "type",
+  "status": "passed",
+  "summary": "type: Type \"123\" into \"123\"",
+  "duration_ms": 62.9,
+  "url": "https://ltqa-domsetu.vercel.app/ecommerce/checkout?domComplexity=nested-iframe",
+  "action_id": "d66f4c96-73f4-4eb2-8b06-f95107d9d177",
+  "coordinates": {
+    "x": 1068,
+    "y": 551
+  },
+  "element_rect": {
+    "x": 947,
+    "y": 543,
+    "width": 243,
+    "height": 16
+  },
+  "ordinal": 25,
+  "id": "0-25"
+}
