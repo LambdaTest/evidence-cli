@@ -104,7 +104,7 @@ Browse it locally with `npm run docs`. See [`GOVERNANCE.md`](GOVERNANCE.md).
 
 ## Support & contributing
 
-- **Community:** [Join us on Discord](https://discord.gg/kanQPEx9) — questions,
+- **Community:** [Join us on Discord](https://discord.gg/SqVMtNeWEf) — questions,
   discussion, and release announcements.
 - **Issues / bug reports:** [GitHub Issues](https://github.com/LambdaTest/evidence-cli/issues/new/choose)
 - **Contributing:** see [CONTRIBUTING.md](CONTRIBUTING.md) — every change starts
