@@ -13,6 +13,10 @@ One shape, whatever made it — a browser agent, a Playwright suite, a Jest run,
 API check. An evidence pack is readable by a CI dashboard, an auditor, or a human
 without knowing the framework that wrote it.
 
+## Documentation
+
+- [KaneAI CLI evidence format](https://www.testmuai.com/docs/kane-cli-evidence-format?utm_source=github&utm_medium=referral)
+
 ## Install
 
 ```bash
