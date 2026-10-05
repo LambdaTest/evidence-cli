@@ -89,6 +89,13 @@ Version and profile are different axes: a profile only *adds* requirements and
 never changes the version; only a breaking change to an existing meaning bumps
 `evidence` (`0.1` → `0.2`).
 
+## Integrations
+
+Producers that write packs for you:
+
+- [`@testmuai/e2e-evidence`](integrations/e2e): a reporter for the
+  [e2e](https://github.com/tester-army/e2e) framework, one pack per run.
+
 ## This repo is its own spec
 
 `evidence-cli` is governed by a living decision log. The [`design/`](design)
