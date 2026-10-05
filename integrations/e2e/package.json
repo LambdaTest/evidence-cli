@@ -1,0 +1,58 @@
+{
+  "name": "@testmuai/e2e-evidence",
+  "version": "0.1.0",
+  "description": "An e2e reporter that writes each run as a sealed, validated .evidence pack, viewable at evidence.lambdatest.com.",
+  "license": "Apache-2.0",
+  "author": "TestMu AI (formerly LambdaTest)",
+  "homepage": "https://github.com/LambdaTest/evidence-cli/tree/main/integrations/e2e#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LambdaTest/evidence-cli.git",
+    "directory": "integrations/e2e"
+  },
+  "bugs": {
+    "url": "https://github.com/LambdaTest/evidence-cli/issues"
+  },
+  "keywords": [
+    "e2e",
+    "e2e-reporter",
+    "evidence",
+    "test-report",
+    "test-results"
+  ],
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "prepack": "npm run build",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "e2e": ">=0.17.0 <1"
+  },
+  "dependencies": {
+    "@testmuai/evidence-cli": "^0.1.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "e2e": "0.17.0",
+    "typescript": "^5.9.0",
+    "vitest": "^3.2.0"
+  }
+}
