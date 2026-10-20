@@ -1,10 +1,20 @@
 import pc from "picocolors";
-import type { ValidationReport, FinalizeResult, MergeReport, Severity } from "../contract";
+import type { Diagnostic, ValidationReport, FinalizeResult, MergeReport, Severity } from "../contract";
+import type { GateResult, VerdictDoc } from "../verdict/evaluate";
+
+/** The lint outcome for one policy file. */
+export interface LintResult {
+  source: string;
+  valid: boolean;
+  diagnostics: Diagnostic[];
+}
 
 export interface Reporter {
   validation(report: ValidationReport): void;
   finalize(result: FinalizeResult): void;
   merge(report: MergeReport): void;
+  verdicts(docs: VerdictDoc[], files: string[]): void;
+  lint(results: LintResult[]): void;
   usageError(message: string): void;
 }
 
@@ -17,6 +27,12 @@ export class JsonReporter implements Reporter {
   }
   merge(report: MergeReport): void {
     process.stdout.write(JSON.stringify(report, null, 2) + "\n");
+  }
+  verdicts(docs: VerdictDoc[]): void {
+    process.stdout.write(JSON.stringify(docs, null, 2) + "\n");
+  }
+  lint(results: LintResult[]): void {
+    process.stdout.write(JSON.stringify(results, null, 2) + "\n");
   }
   usageError(message: string): void {
     process.stderr.write(JSON.stringify({ error: message }, null, 2) + "\n");
@@ -80,6 +96,49 @@ export class HumanReporter implements Reporter {
     process.stdout.write(
       this.paint(`${this.sym("ok")} merged ${report.output.path} (run_id ${report.output.runId}, ${report.tests.merged} test(s)${sealed})`, "ok") + "\n",
     );
+  }
+
+  verdicts(docs: VerdictDoc[], files: string[]): void {
+    docs.forEach((doc, i) => {
+      const m: Marker = doc.result === "pass" ? "ok" : "error";
+      const to = files[i] ? ` -> ${files[i]}` : "";
+      if (doc.error) {
+        process.stdout.write(this.paint(`${this.sym(m)} ${doc.policy.id}: errored — ${doc.error.message} [${doc.error.code}]${to}`, m) + "\n");
+        if (doc.error.hint) process.stdout.write(`    -> ${doc.error.hint}\n`);
+        return;
+      }
+      const n = (s: GateResult["status"]) => doc.gates.filter((g) => g.status === s).length;
+      const counts = `${doc.gates.length} gate(s): ${n("pass")} pass, ${n("fail")} fail, ${n("warn")} warn, ${n("errored")} errored`;
+      process.stdout.write(this.paint(`${this.sym(m)} ${doc.policy.id}: ${doc.result} — ${counts}${to}`, m) + "\n");
+      for (const g of doc.gates) {
+        if (g.status === "pass") continue;
+        const gm: Marker = g.status === "warn" ? "warning" : "error";
+        const subject = g.metric !== undefined ? `${g.metric}${g.where ? ` where ${g.where}` : ""}` : g.expr;
+        const detail = g.error
+          ? `errored — ${g.error.message} [${g.error.code}]`
+          : g.op === "expr"
+            ? "is false"
+            : `${g.op} ${JSON.stringify(g.expected)}, actual ${JSON.stringify(g.actual)}`;
+        process.stdout.write(this.paint(`  ${this.sym(gm)} ${g.id}: ${subject} ${detail}`, gm) + "\n");
+        if (g.message) process.stdout.write(`      ${g.message}\n`);
+      }
+    });
+  }
+
+  lint(results: LintResult[]): void {
+    for (const r of results) {
+      const errors = r.diagnostics.filter((d) => d.severity === "error").length;
+      const warnings = r.diagnostics.length - errors;
+      const head = r.valid
+        ? `${this.sym("ok")} ${r.source} — no problems${warnings ? `, ${warnings} warning(s)` : ""}`
+        : `${this.sym("error")} ${r.source} — ${errors} problem(s)${warnings ? `, ${warnings} warning(s)` : ""}`;
+      process.stdout.write(this.paint(head, r.valid ? "ok" : "error") + "\n");
+      for (const d of r.diagnostics) {
+        const at = d.line ? `line ${d.line}: ` : "";
+        process.stdout.write(this.paint(`  ${this.sym(d.severity)} ${at}${d.message} [${d.code}]`, d.severity) + "\n");
+        if (d.hint) process.stdout.write(`      -> ${d.hint}\n`);
+      }
+    }
   }
 
   usageError(message: string): void {
