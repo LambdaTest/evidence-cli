@@ -155,7 +155,8 @@ function recompute(def: MetricDef, name: string, pack: PackFacts, scope: Scope):
   return { value: storedValue(def, name, pack), trust: "stored" };
 }
 
-function failureRows(pack: PackFacts): unknown[] {
+/** The rows of the pack's root failure.yaml index; [] when it has none. */
+export function failureRows(pack: PackFacts): unknown[] {
   const f = pack.files["failure.yaml"];
   const rows = f && "value" in f ? (f.value as any)?.failures : undefined;
   return Array.isArray(rows) ? rows : [];
