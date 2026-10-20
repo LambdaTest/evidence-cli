@@ -121,6 +121,8 @@ definitions.
 - `run.schema.json` gains the optional `metrics_catalog` block (additive; no
   0.1 pack is invalidated). `meta/` holds the snapshot.
 - `validate` gains the `catalog.*` checks; `merge` keeps an identical snapshot.
+- The built-in catalog is stored as JSON (any YAML reader parses it), so it is
+  imported like the schemas and travels inside bundles of the library.
 - The catalog format includes `min_producer` so a catalog service can hand a
   producer only a catalog it can satisfy; the verdict ignores it.
 - Deferred: per-source catalogs on a merged pack, policy references to one
