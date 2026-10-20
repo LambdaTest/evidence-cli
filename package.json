@@ -24,7 +24,7 @@
     "framework-agnostic"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=20.19"
   },
   "bin": {
     "evidence": "dist/cli.js"
@@ -54,6 +54,7 @@
     "docs:install": "npm --prefix design/web install"
   },
   "dependencies": {
+    "@marcbachmann/cel-js": "^8.0.0",
     "adm-zip": "^0.5.14",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
