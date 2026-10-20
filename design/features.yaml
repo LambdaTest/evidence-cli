@@ -51,6 +51,10 @@ features:
     title: Merge
     blurb: Policy-driven merging of N packs into one — declarative merge-rules gate packs and resolve test collisions; merge assembles, finalize derives and seals.
     spec: design/contract/03-commands.md
+  - id: verdict
+    title: Verdict
+    blurb: Judge a sealed pack against policies of gates over catalog-defined metrics (CEL expressions); the verdict is a sidecar beside the pack, never written into it.
+    spec: design/contract/03-commands.md
   - id: decision-system
     title: Decision system & viewer
     blurb: Governance, the ADR format, schemas-as-source-of-truth, and the viewer.

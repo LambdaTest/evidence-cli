@@ -43,9 +43,11 @@ and type in one place rather than split across sibling blocks.
 *vocabulary*. evidence-cli validates that `value` and `type` are present, not
 what `type` says.
 
-Metrics are explicitly facts, not judgments. The verdict lives only in
-[`status`/`totals`](0006-verdict-enum.md); `metrics` never carries a pass/fail
-meaning. This keeps the one place a pack says "good or bad" unambiguous. For the
+Metrics are explicitly facts, not judgments. Inside the pack, the verdict lives
+only in [`status`/`totals`](0006-verdict-enum.md); `metrics` never carries a
+pass/fail meaning. A policy verdict over those facts is computed outside the
+pack and kept beside it ([0047](0047-verdict-command-and-policy.md),
+[0050](0050-verdict-exit-codes-and-sidecar.md)). This keeps the one place a pack says "good or bad" unambiguous. For the
 same reason a metric `value` is `number | integer | string` and **not** boolean:
 a bare `true`/`false` reads as a verdict, which is exactly what a metric must
 never be. A producer that wants a flag emits it as a typed string.
@@ -55,3 +57,6 @@ never be. A producer that wants a flag emits it as a typed string.
 - The run schema models `metrics` as `additionalProperties` → `{ value, type, ... }`,
   with `value` constrained to `number | integer | string` (no boolean).
 - A non-browser framework simply emits a different metric set; nothing is required.
+- What a metric name means, and how a reader checks it, is defined by a metric
+  catalog ([0048](0048-metric-catalog-in-pack.md)), not by this map. A stored
+  value that disagrees with its catalog recompute errors a policy gate.
