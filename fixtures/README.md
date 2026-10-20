@@ -145,7 +145,7 @@ gates:                            # every gate, in policy order
 
 | Case | Result | What it pins |
 | --- | --- | --- |
-| `pass` | `pass` | built-ins with every operator kind, a `where`, `run.status` read from a file |
+| `pass` | `pass` | built-ins with `equals`, `min` and `max`, a `where`, `run.status` read from a file |
 | `fail` | `fail` | a failed blocking gate fails; a failed warning gate only warns |
 | `errored-unknown-metric` | `errored` | a gate naming a metric the pack's catalog lacks errors the whole policy (`policy.unknown_metric`) |
 | `errored-stored-mismatch` | `errored` | a stored value that disagrees with its recompute errors the gate (`verdict.stored_mismatch`) |
