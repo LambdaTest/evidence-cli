@@ -1,0 +1,5 @@
+description: A live pack that was never sealed cannot be judged.
+result: errored
+exit_code: 3
+error: verdict.unfinalized
+gates: {}

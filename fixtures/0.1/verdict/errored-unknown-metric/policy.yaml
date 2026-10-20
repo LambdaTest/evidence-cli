@@ -1,0 +1,5 @@
+policy: kane-gate
+requires: { catalog: kane-cli, version: ">=1" }
+gates:
+  - { id: credits, metric: metrics.credit, max: 100, severity: warning }
+  - { id: no-failures, metric: totals.failed, equals: 0, severity: blocking }

@@ -19,6 +19,8 @@ fixtures/
       valid/      <case>.evidence/ + <case>.expected.yaml   # validate passes
       invalid/    <case>.evidence/ + <case>.expected.yaml   # validate fails
       finalized/  <case>.evidence/                          # finalize scenario inputs
+    verdict/
+      <case>/     pack.evidence/ + policy.yaml + expected.yaml   # verdict corpus
 ```
 
 `valid/` and `invalid/` are the **validate** corpus (every pack carries a sidecar).
@@ -121,3 +123,36 @@ it in both forms.
 `0.1/L0/finalized/running.evidence/` is not part of the validate corpus — it is an
 *input* to `finalize` (a live `running` pack), exercised by
 `src/finalize/index.test.ts`.
+
+## `0.1/verdict/` — the verdict corpus
+
+Each case is a directory holding a pack (`pack.evidence/`, directory form), the
+`policy.yaml` to judge it with, and `expected.yaml`. The harness at
+`src/conformance/verdict.test.ts` runs `verdict` on the directory **and** on a
+sealed zip of it, checks the expectation, checks the document against
+`verdict.schema.json`, and requires both forms to give the same document apart
+from `pack.sha256` (null for a directory) and `evaluated_at` (decision 0047).
+
+```yaml
+# expected.yaml
+description: human note           # ignored by the harness
+result: fail                      # pass | fail | errored
+exit_code: 1                      # 0 | 1 | 3
+error: null                       # the whole-verdict error code, or null
+gates:                            # every gate, in policy order
+  no-failures: { status: fail, actual: 1, trust: recomputed }   # status required; actual, trust, stored, error optional
+```
+
+| Case | Result | What it pins |
+| --- | --- | --- |
+| `pass` | `pass` | built-ins with every operator kind, a `where`, `run.status` read from a file |
+| `fail` | `fail` | a failed blocking gate fails; a failed warning gate only warns |
+| `errored-unknown-metric` | `errored` | a gate naming a metric the pack's catalog lacks errors the whole policy (`policy.unknown_metric`) |
+| `errored-stored-mismatch` | `errored` | a stored value that disagrees with its recompute errors the gate (`verdict.stored_mismatch`) |
+| `unfinalized` | `errored` | a live, unsealed pack cannot be judged (`verdict.unfinalized`) |
+| `merged` | `pass` | merge keeps the shared catalog; `merge: sum` combines stored values, `merge: recompute` reruns over the merged tests |
+| `cel-expr` | `pass` | expression gates with `filter`, `all`, `exists`, `map`, `sum`, `mean`, `percentile` |
+
+The packs were produced by the real `finalize` and `merge`, so their totals,
+hashes and failure indexes are genuine. Adding a case is mechanical: add the
+directory; the harness lists the cases it requires, so update that list too.

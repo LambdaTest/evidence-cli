@@ -1,0 +1,12 @@
+description: Expression gates using filter, all, exists, map and the registered sum, mean and percentile functions.
+result: pass
+exit_code: 0
+error: null
+gates:
+  critical-not-flaky: { status: pass, actual: true, trust: recomputed }
+  something-passed: { status: pass, actual: true }
+  total-time: { status: pass, actual: true }
+  mean-time: { status: pass, actual: true }
+  p90-time: { status: pass, actual: true }
+  ids: { status: pass, actual: true }
+  one-skipped: { status: pass, actual: true }

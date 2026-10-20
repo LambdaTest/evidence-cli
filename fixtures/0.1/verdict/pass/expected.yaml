@@ -1,0 +1,10 @@
+description: Every built-in gate passes on a clean two-test pack.
+result: pass
+exit_code: 0
+error: null
+gates:
+  no-failures: { status: pass, actual: 0, trust: recomputed }
+  pass-rate: { status: pass, actual: 1, trust: recomputed }
+  checkout-green: { status: pass, actual: 0, trust: recomputed }
+  sealed: { status: pass, actual: finalized, trust: file }
+  quick: { status: pass, actual: 600000, trust: recomputed }

@@ -1,0 +1,9 @@
+description: One failed test fails a blocking gate; a failed warning gate only warns.
+result: fail
+exit_code: 1
+error: null
+gates:
+  no-failures: { status: fail, actual: 1, trust: recomputed }
+  no-failed-steps: { status: warn, actual: 1, trust: recomputed }
+  failure-records: { status: pass, actual: 1, trust: file }
+  checkout-green: { status: pass, actual: 1, trust: recomputed }

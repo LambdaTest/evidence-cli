@@ -1,0 +1,23 @@
+policy: cel-gate
+gates:
+  - id: critical-not-flaky
+    expr: "tests.filter(t, 'critical' in t.tags).all(t, !t.flaky)"
+    severity: blocking
+  - id: something-passed
+    expr: "tests.exists(t, t.status == 'passed')"
+    severity: blocking
+  - id: total-time
+    expr: "sum(tests.map(t, t.duration_ms)) < 2000.0"
+    severity: blocking
+  - id: mean-time
+    expr: "mean(tests.filter(t, t.status != 'skipped').map(t, t.duration_ms)) == 750.0"
+    severity: blocking
+  - id: p90-time
+    expr: "percentile(tests.map(t, t.duration_ms), 90) <= 1200.0"
+    severity: blocking
+  - id: ids
+    expr: "tests.map(t, t.id) == ['checkout', 'login', 'search']"
+    severity: blocking
+  - id: one-skipped
+    expr: "totals.skipped == 1 && size(tests.filter(t, t.status == 'skipped')) == 1"
+    severity: blocking

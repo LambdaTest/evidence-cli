@@ -1,0 +1,10 @@
+evidence: "0.1"
+test: login
+status: failed
+definition:
+  path: test.md
+  sha256: sha256:87335f06c76f26ead81ae0a2a3eac8e034e28d77036d2ce8948e5b787c465780
+steps:
+  - { id: open, ordinal: 1, status: passed }
+  - { id: pay, ordinal: 2, status: failed }
+tags: [ "login" ]
