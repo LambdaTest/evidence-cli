@@ -129,4 +129,31 @@ describe("merge()", () => {
     const run = parseYaml(await fs.readFile(path.join(out, "run.yaml"), "utf8")) as any;
     expect(Object.keys(run.metrics).sort()).toEqual(["1-a/requests", "2-b/requests"]); // b is ordinal 2, not 3
   });
+
+  describe("metric catalog snapshot (decision 0048)", () => {
+    const CAT = "catalog: kane-cli\nversion: 3\nmetrics:\n  credits: { type: decimal, verify: stored, merge: sum }\n";
+    const OTHER = CAT.replace("version: 3", "version: 4");
+    const cases: { name: string; a?: string; b?: string; kept: boolean }[] = [
+      { name: "identical snapshots are kept once", a: CAT, b: CAT, kept: true },
+      { name: "different snapshots are dropped", a: CAT, b: OTHER, kept: false },
+      { name: "a source without a snapshot drops it", a: CAT, kept: false },
+      { name: "no snapshots, nothing to keep", kept: false },
+    ];
+    it.each(cases)("$name", async ({ a, b, kept }) => {
+      const pa = await sealCopy(await stagePack({ runId: "a", tests: { login: {} }, catalog: a ? { text: a, source: "controller" } : undefined }));
+      const pb = await sealCopy(await stagePack({ runId: "b", tests: { checkout: {} }, catalog: b ? { text: b, source: "cache" } : undefined }));
+      const out = await outPath();
+      await merge([pa, pb], { runId: "m", out });
+      const snapshot = await fs.readFile(path.join(out, "meta", "metrics-catalog.yaml"), "utf8").catch(() => null);
+      const run = parseYaml(await fs.readFile(path.join(out, "run.yaml"), "utf8")) as any;
+      if (kept) {
+        expect(snapshot).toBe(a);
+        expect(run.metrics_catalog).toMatchObject({ id: "kane-cli", version: 3, source: "controller" });
+      } else {
+        expect(snapshot).toBeNull();
+        expect(run.metrics_catalog).toBeUndefined();
+      }
+      expect((await validate(out)).valid).toBe(true);
+    });
+  });
 });

@@ -85,6 +85,15 @@ sibling comparison, or filesystem facts:
   the sum of the four verdict buckets;
 - every `definition.sha256` is present and hash-matches its file.
 
+**Metric catalog snapshot (every run status):** when `run.yaml` carries a
+`metrics_catalog` block, `meta/metrics-catalog.yaml` must exist
+(`catalog.missing`), pass the catalog checks (`catalog.parse`,
+`catalog.schema`, `catalog.reserved_name`, `catalog.expr`,
+`catalog.path_escape`, `catalog.merge_rule`), hash to `metrics_catalog.sha256`
+(`catalog.hash_mismatch`) and carry its `id` and `version`
+(`catalog.identity_mismatch`). A snapshot with no block is a warning
+(`catalog.unreferenced`). See decision [0048 — Metric catalogs](#/decisions).
+
 A test `status` that disagrees with its steps is a **warning**, never a failure —
 the [test verdict is authored](#/decisions), so the validator checks, it does not
 judge.
@@ -325,6 +334,7 @@ grows with the number of runs kept.
 | `metrics` | no constraint — free-form semantics unknowable | **namespaced by flattening** into the metric name: `<i>-<run_id>/<name>` (1-based index over eligible packs in CLI order; skipped packs consume no ordinal), each original typed object intact |
 | `environment` | no built-in constraint; rules pick sub-keys | **common subset** stays run-level; divergent keys **pushed down** per test (per-test value wins where already present) |
 | `merged_from` *(new, additive)* | — | list of source `run_id`s, in CLI order |
+| `metrics_catalog` | — | the first source's block, kept **only** when every eligible source carries the byte-identical `meta/metrics-catalog.yaml` (which is then kept too); otherwise absent (decision [0048](#/decisions)) |
 
 `coverage/` from each eligible source nests under `coverage/<i>-<run_id>/`
 (the same label used for metrics). The root `failure.yaml` index is

@@ -4,6 +4,7 @@ import { err } from "../diagnostics";
 import { openContainer } from "../pack/container";
 import { loadSchemas } from "../schemas/compile";
 import { parseYaml } from "../yaml";
+import { runCatalogChecks } from "./catalog";
 import { runCrossChecks } from "./checks";
 import { runL1Checks } from "./l1";
 import type { ValidateFunction } from "ajv";
@@ -91,6 +92,7 @@ export async function validate(
   }
 
   diagnostics.push(...(await runCrossChecks({ run, tests, container })));
+  diagnostics.push(...(await runCatalogChecks({ run, container })));
 
   if (chain.includes("L1")) {
     diagnostics.push(

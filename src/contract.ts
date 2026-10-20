@@ -103,6 +103,14 @@ export const Codes = {
   L1_FAILURE_INDEX_INVALID: "l1.failure_index.invalid",
   L1_FAILURE_INDEX_DANGLING: "l1.failure_index.dangling",
   L1_FAILURE_INDEX_INCOMPLETE: "l1.failure_index.incomplete",
+
+  // Metric catalog snapshot (decision 0048), checked at any status. The
+  // snapshot's own problems use the catalog lint codes (catalog.parse,
+  // catalog.schema, catalog.reserved_name, …).
+  CATALOG_MISSING: "catalog.missing",
+  CATALOG_HASH_MISMATCH: "catalog.hash_mismatch",
+  CATALOG_IDENTITY_MISMATCH: "catalog.identity_mismatch",
+  CATALOG_UNREFERENCED: "catalog.unreferenced",
 } as const;
 
 /**

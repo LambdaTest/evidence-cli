@@ -45,6 +45,8 @@ export interface Catalog {
 }
 
 export const CORE_CATALOG_ID = "evidence-core";
+/** Where a producer snapshots its catalog inside the pack. */
+export const CATALOG_SNAPSHOT_PATH = "meta/metrics-catalog.yaml";
 export const DEFAULT_OVER = "tests/*/result.yaml";
 
 /** Operators each metric type allows (decision 0048). */

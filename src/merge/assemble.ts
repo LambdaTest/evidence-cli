@@ -2,6 +2,7 @@ import { promises as fs } from "node:fs";
 import * as path from "node:path";
 import { CONTRACT_VERSION } from "../contract";
 import type { PackContainer } from "../pack/container";
+import { CATALOG_SNAPSHOT_PATH } from "../verdict/catalog";
 import { parseDoc, parseYaml, stringifyDoc, stringifyYaml } from "../yaml";
 import type { EligiblePack } from "./gates";
 import { orderMembers } from "./collide";
@@ -69,6 +70,16 @@ export async function assemble(
     }
   }
 
+  // Metric catalog snapshot (decision 0048): kept, with the first source's
+  // metrics_catalog block, only when every eligible source carries the
+  // byte-identical snapshot.
+  const snapshots = await Promise.all(eligible.map((p) => p.container.readFileBytes(CATALOG_SNAPSHOT_PATH)));
+  const sharedSnapshot = snapshots.every((b) => b != null && b.equals(snapshots[0]!)) ? snapshots[0] : null;
+  if (sharedSnapshot) {
+    await fs.mkdir(path.join(outDir, path.dirname(CATALOG_SNAPSHOT_PATH)), { recursive: true });
+    await fs.writeFile(path.join(outDir, CATALOG_SNAPSHOT_PATH), sharedSnapshot);
+  }
+
   // Environment: common subset stays run-level; divergent keys push down per
   // test (0043's lossless merge). Per-test values win over pushed-down ones.
   const envs = eligible.map((p) => (p.run?.environment && typeof p.run.environment === "object" ? p.run.environment : {}));
@@ -120,6 +131,7 @@ export async function assemble(
     merged_from: eligible.map((p) => p.run.run_id),
   };
   if (Object.keys(metrics).length > 0) run.metrics = metrics;
+  if (sharedSnapshot && eligible[0].run?.metrics_catalog) run.metrics_catalog = eligible[0].run.metrics_catalog;
   if (Object.keys(commonEnv).length > 0) run.environment = commonEnv;
   await fs.writeFile(path.join(outDir, "run.yaml"), stringifyYaml(run), "utf8");
 }

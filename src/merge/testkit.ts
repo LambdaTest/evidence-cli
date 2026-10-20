@@ -26,6 +26,7 @@ export interface StagePackSpec {
   environment?: any;
   metrics?: any;
   l1?: boolean; // add logs/steps/coverage artifacts (L1 shape)
+  catalog?: { text: string; source?: string }; // meta/metrics-catalog.yaml + run.yaml metrics_catalog
   tests?: Record<string, StageTestSpec>;
 }
 
@@ -41,6 +42,13 @@ export async function stagePack(spec: StagePackSpec): Promise<string> {
   if (spec.environment) run += `environment: ${JSON.stringify(spec.environment)}\n`;
   if (spec.metrics) run += `metrics: ${JSON.stringify(spec.metrics)}\n`;
   await fs.mkdir(dir, { recursive: true });
+  if (spec.catalog) {
+    const meta = parseYaml(spec.catalog.text) as any;
+    const sha256 = createHash("sha256").update(spec.catalog.text).digest("hex");
+    await fs.mkdir(path.join(dir, "meta"), { recursive: true });
+    await fs.writeFile(path.join(dir, "meta", "metrics-catalog.yaml"), spec.catalog.text);
+    run += `metrics_catalog: ${JSON.stringify({ id: meta.catalog, version: meta.version, sha256, source: spec.catalog.source ?? "bundled" })}\n`;
+  }
   await fs.writeFile(path.join(dir, "run.yaml"), run);
 
   for (const [id, t] of Object.entries(tests)) {
