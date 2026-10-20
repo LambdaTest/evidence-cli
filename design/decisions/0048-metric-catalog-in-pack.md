@@ -43,7 +43,7 @@ decision: >
   `run.yaml.metrics`, the two must agree, else the gate errors
   (`verdict.stored_mismatch`) and the stored number is reported beside the
   recompute. evidence-cli SHIPS the `evidence-core` catalog
-  (`src/schemas/0.1/evidence-core.catalog.yaml`, version "0.1"): `totals.tests`,
+  (`src/schemas/0.1/evidence-core.catalog.json`, version "0.1"): `totals.tests`,
   `totals.passed`, `totals.failed`, `totals.broken`, `totals.skipped`,
   `pass_rate` (passed ÷ (tests − skipped)), `steps.total`, `steps.failed`,
   `steps.skipped` (all per_test), `run.duration_ms`, `run.status`,
@@ -74,7 +74,7 @@ decision: >
   bytes; no `checksums.txt` is added.
 governs:
   - src/schemas/metrics-catalog.schema.json
-  - src/schemas/0.1/evidence-core.catalog.yaml
+  - src/schemas/0.1/evidence-core.catalog.json
   - src/schemas/0.1/L0/run.schema.json#/properties/metrics_catalog
   - src/validate
   - src/merge/assemble.ts

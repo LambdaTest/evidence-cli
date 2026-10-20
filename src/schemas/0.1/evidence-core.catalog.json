@@ -1,0 +1,82 @@
+{
+  "catalog": "evidence-core",
+  "version": "0.1",
+  "description": "Built-in metrics every 0.1 pack supports, from any producer. Names are unprefixed and reserved; every value is recomputed from the pack's own files, never read from a stored number. See decision 0048.",
+  "metrics": {
+    "totals.tests": {
+      "type": "count",
+      "label": "Tests",
+      "per_test": true,
+      "verify": { "aggregate": "count" }
+    },
+    "totals.passed": {
+      "type": "count",
+      "label": "Passed tests",
+      "per_test": true,
+      "verify": { "aggregate": "count", "where": "test.status == 'passed'" }
+    },
+    "totals.failed": {
+      "type": "count",
+      "label": "Failed tests",
+      "per_test": true,
+      "verify": { "aggregate": "count", "where": "test.status == 'failed'" }
+    },
+    "totals.broken": {
+      "type": "count",
+      "label": "Broken tests",
+      "description": "Tests whose oracle could not be evaluated.",
+      "per_test": true,
+      "verify": { "aggregate": "count", "where": "test.status == 'broken'" }
+    },
+    "totals.skipped": {
+      "type": "count",
+      "label": "Skipped tests",
+      "per_test": true,
+      "verify": { "aggregate": "count", "where": "test.status == 'skipped'" }
+    },
+    "pass_rate": {
+      "type": "ratio",
+      "label": "Pass rate",
+      "description": "passed ÷ (tests − skipped). Errors when every test was skipped.",
+      "range": [0, 1],
+      "per_test": true,
+      "verify": { "expr": "double(totals.passed) / double(totals.tests - totals.skipped)" }
+    },
+    "steps.total": {
+      "type": "count",
+      "label": "Steps",
+      "per_test": true,
+      "verify": { "aggregate": "sum", "value": "size(test.steps)" }
+    },
+    "steps.failed": {
+      "type": "count",
+      "label": "Failed steps",
+      "per_test": true,
+      "verify": { "aggregate": "sum", "value": "size(test.steps.filter(s, s.status == 'failed'))" }
+    },
+    "steps.skipped": {
+      "type": "count",
+      "label": "Skipped steps",
+      "per_test": true,
+      "verify": { "aggregate": "sum", "value": "size(test.steps.filter(s, s.status == 'skipped'))" }
+    },
+    "run.duration_ms": {
+      "type": "ms",
+      "label": "Run duration",
+      "description": "run.yaml ended − started.",
+      "verify": { "expr": "double((timestamp(run.ended) - timestamp(run.started)).getMilliseconds())" }
+    },
+    "run.status": {
+      "type": "enum",
+      "label": "Run status",
+      "values": ["running", "finalized", "aborted"],
+      "verify": { "file": "run.yaml", "path": "status" }
+    },
+    "failures.count": {
+      "type": "count",
+      "label": "Failure records",
+      "description": "Rows in the root failure.yaml index.",
+      "verify": { "file": "failure.yaml", "path": "totals.failures" }
+    }
+  }
+}

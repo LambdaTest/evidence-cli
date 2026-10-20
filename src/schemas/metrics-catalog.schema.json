@@ -52,7 +52,7 @@
               "type": "object",
               "required": ["file", "path"],
               "properties": {
-                "file": { "description": "Pack-root-relative .yaml/.yml/.json file, contained in the pack.", "type": "string", "minLength": 1 },
+                "file": { "description": "Pack-root-relative .yaml/.yml/.json file, contained in the pack.", "type": "string", "pattern": "\\.(ya?ml|json)$" },
                 "path": { "description": "Dot-path into the parsed file.", "type": "string", "minLength": 1 }
               },
               "additionalProperties": false

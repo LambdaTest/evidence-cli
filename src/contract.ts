@@ -10,6 +10,11 @@ export interface Diagnostic {
   severity: Severity;
   location: string;
   message: string;
+  /** How to fix it, when the tool can say (policy lint, decision 0047). */
+  hint?: string;
+  /** 1-based line and column in the checked file, when known. */
+  line?: number;
+  column?: number;
 }
 
 export interface ValidationReport {

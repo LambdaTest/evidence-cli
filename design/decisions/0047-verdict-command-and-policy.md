@@ -56,7 +56,7 @@ decision: >
   pass L0 validation (else `verdict.pack_invalid`); a policy problem found
   against THIS pack's catalog errors the whole verdict with that problem, while
   a problem that makes the policy unreadable (parse, schema, unknown key,
-  duplicate gate, expression syntax) is a usage error and no verdict is written.
+  duplicate gate) is a usage error and no verdict is written.
   Each gate resolves its metric (0048) and compares; a value that cannot be
   resolved, a type mismatch, an out-of-range value, or a stored number that
   disagrees with its recompute ERRORS the gate — never a silent pass. Gate
