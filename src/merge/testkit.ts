@@ -15,6 +15,8 @@ export interface StageTestSpec {
   environment?: any; // result-level environment block
   externalId?: any; // result-level external_id block (open map)
   failure?: string; // content of steps/2-pay/failure.yaml
+  tags?: string[];
+  extra?: string; // raw YAML lines appended to result.yaml
 }
 
 export interface StagePackSpec {
@@ -27,6 +29,7 @@ export interface StagePackSpec {
   metrics?: any;
   l1?: boolean; // add logs/steps/coverage artifacts (L1 shape)
   catalog?: { text: string; source?: string }; // meta/metrics-catalog.yaml + run.yaml metrics_catalog
+  files?: Record<string, string>; // extra pack-root-relative files
   tests?: Record<string, StageTestSpec>;
 }
 
@@ -59,6 +62,8 @@ export async function stagePack(spec: StagePackSpec): Promise<string> {
     let result = `evidence: "0.1"\ntest: ${id}\nstatus: ${status}\ndefinition:\n  path: test.md\nsteps:\n  - { id: open, ordinal: 1, status: passed }\n  - { id: pay, ordinal: 2, status: ${status} }\n`;
     if (t.environment) result += `environment: ${JSON.stringify(t.environment)}\n`;
     if (t.externalId) result += `external_id: ${JSON.stringify(t.externalId)}\n`;
+    if (t.tags) result += `tags: ${JSON.stringify(t.tags)}\n`;
+    if (t.extra) result += t.extra;
     await fs.writeFile(path.join(testDir, "result.yaml"), result);
 
     if (spec.l1) {
@@ -77,6 +82,11 @@ export async function stagePack(spec: StagePackSpec): Promise<string> {
       await fs.mkdir(stepDir, { recursive: true });
       await fs.writeFile(path.join(stepDir, "failure.yaml"), t.failure);
     }
+  }
+
+  for (const [rel, content] of Object.entries(spec.files ?? {})) {
+    await fs.mkdir(path.dirname(path.join(dir, rel)), { recursive: true });
+    await fs.writeFile(path.join(dir, rel), content);
   }
 
   if (spec.l1) {
