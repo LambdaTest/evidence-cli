@@ -95,6 +95,7 @@ describe("lintCatalog", () => {
     { name: "reserved built-in name", text: "catalog: c\nversion: 1\nmetrics:\n  totals.failed: { type: count, verify: stored }\n", codes: ["catalog.reserved_name"] },
     { name: "expression does not compile", text: "catalog: c\nversion: 1\nmetrics:\n  x: { type: count, verify: { expr: 'foo == 1' } }\n", codes: ["catalog.expr"] },
     { name: "aggregate where does not compile", text: "catalog: c\nversion: 1\nmetrics:\n  x: { type: count, verify: { aggregate: count, where: 'tests.size()' } }\n", codes: ["catalog.expr"] },
+    { name: "aggregate where that is not a bool", text: "catalog: c\nversion: 1\nmetrics:\n  x: { type: count, verify: { aggregate: count, where: 'size(test.tags)' } }\n", codes: ["catalog.expr"] },
     { name: "file escapes the pack", text: "catalog: c\nversion: 1\nmetrics:\n  x: { type: count, verify: { file: ../x.yaml, path: a } }\n", codes: ["catalog.path_escape"] },
     { name: "recompute on a stored metric", text: "catalog: c\nversion: 1\nmetrics:\n  x: { type: count, verify: stored, merge: recompute }\n", codes: ["catalog.merge_rule"] },
     { name: "per_test on a stored metric", text: "catalog: c\nversion: 1\nmetrics:\n  x: { type: count, verify: stored, per_test: true }\n", codes: ["catalog.schema"] },
@@ -106,6 +107,11 @@ describe("lintCatalog", () => {
     const { catalog, diagnostics } = lintCatalog(text);
     expect(catalog).toBeNull();
     for (const code of codes) expect(diagnostics.map((d) => d.code)).toContain(code);
+  });
+
+  it("accepts an aggregate where whose type is only known at evaluation", () => {
+    const { catalog } = lintCatalog("catalog: c\nversion: 1\nmetrics:\n  x: { type: count, verify: { aggregate: count, where: 'test.status' } }\n");
+    expect(catalog?.metrics.x.verify).toMatchObject({ kind: "aggregate", where: { type: "dyn" } });
   });
 
   it("prefixes locations with the given file", () => {

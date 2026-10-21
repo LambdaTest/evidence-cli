@@ -491,6 +491,10 @@ are CEL. A gate `expr` and a catalog `verify.expr` see `run`, `tests`,
 Numbers read from files are doubles; `totals.*` and `size()` are ints. Added
 functions: `sum(list)`, `mean(list)`, `percentile(list, p)` (nearest rank).
 Limits: 1000 AST nodes, depth 32, and 1,000,000 list reads per evaluation.
+A `where` must be a bool: one whose type is known to be something else is
+rejected when the policy or catalog is checked (`policy.expr_type`,
+`catalog.expr`), and one that gives a non-bool for a test errors the gate
+(`verdict.expr_error`) instead of leaving the test out.
 
 ### Checking a policy
 

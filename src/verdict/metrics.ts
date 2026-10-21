@@ -124,7 +124,10 @@ function recompute(def: MetricDef, name: string, pack: PackFacts, scope: Scope):
       const ctx = { test, file, run: pack.run ?? {} };
       if (v.where) {
         const keep = evaluate(name, v.where, ctx);
-        if (keep !== true) return;
+        if (typeof keep !== "boolean") {
+          throw new Unresolved(fail("verdict.expr_error", name, `${name}: where gave ${JSON.stringify(keep)} for test "${id}", not a bool`, { trust: "recomputed" }));
+        }
+        if (!keep) return;
       }
       let x: unknown;
       if (v.path !== undefined) x = getKey(file, v.path);

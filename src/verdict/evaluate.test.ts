@@ -17,6 +17,7 @@ version: 3
 metrics:
   self_heals: { type: count, verify: stored }
   flaky_rate: { type: ratio, range: [0, 1], verify: { expr: "double(size(tests.filter(t, t.flaky))) / double(totals.tests)" } }
+  failed_by_status: { type: count, verify: { aggregate: count, where: "test.status" } }
 `;
 
 function policy(text: string): Policy {
@@ -97,6 +98,8 @@ describe("judge", () => {
     { name: "a failed warning gate warns", gate: "{ id: g, metric: totals.failed, equals: 0, severity: warning }", status: "warn" },
     { name: "expr false fails", gate: "{ id: g, expr: \"tests.all(t, t.status == 'passed')\", severity: blocking }", status: "fail" },
     { name: "expr error errors", gate: "{ id: g, expr: \"tests[5].status == 'x'\", severity: warning }", status: "errored" },
+    { name: "a catalog where that gives a non-bool errors", gate: "{ id: g, metric: metrics.failed_by_status, max: 0, severity: blocking }", status: "errored" },
+    { name: "a gate where that gives a non-bool errors", gate: "{ id: g, metric: totals.failed, where: \"test.status\", max: 0, severity: blocking }", status: "errored" },
     { name: "stored mismatch errors", gate: "{ id: g, metric: metrics.flaky_rate, max: 1, severity: warning }", status: "errored" },
   ];
   it.each(compare)("$name", ({ gate, status }) => {

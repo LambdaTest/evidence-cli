@@ -54,9 +54,12 @@ decision: >
   either is an error. A double result that is not finite (a division by zero)
   is an error. CEL has no clock and no I/O and the registered functions are
   pure, so the same facts always give the same value. Any evaluation error
-  errors the gate (`verdict.expr_error`); a parse error is `policy.expr_syntax`
-  and a type error (including an unknown variable, or a gate expression that
-  cannot be a bool) is `policy.expr_type`.
+  errors the gate (`verdict.expr_error`), and so does a `where` (a gate's or an
+  aggregate's) that gives anything but a bool for a test: a test is never
+  dropped by a filter that did not say false. A parse error is
+  `policy.expr_syntax` and a type error (including an unknown variable, or a
+  gate expression or `where` that cannot be a bool) is `policy.expr_type`; in a
+  catalog both are `catalog.expr`.
 governs:
   - src/verdict/expr.ts
   - package.json

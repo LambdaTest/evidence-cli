@@ -36,6 +36,7 @@ metrics:
     type: ms
     verify: { aggregate: p90, over: "tests/*/logs/timings.json", path: summary.total_reasoning_ms }
   browser: { type: enum, values: [chrome, firefox], verify: stored }
+  failed_by_status: { type: count, verify: { aggregate: count, where: "test.status" } }
 `;
 
 function catalogs(p: PackFacts) {
@@ -180,6 +181,16 @@ describe("resolveMetric — producer metrics", () => {
   it("folds a per-test file over the tests that carry it", () => {
     expect(value(resolveMetric("metrics.agent.reasoning_ms", timed, catalogs(timed)))).toBe(400);
     expect(value(resolveMetric("metrics.agent.reasoning_p90", timed, catalogs(timed)))).toBe(300);
+  });
+
+  it("errors an aggregate whose where gives a non-bool, rather than skipping the test", () => {
+    const r = resolveMetric("metrics.failed_by_status", kane, catalogs(kane));
+    expect(r).toMatchObject({ error: { code: "verdict.expr_error", message: expect.stringMatching(/where gave "passed" for test "checkout", not a bool/) }, trust: "recomputed" });
+  });
+
+  it("errors a gate where that gives a non-bool", () => {
+    const r = resolveMetric("totals.failed", kane, catalogs(kane), "test.status");
+    expect(r).toMatchObject({ error: { code: "verdict.expr_error", message: expect.stringMatching(/not a bool/) } });
   });
 
   it("errors an aggregate with no values to fold", () => {

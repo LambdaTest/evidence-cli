@@ -69,7 +69,7 @@
                 },
                 "path": { "description": "Dot-path into the per-test file.", "type": "string", "minLength": 1 },
                 "value": { "description": "CEL over `test` and `file` giving the per-test value.", "type": "string", "minLength": 1 },
-                "where": { "description": "CEL over `test` and `file`; only tests it holds for are folded.", "type": "string", "minLength": 1 }
+                "where": { "description": "A bool CEL expression over `test` and `file`; only tests it holds for are folded. A non-bool result errors the gate.", "type": "string", "minLength": 1 }
               },
               "additionalProperties": false,
               "not": { "required": ["path", "value"] }

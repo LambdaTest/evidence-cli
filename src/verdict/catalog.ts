@@ -82,12 +82,19 @@ function compileInto(
   env: ExprEnv,
   location: string,
   diags: Diagnostic[],
+  opts: { bool?: boolean } = {},
 ): Compiled | undefined {
   if (typeof src !== "string") return undefined;
   const c = compileExpr(src, env);
-  if ("run" in c) return c;
-  diags.push({ ...c, code: "catalog.expr", location });
-  return undefined;
+  if (!("run" in c)) {
+    diags.push({ ...c, code: "catalog.expr", location });
+    return undefined;
+  }
+  if (opts.bool && c.type !== "bool" && c.type !== "dyn") {
+    diags.push(err("catalog.expr", location, `where must be a bool, but "${src}" is ${c.type}`));
+    return undefined;
+  }
+  return c;
 }
 
 function buildCatalog(doc: unknown, sha256: string, builtin: boolean, location: string): { catalog: Catalog | null; diagnostics: Diagnostic[] } {
@@ -127,7 +134,7 @@ function buildCatalog(doc: unknown, sha256: string, builtin: boolean, location: 
         diags.push(err("catalog.path_escape", `${loc}/verify/over`, `over "${over}" escapes the pack`));
       }
       const value = compileInto(v.value, "test", `${loc}/verify/value`, diags);
-      const where = compileInto(v.where, "test", `${loc}/verify/where`, diags);
+      const where = compileInto(v.where, "test", `${loc}/verify/where`, diags, { bool: true });
       if (v.aggregate !== "count" && v.path === undefined && v.value === undefined) {
         diags.push(err("catalog.schema", `${loc}/verify`, `aggregate ${v.aggregate} needs a "path" or a "value" to fold`));
       }
