@@ -165,54 +165,65 @@ export function failureRows(pack: PackFacts): unknown[] {
   return Array.isArray(rows) ? rows : [];
 }
 
+/** One stored {value, type, unit} entry, checked against the catalog's type and unit; key names it in messages. */
+function checkStored(def: MetricDef, name: string, key: string, m: any): MetricValue {
+  if (m.type !== def.type) {
+    throw new Unresolved(fail("verdict.stored_type", name, `${name}: ${key} type "${m.type}" is not the catalog's "${def.type}"`, { trust: "stored", actual: m.value }));
+  }
+  if (def.unit && m.unit !== undefined && m.unit !== def.unit) {
+    throw new Unresolved(fail("verdict.stored_type", name, `${name}: ${key} unit "${m.unit}" is not the catalog's "${def.unit}"`, { trust: "stored", actual: m.value }));
+  }
+  return m.value;
+}
+
 /** run.yaml.metrics.<name>, checked against the catalog's type and unit. */
 function storedValue(def: MetricDef, name: string, pack: PackFacts): MetricValue {
   const m = pack.run?.metrics?.[def.name];
   if (!m || typeof m !== "object" || m.value === undefined) {
     throw new Unresolved(fail("verdict.metric_missing", name, `${name}: run.yaml has no metrics.${def.name}`, { trust: "stored" }));
   }
-  if (m.type !== def.type) {
-    throw new Unresolved(fail("verdict.stored_type", name, `${name}: stored type "${m.type}" is not the catalog's "${def.type}"`, { trust: "stored", actual: m.value }));
-  }
-  if (def.unit && m.unit !== undefined && m.unit !== def.unit) {
-    throw new Unresolved(fail("verdict.stored_type", name, `${name}: stored unit "${m.unit}" is not the catalog's "${def.unit}"`, { trust: "stored", actual: m.value }));
-  }
-  return m.value;
+  return checkStored(def, name, "stored", m);
 }
 
-/** The stored values of a metric across a merged pack's sources (<label>/<name>). */
+/**
+ * The stored values of a metric across a merged pack's sources
+ * (<label>/<name>), each checked like a single stored value: type, unit,
+ * then value type and range.
+ */
 function mergedStored(def: MetricDef, name: string, pack: PackFacts): number[] {
   const out: number[] = [];
   for (const [key, m] of Object.entries<any>(pack.run?.metrics ?? {})) {
     const slash = key.indexOf("/");
     if (slash < 0 || key.slice(slash + 1) !== def.name) continue;
-    if (typeof m?.value !== "number") {
+    if (!m || typeof m !== "object" || typeof m.value !== "number") {
       throw new Unresolved(fail("verdict.stored_type", name, `${name}: ${key} is not a number`, { trust: "stored" }));
     }
-    out.push(m.value);
+    const value = checkValue(def, name, checkStored(def, name, key, m), "stored", `${name}: ${key}`);
+    out.push(value as number);
   }
   if (out.length === 0) throw new Unresolved(fail("verdict.metric_missing", name, `${name}: no merged source stored metrics.<label>/${def.name}`, { trust: "stored" }));
   return out;
 }
 
-function checkValue(def: MetricDef, name: string, value: unknown, trust: Trust): MetricValue {
+/** Check a value against the metric's type, values and range; label names it in messages. */
+function checkValue(def: MetricDef, name: string, value: unknown, trust: Trust, label = name): MetricValue {
   if (STRING_TYPES.has(def.type)) {
     if (typeof value !== "string") {
-      throw new Unresolved(fail("verdict.value_type", name, `${name}: ${JSON.stringify(value)} is not a string (type ${def.type})`, { trust, actual: value }));
+      throw new Unresolved(fail("verdict.value_type", name, `${label}: ${JSON.stringify(value)} is not a string (type ${def.type})`, { trust, actual: value }));
     }
     if (def.values && !def.values.includes(value)) {
-      throw new Unresolved(fail("verdict.out_of_range", name, `${name}: "${value}" is not one of ${def.values.join(", ")}`, { trust, actual: value }));
+      throw new Unresolved(fail("verdict.out_of_range", name, `${label}: "${value}" is not one of ${def.values.join(", ")}`, { trust, actual: value }));
     }
     return value;
   }
   if (typeof value !== "number" || !Number.isFinite(value)) {
-    throw new Unresolved(fail("verdict.value_type", name, `${name}: ${JSON.stringify(value)} is not a number (type ${def.type})`, { trust, actual: value }));
+    throw new Unresolved(fail("verdict.value_type", name, `${label}: ${JSON.stringify(value)} is not a number (type ${def.type})`, { trust, actual: value }));
   }
   if (INTEGER_TYPES.has(def.type) && !Number.isInteger(value)) {
-    throw new Unresolved(fail("verdict.value_type", name, `${name}: ${value} is not an integer (type ${def.type})`, { trust, actual: value }));
+    throw new Unresolved(fail("verdict.value_type", name, `${label}: ${value} is not an integer (type ${def.type})`, { trust, actual: value }));
   }
   if (def.range && (value < def.range[0] || value > def.range[1])) {
-    throw new Unresolved(fail("verdict.out_of_range", name, `${name}: ${value} is outside [${def.range[0]}, ${def.range[1]}]`, { trust, actual: value }));
+    throw new Unresolved(fail("verdict.out_of_range", name, `${label}: ${value} is outside [${def.range[0]}, ${def.range[1]}]`, { trust, actual: value }));
   }
   return value;
 }

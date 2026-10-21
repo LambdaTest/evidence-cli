@@ -37,6 +37,7 @@ metrics:
     verify: { aggregate: p90, over: "tests/*/logs/timings.json", path: summary.total_reasoning_ms }
   browser: { type: enum, values: [chrome, firefox], verify: stored }
   failed_by_status: { type: count, verify: { aggregate: count, where: "test.status" } }
+  peak_heals: { type: count, range: [0, 5], verify: stored, merge: min }
 `;
 
 function catalogs(p: PackFacts) {
@@ -252,5 +253,23 @@ describe("resolveMetric — merged packs", () => {
       expect(value(r)).toEqual(want);
       expect(r.trust).toBe(trust);
     }
+  });
+
+  const sources: { name: string; metric: string; stored: Record<string, unknown>; code: string; message: RegExp }[] = [
+    { name: "a source's unit differs", metric: "credits", stored: { "2-b/credits": { value: 4, type: "decimal", unit: "usd" } }, code: "verdict.stored_type", message: /2-b\/credits.*unit "usd"/ },
+    { name: "a source's type differs", metric: "credits", stored: { "2-b/credits": { value: 4, type: "count", unit: "credits" } }, code: "verdict.stored_type", message: /2-b\/credits.*type "count"/ },
+    {
+      name: "a source's value is outside the range",
+      metric: "peak_heals",
+      stored: { "1-a/peak_heals": { value: 9, type: "count" }, "2-b/peak_heals": { value: 2, type: "count" } },
+      code: "verdict.out_of_range",
+      message: /1-a\/peak_heals.*9 is outside \[0, 5\]/,
+    },
+  ];
+  it.each(sources)("errors when $name, though the merged value would pass", ({ metric, stored, code, message }) => {
+    expect(Object.keys(merged.run.metrics)).toContain("2-b/credits");
+    const p = { ...merged, run: { ...merged.run, metrics: { ...merged.run.metrics, ...stored } } };
+    const r = resolveMetric(`metrics.${metric}`, p, catalogs(p));
+    expect(r).toMatchObject({ error: { code, message: expect.stringMatching(message) }, trust: "stored" });
   });
 });

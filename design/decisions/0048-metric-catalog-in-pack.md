@@ -66,7 +66,9 @@ decision: >
   MERGED PACKS (`merged_from` present): built-ins are recomputed over the
   merged tests unchanged; a producer metric follows its `merge` rule — `sum`,
   `min`, `max`, `mean` combine every source's stored `<label>/<name>` value,
-  `recompute` re-runs an aggregate/expr verify over the merged tests, `none`
+  each first checked as a single stored value is (type, unit, range; one bad
+  source errors the gate, `verdict.stored_type` / `verdict.value_type` /
+  `verdict.out_of_range`), `recompute` re-runs an aggregate/expr verify over the merged tests, `none`
   (the default) errors the gate (`verdict.merge_none`). `evidence merge` keeps
   the snapshot and the `metrics_catalog` block when every eligible source
   carries the byte-identical snapshot; otherwise the merged pack carries none.

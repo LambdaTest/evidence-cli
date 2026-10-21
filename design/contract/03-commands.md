@@ -478,7 +478,8 @@ gate errors with `verdict.stored_mismatch` and reports both numbers. A pack
 with no catalog is still judged on built-ins; its `metrics.*` gates error
 (`verdict.catalog_missing`). On a **merged** pack a producer metric follows its
 `merge` rule: `sum`/`min`/`max`/`mean` combine every source's stored
-`<label>/<name>`, `recompute` re-runs its aggregate/expr over the merged tests,
+`<label>/<name>`, each first checked for type, unit and range like a single
+stored value (one bad source errors the gate), `recompute` re-runs its aggregate/expr over the merged tests,
 `none` (the default) errors the gate.
 
 ### Expressions (CEL)

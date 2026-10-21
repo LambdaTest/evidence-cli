@@ -85,7 +85,7 @@
           ]
         },
         "merge": {
-          "description": "How the metric resolves on a merged pack. sum/min/max/mean combine every source's stored value; recompute re-runs an aggregate/expr over the merged tests; none (the default) errors a gate on it.",
+          "description": "How the metric resolves on a merged pack. sum/min/max/mean combine every source's stored value, each checked for type, unit and range first; recompute re-runs an aggregate/expr over the merged tests; none (the default) errors a gate on it.",
           "enum": ["sum", "min", "max", "mean", "recompute", "none"]
         },
         "min_producer": { "type": "string", "minLength": 1 }
