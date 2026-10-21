@@ -144,6 +144,8 @@ describe("judge", () => {
     { name: "an invalid pack", facts: () => ({ ...pack, validation: { ...pack.validation, valid: false, diagnostics: [{ code: "totals.mismatch", severity: "error", location: "run.yaml", message: "bad" }] } }), text: gates("{ id: g, metric: totals.failed, equals: 0, severity: blocking }"), code: "verdict.pack_invalid" },
     { name: "a policy that requires a catalog the pack lacks", facts: () => noCatalog, text: "policy: p\nrequires: { catalog: kane-cli }\ngates:\n  - { id: g, expr: \"true\", severity: blocking }\n", code: "policy.catalog_required" },
     { name: "a policy naming a metric the pack's catalog lacks", facts: () => pack, text: gates("{ id: g, metric: metrics.nope, max: 1, severity: blocking }"), code: "policy.unknown_metric" },
+    { name: "a policy naming constructor", facts: () => pack, text: gates("{ id: g, metric: constructor, max: 1, severity: blocking }"), code: "policy.unknown_metric" },
+    { name: "a policy naming metrics.__proto__", facts: () => pack, text: gates("{ id: g, metric: metrics.__proto__, max: 1, severity: blocking }"), code: "policy.unknown_metric" },
   ];
   it.each(whole)("errors the whole verdict for $name", ({ facts, text, code }) => {
     const doc = judge(facts(), policy(text), undefined, { evaluatedAt: AT });

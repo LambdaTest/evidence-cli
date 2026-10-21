@@ -66,6 +66,11 @@ export const OPS_BY_TYPE: Record<MetricType, readonly string[]> = {
 export const INTEGER_TYPES: ReadonlySet<MetricType> = new Set(["count", "integer", "bytes"]);
 export const STRING_TYPES: ReadonlySet<MetricType> = new Set(["string", "enum"]);
 
+/** obj[key] when key is obj's own property; inherited names such as "constructor" are never found. */
+export function own<T>(obj: Record<string, T> | null | undefined, key: string): T | undefined {
+  return obj != null && typeof obj === "object" && Object.hasOwn(obj, key) ? obj[key] : undefined;
+}
+
 export class CatalogLoadError extends Error {
   readonly code = "USAGE";
   constructor(message: string, readonly diagnostics: Diagnostic[]) {

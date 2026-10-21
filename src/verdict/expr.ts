@@ -150,9 +150,7 @@ export function makeFacts(vars: Record<string, unknown>): Facts {
       });
     }
     if (v !== null && typeof v === "object") {
-      const out: Record<string, unknown> = {};
-      for (const [k, x] of Object.entries(v)) out[k] = wrap(x);
-      return out;
+      return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, wrap(x)]));
     }
     return v;
   };
@@ -171,9 +169,7 @@ function fromCel(v: unknown): unknown {
   if (typeof v === "number" && !Number.isFinite(v)) throw new ExprEvalError(`result is not a finite number (${v})`);
   if (Array.isArray(v)) return v.map(fromCel);
   if (v !== null && typeof v === "object" && Object.getPrototypeOf(v) === Object.prototype) {
-    const out: Record<string, unknown> = {};
-    for (const [k, x] of Object.entries(v)) out[k] = fromCel(x);
-    return out;
+    return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, fromCel(x)]));
   }
   return v;
 }

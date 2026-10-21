@@ -78,6 +78,12 @@ describe("helpers", () => {
     expect(getKey(null, "a")).toBeUndefined();
   });
 
+  it("getKey reads only own keys; inherited names are absent", () => {
+    for (const k of ["constructor", "toString", "__proto__", "a.constructor"]) expect(getKey({ a: {} }, k)).toBeUndefined();
+    expect(getKey(JSON.parse('{"constructor": 1}'), "constructor")).toBe(1);
+    expect(getKey({ a: [5, 6] }, "a.1")).toBe(6);
+  });
+
   it("deepEqual is canonical", () => {
     expect(deepEqual({ x: 1, y: [1, 2] }, { y: [1, 2], x: 1 })).toBe(true);
     expect(deepEqual([1, 2], [2, 1])).toBe(false);

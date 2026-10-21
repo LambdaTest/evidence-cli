@@ -90,6 +90,25 @@ gates:
     expect(diags[0].hint).toMatch(/--catalog/);
   });
 
+  const prototypeNames = ["constructor", "toString", "__proto__", "hasOwnProperty", "metrics.constructor", "metrics.toString", "metrics.__proto__"];
+  it.each(prototypeNames)("reports %s as an unknown metric, not a built-in", (name) => {
+    const diags = lintPolicy(gates(`{ id: g, metric: "${name}", max: 1, severity: blocking }`), { catalog: KANE });
+    expect(diags.map((d) => d.code)).toEqual(["policy.unknown_metric"]);
+  });
+
+  it("finds a producer metric named constructor, and hints the prefix when it is written bare", () => {
+    const catalog = loadCatalog("catalog: c\nversion: 1\nmetrics:\n  constructor: { type: count, verify: stored }\n");
+    expect(lintPolicy(gates("{ id: g, metric: metrics.constructor, max: 1, severity: blocking }"), { catalog })).toEqual([]);
+    const diags = lintPolicy(gates("{ id: g, metric: constructor, max: 1, severity: blocking }"), { catalog });
+    expect(diags.map((d) => d.code)).toEqual(["policy.unknown_metric"]);
+    expect(diags[0].hint).toMatch(/metric: metrics\.constructor/);
+  });
+
+  it("does not hint a prefix for a prototype name the catalog does not define", () => {
+    const diags = lintPolicy(gates("{ id: g, metric: toString, max: 1, severity: blocking }"), { catalog: KANE });
+    expect(diags[0].hint).not.toMatch(/metrics\.toString/);
+  });
+
   it("returns only the parse error when the YAML does not parse", () => {
     expect(lintPolicy("policy: [").map((d) => d.code)).toEqual(["policy.parse"]);
   });

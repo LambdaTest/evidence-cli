@@ -61,6 +61,12 @@ describe("evalExpr — test context", () => {
   it.each(cases)("$src", ({ src, want }) => {
     expect(evalExpr(compiled(src, "test"), makeFacts({ test, file: test, run: packVars.run }))).toEqual(want);
   });
+  it("keeps a __proto__ key in the facts as a plain key", () => {
+    const file = JSON.parse('{"__proto__": {"a": 1}, "b": 2}');
+    const facts = makeFacts({ test, file, run: packVars.run });
+    expect(evalExpr(compiled("'__proto__' in file && !has(file.a)", "test"), facts)).toBe(true);
+    expect(evalExpr(compiled("file", "test"), facts)).toEqual(file);
+  });
 });
 
 describe("evalExpr — errors", () => {

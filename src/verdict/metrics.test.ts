@@ -194,6 +194,30 @@ describe("resolveMetric — producer metrics", () => {
     expect(r).toMatchObject({ error: { code: "verdict.expr_error", message: expect.stringMatching(/not a bool/) } });
   });
 
+  it.each(["constructor", "toString", "__proto__", "metrics.constructor", "metrics.__proto__"])("errors %s as an unknown metric", (name) => {
+    expect(resolveMetric(name, kane, catalogs(kane))).toMatchObject({ error: { code: "policy.unknown_metric" } });
+  });
+
+  it("reads a stored metric named constructor only from run.yaml's own keys", () => {
+    const catalog = { ...kane.catalog!, metrics: { constructor: { ...kane.catalog!.metrics.self_heals, name: "constructor", range: undefined } } };
+    const without = { ...kane, catalog, run: { ...kane.run, metrics: {} } };
+    expect(resolveMetric("metrics.constructor", without, [CORE_CATALOG, catalog])).toMatchObject({ error: { code: "verdict.metric_missing" } });
+    const withIt = { ...without, run: { ...kane.run, metrics: { constructor: { value: 3, type: "count" } } } };
+    expect(value(resolveMetric("metrics.constructor", withIt, [CORE_CATALOG, catalog]))).toBe(3);
+  });
+
+  it("reads a file verify path only from the file's own keys", () => {
+    const catalog = { ...kane.catalog!, metrics: { cov: { ...kane.catalog!.metrics["coverage.uncovered"], name: "cov", verify: { kind: "file" as const, file: "coverage/usecases.yaml", path: "rollup.constructor" } } } };
+    const p = { ...kane, catalog };
+    expect(resolveMetric("metrics.cov", p, [CORE_CATALOG, catalog])).toMatchObject({ error: { code: "verdict.metric_missing", message: expect.stringMatching(/has no rollup\.constructor/) } });
+  });
+
+  it("reads a file verify only from the pack's own files", () => {
+    const catalog = { ...kane.catalog!, metrics: { cov: { ...kane.catalog!.metrics["coverage.uncovered"], name: "cov", verify: { kind: "file" as const, file: "constructor", path: "length" } } } };
+    const p = { ...kane, catalog, files: {} };
+    expect(resolveMetric("metrics.cov", p, [CORE_CATALOG, catalog])).toMatchObject({ error: { code: "verdict.metric_missing", message: expect.stringMatching(/not in the pack/) } });
+  });
+
   it("errors an aggregate with no values to fold", () => {
     const r = resolveMetric("metrics.agent.reasoning_p90", kane, catalogs(kane));
     expect(r).toMatchObject({ error: { code: "verdict.metric_missing" } });

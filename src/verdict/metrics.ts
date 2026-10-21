@@ -1,7 +1,7 @@
 import type { Diagnostic } from "../contract";
 import { err } from "../diagnostics";
 import { getKey } from "../merge/rules";
-import { DEFAULT_OVER, INTEGER_TYPES, STRING_TYPES } from "./catalog";
+import { DEFAULT_OVER, INTEGER_TYPES, own, STRING_TYPES } from "./catalog";
 import type { Catalog, MetricDef } from "./catalog";
 import { compileExpr, evalExpr, ExprEvalError, makeFacts, percentile } from "./expr";
 import type { Compiled } from "./expr";
@@ -116,7 +116,7 @@ function recompute(def: MetricDef, name: string, pack: PackFacts, scope: Scope):
         file = pack.tests.find((t) => t.id === id)?.result;
       } else {
         const rel = `tests/${id}/${v.over.slice("tests/*/".length)}`;
-        const f = pack.files[rel];
+        const f = own(pack.files, rel);
         if (!f) return; // this test has no such file
         if ("error" in f) throw new Unresolved(fail("verdict.metric_missing", name, `${name}: ${f.error}`, { trust: "recomputed" }));
         file = f.value;
@@ -146,7 +146,7 @@ function recompute(def: MetricDef, name: string, pack: PackFacts, scope: Scope):
     return { value: v.aggregate === "count" ? count : fold(name, v.aggregate, values), trust: "recomputed" };
   }
   if (v.kind === "file") {
-    const f = pack.files[v.file];
+    const f = own(pack.files, v.file);
     if (!f) throw new Unresolved(fail("verdict.metric_missing", name, `${name}: ${v.file} is not in the pack`, { trust: "file" }));
     if ("error" in f) throw new Unresolved(fail("verdict.metric_missing", name, `${name}: ${f.error}`, { trust: "file" }));
     const value = getKey(f.value, v.path);
@@ -160,7 +160,7 @@ function recompute(def: MetricDef, name: string, pack: PackFacts, scope: Scope):
 
 /** The rows of the pack's root failure.yaml index; [] when it has none. */
 export function failureRows(pack: PackFacts): unknown[] {
-  const f = pack.files["failure.yaml"];
+  const f = own(pack.files, "failure.yaml");
   const rows = f && "value" in f ? (f.value as any)?.failures : undefined;
   return Array.isArray(rows) ? rows : [];
 }
@@ -178,7 +178,7 @@ function checkStored(def: MetricDef, name: string, key: string, m: any): MetricV
 
 /** run.yaml.metrics.<name>, checked against the catalog's type and unit. */
 function storedValue(def: MetricDef, name: string, pack: PackFacts): MetricValue {
-  const m = pack.run?.metrics?.[def.name];
+  const m = own<any>(pack.run?.metrics, def.name);
   if (!m || typeof m !== "object" || m.value === undefined) {
     throw new Unresolved(fail("verdict.metric_missing", name, `${name}: run.yaml has no metrics.${def.name}`, { trust: "stored" }));
   }
@@ -273,7 +273,7 @@ export function resolveMetric(name: string, pack: PackFacts, catalogs: Catalog[]
     const checked = checkValue(def, name, value, trust);
 
     if (!found.builtin && !pack.merged && where === undefined && trust !== "stored") {
-      const stored = pack.run?.metrics?.[def.name];
+      const stored = own<any>(pack.run?.metrics, def.name);
       if (stored && typeof stored === "object" && stored.value !== undefined && !agrees(checked, stored.value)) {
         return fail("verdict.stored_mismatch", name, `${name}: the stored value ${JSON.stringify(stored.value)} disagrees with the recomputed ${JSON.stringify(checked)}`, {
           trust,

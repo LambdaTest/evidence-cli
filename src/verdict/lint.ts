@@ -1,5 +1,5 @@
 import type { Diagnostic } from "../contract";
-import { CORE_CATALOG, INTEGER_TYPES, OPS_BY_TYPE, STRING_TYPES } from "./catalog";
+import { CORE_CATALOG, INTEGER_TYPES, OPS_BY_TYPE, own, STRING_TYPES } from "./catalog";
 import type { Catalog, MetricDef } from "./catalog";
 import { compileExpr } from "./expr";
 import type { ExprEnv } from "./expr";
@@ -29,13 +29,13 @@ export type MetricLookup =
 
 /** Find a policy metric name in evidence-core or the producer catalog. */
 export function lookupMetric(name: string, catalog: Catalog | null | undefined): MetricLookup {
-  const core = CORE_CATALOG.metrics[name];
+  const core = own(CORE_CATALOG.metrics, name);
   if (core) return { def: core, builtin: true };
   if (name.startsWith(PRODUCER_PREFIX)) {
     const rest = name.slice(PRODUCER_PREFIX.length);
-    if (CORE_CATALOG.metrics[rest]) return { problem: "builtin_prefixed" };
+    if (own(CORE_CATALOG.metrics, rest)) return { problem: "builtin_prefixed" };
     if (!catalog) return { problem: "no_catalog" };
-    const def = catalog.metrics[rest];
+    const def = own(catalog.metrics, rest);
     return def ? { def, builtin: false } : { problem: "unknown" };
   }
   return { problem: "unknown" };
@@ -140,7 +140,7 @@ export function checkPolicy(policy: Policy, opts: CheckOptions = {}): Diagnostic
         const bare = gate.metric.slice(PRODUCER_PREFIX.length);
         diags.push(policyDiag(policy, "policy.builtin_prefixed", metricPath, `${label}: "${gate.metric}" does not exist; "${bare}" is built-in`, { hint: `write  metric: ${bare}` }));
       } else {
-        const producerName = !gate.metric.startsWith(PRODUCER_PREFIX) && catalog?.metrics[gate.metric] ? PRODUCER_PREFIX + gate.metric : undefined;
+        const producerName = !gate.metric.startsWith(PRODUCER_PREFIX) && own(catalog?.metrics, gate.metric) ? PRODUCER_PREFIX + gate.metric : undefined;
         const near = producerName ? [] : closest(gate.metric, allNames(catalog));
         const hint = producerName
           ? `producer metrics are always prefixed: write  metric: ${producerName}`
