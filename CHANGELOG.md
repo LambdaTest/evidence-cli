@@ -21,6 +21,10 @@ All notable changes to evidence-cli are documented here. This format follows
   `meta/metrics-catalog.yaml` and records `run.yaml` `metrics_catalog`
   (additive); `validate` checks the snapshot, its hash and identity, and
   `merge` keeps it when every source carries the same one. See decision 0048.
+- **Merge report** gains `output.endedAt`: the seal time, the latest `ended`
+  (else `started`) among the eligible packs, reported with or without
+  `--finalize`, so a caller that seals the merged pack itself stamps the same
+  time. Additive.
 - **Diagnostics** gain optional `hint`, `line` and `column`.
 - **Node** — requires Node 20.19 or newer (the CEL library is an ES module).
 - The CLI's `--version` now reports the package version.

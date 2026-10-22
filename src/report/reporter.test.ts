@@ -59,7 +59,7 @@ describe("reporters", () => {
         ],
         discarded: [],
       },
-      output: { path: "/out/m.evidence", runId: "nightly", finalized: false },
+      output: { path: "/out/m.evidence", runId: "nightly", finalized: false, endedAt: "2026-07-08T10:00:00Z" },
     };
     const out = capture(() => new HumanReporter(false).merge(merged));
     expect(out).toContain("collision checkout: nested into checkout, latest b [tests.identity.on_same=nest]");

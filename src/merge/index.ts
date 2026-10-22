@@ -30,16 +30,17 @@ export async function merge(inputs: string[], opts: MergeOptions): Promise<Merge
   const { groups, collisions, discarded } = await resolveCollisions(eligible, rules);
   await assemble(opts.out, { runId: opts.runId, title: opts.title }, eligible, groups);
 
+  const endedAt = maxEnded(eligible);
   let finalized = false;
   if (opts.finalize) {
-    await finalize(opts.out, { endedAt: maxEnded(eligible) });
+    await finalize(opts.out, { endedAt });
     finalized = true;
   }
 
   return {
     packs: { eligible: eligible.map((p) => p.run.run_id), skipped },
     tests: { merged: groups.length, collisions, discarded },
-    output: { path: opts.out, runId: opts.runId, finalized },
+    output: { path: opts.out, runId: opts.runId, finalized, endedAt },
   };
 }
 

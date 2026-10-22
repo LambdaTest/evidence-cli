@@ -368,8 +368,13 @@ tests:
     - { test: login, winner: shard-c, rule: tests.identity.on_same=nest, action: nest, folder: login }
     - { test: login, winner: shard-d, rule: tests.identity.on_different=split, action: split, folder: login-1 }
   discarded: [flaky-login]
-output: { path: merged.evidence, run_id: nightly-2026-07-08, finalized: true }
+output: { path: merged.evidence, run_id: nightly-2026-07-08, finalized: true, ended_at: "2026-07-08T10:00:00Z" }
 ```
+
+`output.ended_at` (`endedAt` in the library) is the seal time: the latest `ended` (else `started`) among
+the **eligible** packs only, never a skipped one; `""` when none carries
+either. It is reported with or without `--finalize`, so a caller that merges
+live and seals the pack itself stamps the same time `--finalize` would.
 
 `action` and `folder` appear only on 0046's shape-changing outcomes; the other
 three fields are unconditional, so existing `--json` consumers keep parsing

@@ -55,7 +55,10 @@ export interface MergeReport {
     collisions: { test: string; winner: string; rule: string; action?: "nest" | "split"; folder?: string }[];
     discarded: string[];
   };
-  output: { path: string; runId: string; finalized: boolean };
+  // endedAt: the seal time, the latest `ended` (else `started`) among the
+  // eligible packs; "" when none carries either. Set with or without finalize,
+  // so a caller that seals the pack itself stamps the same time.
+  output: { path: string; runId: string; finalized: boolean; endedAt: string };
 }
 
 export const Codes = {
