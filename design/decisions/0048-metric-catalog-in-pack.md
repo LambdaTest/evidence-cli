@@ -68,7 +68,9 @@ decision: >
   `min`, `max`, `mean` combine every source's stored `<label>/<name>` value,
   each first checked as a single stored value is (type, unit, range; one bad
   source errors the gate, `verdict.stored_type` / `verdict.value_type` /
-  `verdict.out_of_range`), `recompute` re-runs an aggregate/expr verify over the merged tests, `none`
+  `verdict.out_of_range`), and every `merged_from` source must store it
+  (`verdict.metric_missing` otherwise; a source that was itself merged
+  contributes its sources' `<label>/<inner label>/<name>` values), `recompute` re-runs an aggregate/expr verify over the merged tests, `none`
   (the default) errors the gate (`verdict.merge_none`). `evidence merge` keeps
   the snapshot and the `metrics_catalog` block when every eligible source
   carries the byte-identical snapshot; otherwise the merged pack carries none.
@@ -126,6 +128,13 @@ definitions.
 - The built-in catalog is stored as JSON (any YAML reader parses it), so it is
   imported like the schemas and travels inside bundles of the library.
 - The catalog format includes `min_producer` so a catalog service can hand a
-  producer only a catalog it can satisfy; the verdict ignores it.
+  producer only a catalog it can satisfy; the verdict ignores the
+  catalog-level one. A metric's own `min_producer` is enforced: a gate on it
+  errors (`verdict.producer_version`) when a test in the pack was written by
+  an older producer, since that producer does not write the facts the metric
+  reads and the value would be wrong rather than missing.
+- An aggregate over a `path` errors when a test it keeps has no such path, so
+  a mistyped path is never read as 0; a catalog narrows to the tests that
+  carry the path with `where: has(test.<path>)`.
 - Deferred: per-source catalogs on a merged pack, policy references to one
   merged source's metric, counting lines in log files as a verify kind.

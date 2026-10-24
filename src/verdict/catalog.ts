@@ -6,6 +6,7 @@ import { loadToolSchema } from "../schemas/compile";
 import { isContained } from "../validate/checks";
 import { parseYaml } from "../yaml";
 import { compileExpr } from "./expr";
+import { parseSemver } from "./semver";
 import type { Compiled, ExprEnv } from "./expr";
 
 export type MetricType =
@@ -32,6 +33,8 @@ export interface MetricDef {
   per_test: boolean;
   verify: Verify;
   merge: MergeRule;
+  /** lowest producer version that writes the facts this metric reads */
+  min_producer?: string;
 }
 
 export interface Catalog {
@@ -159,6 +162,9 @@ function buildCatalog(doc: unknown, sha256: string, builtin: boolean, location: 
     if (Array.isArray(m.range) && m.range[0] > m.range[1]) {
       diags.push(err("catalog.schema", `${loc}/range`, `range [${m.range[0]}, ${m.range[1]}] has lo > hi`));
     }
+    if (m.min_producer !== undefined && !parseSemver(m.min_producer)) {
+      diags.push(err("catalog.schema", `${loc}/min_producer`, `min_producer "${m.min_producer}" is not a semantic version`));
+    }
     if (m.values !== undefined && m.type !== "enum") {
       diags.push(err("catalog.schema", `${loc}/values`, `values is only allowed on an enum metric`));
     }
@@ -174,6 +180,7 @@ function buildCatalog(doc: unknown, sha256: string, builtin: boolean, location: 
       per_test: m.per_test === true,
       verify,
       merge,
+      ...(m.min_producer !== undefined ? { min_producer: m.min_producer } : {}),
     };
   }
   if (diags.length > 0) return { catalog: null, diagnostics: diags };

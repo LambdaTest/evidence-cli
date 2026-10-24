@@ -1,5 +1,0 @@
-description: A gate names a metric the pack's catalog does not define, so the policy cannot be judged against this pack.
-result: errored
-exit_code: 3
-error: policy.unknown_metric
-gates: {}

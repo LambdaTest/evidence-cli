@@ -11,8 +11,13 @@ All notable changes to evidence-cli are documented here. This format follows
   pack, never into it. A policy is a list of gates: a metric with one operator
   (`equals`/`min`/`max`/`range`/`in`), optionally narrowed per test with
   `where`, or a boolean CEL `expr`. Exit `0` pass · `1` fail · `3` errored ·
-  `2` usage. `--lint` checks policies with no pack (against `--catalog` when
-  given) and reports every problem at once with a line and a hint. Library:
+  `2` usage, which includes a policy that does not check clean against the
+  pack's catalog (every problem listed). `--lint` checks policies with no pack
+  (against `--catalog` when given) and reports every problem at once with a
+  line and a hint. Missing values error a gate rather than reading as 0: an
+  aggregate whose kept test lacks the path, a merged source (at any depth)
+  that stored no value, a pack older than a metric's `min_producer`.
+  Expressions are bounded by fact reads and by evaluation steps. Library:
   `verdict`, `lintPolicy`, `judge`, `loadPackFacts`, `loadPolicy`,
   `loadCatalog`, `writeVerdicts`. See decisions 0047, 0049, 0050.
 - **Metric catalogs** — one format for the built-in `evidence-core` catalog

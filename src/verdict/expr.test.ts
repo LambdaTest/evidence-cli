@@ -97,6 +97,17 @@ describe("evalExpr — errors", () => {
     expect(() => evalExpr(c, makeFacts({ ...packVars, tests }))).toThrow(/cost limit/);
   });
 
+  it.each([
+    ["a list literal", `[${Array.from({ length: 60 }, (_, i) => i).join(",")}]`],
+    ["a list mapped from the facts", "tests.map(t, t.id)"],
+  ])("stops nested loops over %s, which the facts' list meter does not see, at the step limit", (_name, list) => {
+    const tests = Array.from({ length: 60 }, (_, i) => ({ id: `t${i}`, status: "passed", tags: [] }));
+    const c = compiled(`[${list}].all(l, l.all(a, l.all(b, l.all(c, l.all(d, true)))))`);
+    const started = Date.now();
+    expect(() => evalExpr(c, makeFacts({ ...packVars, tests }))).toThrow(/cost limit exceeded \(5000000 steps\)/);
+    expect(Date.now() - started).toBeLessThan(5000);
+  });
+
   it("resets the cost budget for every evaluation", () => {
     const tests = Array.from({ length: 900 }, (_, i) => ({ id: `t${i}`, status: "passed", tags: [] }));
     const c = compiled("tests.all(a, tests.exists(b, b.status == a.status))");

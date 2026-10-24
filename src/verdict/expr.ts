@@ -16,6 +16,8 @@ export const EXPR_LIMITS = {
   maxDepth: 32,
   /** list-element reads from the facts allowed in one evaluation */
   maxElementReads: 1_000_000,
+  /** expression nodes evaluated in one evaluation, loop steps over lists the expression builds included */
+  maxSteps: 5_000_000,
 } as const;
 
 const VARIABLES: Record<ExprEnv, [string, string][]> = {
@@ -43,7 +45,7 @@ export interface Compiled {
 /** Facts bound to one evaluation context, with the cost meter their lists report to. */
 export interface Facts {
   vars: Record<string, unknown>;
-  meter: { left: number };
+  meter: { left: number; steps: number };
 }
 
 export class ExprEvalError extends Error {
@@ -99,6 +101,26 @@ function newEnv(kind: ExprEnv): Environment {
 
 const ENVS: Record<ExprEnv, Environment> = { pack: newEnv("pack"), test: newEnv("test") };
 
+/** The meter of the evaluation in progress; evalExpr sets it. */
+let activeMeter: Facts["meter"] | null = null;
+
+/**
+ * Count every node the library's evaluator runs against the active meter. The
+ * evaluator object is passed to every node and runs children (loop steps
+ * included) through its run method, so counting there bounds loops over lists
+ * the expression builds itself, which the facts' list meter cannot see.
+ */
+function meterEvaluator(ev: { run: (ast: unknown, ctx: unknown) => unknown }): void {
+  if (Object.hasOwn(ev, "run")) return;
+  const run = ev.run;
+  ev.run = function (this: unknown, ast: unknown, ctx: unknown) {
+    if (activeMeter && --activeMeter.steps < 0) {
+      throw new ExprEvalError(`evaluation cost limit exceeded (${EXPR_LIMITS.maxSteps} steps)`);
+    }
+    return run.call(this, ast, ctx);
+  };
+}
+
 function variableList(env: ExprEnv): string {
   return VARIABLES[env].map(([n]) => n).join(", ");
 }
@@ -128,6 +150,12 @@ export function compileExpr(src: string, env: ExprEnv): Compiled | Diagnostic {
     const code = checked.error?.name === "ParseError" ? "policy.expr_syntax" : "policy.expr_type";
     return exprDiagnostic(code, src, checked.error, env);
   }
+  const root = parsed.ast as unknown as { evaluate: (ev: any, ast: unknown, ctx: unknown) => unknown };
+  const evaluateRoot = root.evaluate;
+  root.evaluate = (ev, ast, ctx) => {
+    meterEvaluator(ev);
+    return evaluateRoot.call(root, ev, ast, ctx);
+  };
   return { src, env, type: checked.type ?? "dyn", run: (ctx) => parsed(ctx) };
 }
 
@@ -136,7 +164,7 @@ export function compileExpr(src: string, env: ExprEnv): Compiled | Diagnostic {
  * against the shared meter, so evalExpr can bound the work of one evaluation.
  */
 export function makeFacts(vars: Record<string, unknown>): Facts {
-  const meter = { left: EXPR_LIMITS.maxElementReads };
+  const meter = { left: EXPR_LIMITS.maxElementReads, steps: EXPR_LIMITS.maxSteps };
   const wrap = (v: unknown): unknown => {
     if (Array.isArray(v)) {
       const items = v.map(wrap);
@@ -180,13 +208,19 @@ function fromCel(v: unknown): unknown {
  */
 export function evalExpr(c: Compiled, facts: Facts): unknown {
   facts.meter.left = EXPR_LIMITS.maxElementReads;
+  facts.meter.steps = EXPR_LIMITS.maxSteps;
   let value: unknown;
+  activeMeter = facts.meter;
   try {
     value = c.run(facts.vars);
   } catch (e: any) {
     if (e instanceof ExprEvalError) throw e;
     const summary = typeof e?.summary === "string" ? e.summary : String(e?.message ?? e).split("\n")[0];
     throw new ExprEvalError(`${summary} in "${c.src}"`);
+  } finally {
+    activeMeter = null;
   }
+  // A quantifier keeps a step's error and may still return a value, so a spent budget is checked here too.
+  if (facts.meter.steps < 0) throw new ExprEvalError(`evaluation cost limit exceeded (${EXPR_LIMITS.maxSteps} steps)`);
   return fromCel(value);
 }

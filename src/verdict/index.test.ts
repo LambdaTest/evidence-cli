@@ -36,6 +36,16 @@ describe("verdict()", () => {
     { name: "a policy with an unknown key", policies: [{ content: PASS.replace("min: 1", "minimum: 1"), path: "typo.yaml" }], match: /2 problem/, sources: ["typo.yaml"] },
     { name: "two policies with one id", policies: [{ content: PASS }, { content: PASS }], match: /two policies are named "smoke"/ },
     { name: "an unreadable pack", policies: [{ content: PASS }], pack: "/nonexistent/x.evidence", match: /cannot read pack/ },
+    {
+      name: "policies that do not check clean against the pack's catalog, listing every problem",
+      policies: [
+        { content: "policy: typo\ngates:\n  - { id: t, metric: totals.testz, min: 1, severity: blocking }\n", path: "typo.yaml" },
+        { content: PASS },
+        { content: "policy: ops\ngates:\n  - { id: o, metric: totals.failed, min: 1.5, severity: blocking }\n  - { id: p, metric: metrics.totals.tests, min: 1, severity: blocking }\n", path: "ops.yaml" },
+      ],
+      match: /3 problem\(s\) in 2 policy file\(s\) against the pack's metric catalog; nothing was judged/,
+      sources: ["typo.yaml", "ops.yaml"],
+    },
   ];
   it.each(usage)("throws a usage error for $name", async ({ policies, pack, match, sources }) => {
     const p = verdict(pack ?? sealed, { policies });

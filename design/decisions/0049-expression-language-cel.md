@@ -50,8 +50,9 @@ decision: >
   `percentile(list, p)` → double, nearest-rank (`p` in [0, 100], the value at
   rank ceil(p/100 × n)); `mean` and `percentile` of an empty list are errors.
   LIMITS: at most 1000 AST nodes and nesting depth 32 at parse time, and at
-  most 1,000,000 list-element reads from the facts per evaluation; exceeding
-  either is an error. A double result that is not finite (a division by zero)
+  most 1,000,000 list-element reads from the facts and 5,000,000 evaluation
+  steps (nodes evaluated, loop steps included) per evaluation; exceeding any
+  is an error. A double result that is not finite (a division by zero)
   is an error. CEL has no clock and no I/O and the registered functions are
   pure, so the same facts always give the same value. Any evaluation error
   errors the gate (`verdict.expr_error`), and so does a `where` (a gate's or an
@@ -97,5 +98,8 @@ tags" and "not retried" in the 0.1 contract.
 
 **Why a runtime cost limit on top of parse limits.** Nested comprehensions
 (`tests.all(a, tests.all(b, …))`) are small expressions with large cost. Parse
-limits bound the expression; counting list-element reads bounds the work, and
-the count is the same for the same input, so the limit is deterministic too.
+limits bound the expression; counting list-element reads bounds the work over
+the facts, and counting evaluation steps bounds loops over lists the
+expression builds itself (a list literal, or a `map` result), which no fact
+read sees. Both counts are the same for the same input, so the limits are
+deterministic too.

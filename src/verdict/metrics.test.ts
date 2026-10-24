@@ -6,6 +6,7 @@ import * as path from "node:path";
 import { merge } from "../merge";
 import { stagePack, sealCopy } from "../merge/testkit";
 import { CORE_CATALOG } from "./catalog";
+import { compileExpr } from "./expr";
 import { loadPackFacts } from "./facts";
 import type { PackFacts } from "./facts";
 import { resolveMetric } from "./metrics";
@@ -223,6 +224,38 @@ describe("resolveMetric — producer metrics", () => {
     expect(r).toMatchObject({ error: { code: "verdict.metric_missing" } });
   });
 
+  const producers: { name: string; run?: string; perTest?: Record<string, string>; want?: number; message?: RegExp }[] = [
+    { name: "a producer at min_producer", run: "0.8.10", want: 1 },
+    { name: "a newer producer", run: "0.9.1-qa.verdictpolicy.1", want: 1 },
+    { name: "an older producer", run: "0.8.9", message: /needs a producer at 0\.8\.10 or later, but the pack was written by 0\.8\.9/ },
+    { name: "a pre-release of min_producer", run: "0.8.10-rc.1", message: /written by 0\.8\.10-rc\.1/ },
+    { name: "one test written by an older producer", run: "0.9.0", perTest: { login: "0.8.2" }, message: /written by 0\.8\.2/ },
+    { name: "no producer version", message: /records no producer version/ },
+  ];
+  it.each(producers)("a metric with min_producer 0.8.10 on $name", ({ run, perTest, want, message }) => {
+    const def = { ...kane.catalog!.metrics["heal.healed_tests"], min_producer: "0.8.10" };
+    const catalog = { ...kane.catalog!, metrics: { ...kane.catalog!.metrics, "heal.healed_tests": def } };
+    const tests = kane.tests.map((t) => (perTest?.[t.id] ? { ...t, result: { ...t.result, environment: { producer: { name: "kane-cli", version: perTest[t.id] } } } } : t));
+    const p = { ...kane, catalog, tests, run: { ...kane.run, environment: run ? { producer: { name: "kane-cli", version: run } } : {} } };
+    const r = resolveMetric("metrics.heal.healed_tests", p, [CORE_CATALOG, catalog]);
+    if (message) expect(r).toMatchObject({ error: { code: "verdict.producer_version", message: expect.stringMatching(message) } });
+    else expect(value(r)).toBe(want);
+  });
+
+  const missingPath: { name: string; where?: string; want?: number; message?: RegExp }[] = [
+    { name: "a test it keeps has no such path, so a typo in the path is not read as 0", message: /test "\w+" has no adaptive_heal\.reauthored/ },
+    { name: "its where keeps only the tests that carry the path", where: "has(test.adaptive_heal) && has(test.adaptive_heal.reauthored)", want: 0 },
+  ];
+  it.each(missingPath)("a sum over a path: $name", ({ where, want, message }) => {
+    const w = where === undefined ? undefined : compileExpr(where, "test");
+    if (w !== undefined && !("run" in w)) throw new Error(w.message);
+    const def = { name: "reauthored", type: "count" as const, per_test: true, merge: "none" as const, verify: { kind: "aggregate" as const, aggregate: "sum" as const, over: "tests/*/result.yaml", path: "adaptive_heal.reauthored", where: w } };
+    const catalog = { ...kane.catalog!, metrics: { reauthored: def } };
+    const r = resolveMetric("metrics.reauthored", { ...kane, catalog }, [CORE_CATALOG, catalog]);
+    if (message) expect(r).toMatchObject({ error: { code: "verdict.metric_missing", message: expect.stringMatching(message) }, trust: "recomputed" });
+    else expect(value(r)).toBe(want);
+  });
+
   const errors: { name: string; mutate: (p: PackFacts) => PackFacts; metric: string; code: string }[] = [
     { name: "no catalog in the pack", mutate: (p) => ({ ...p, catalog: null }), metric: "metrics.credits", code: "verdict.catalog_missing" },
     { name: "stored value missing", mutate: (p) => ({ ...p, run: { ...p.run, metrics: {} } }), metric: "metrics.credits", code: "verdict.metric_missing" },
@@ -242,6 +275,7 @@ describe("resolveMetric — producer metrics", () => {
 
 describe("resolveMetric — merged packs", () => {
   let merged: PackFacts;
+  let nested: PackFacts;
   beforeAll(async () => {
     const mk = (runId: string, credits: number, test: string, extra?: string) =>
       stagePack({
@@ -255,6 +289,10 @@ describe("resolveMetric — merged packs", () => {
     const out = path.join(await fs.mkdtemp(path.join(os.tmpdir(), "evi-verdict-merge-")), "m.evidence");
     await merge([a, b], { runId: "m", out, finalize: true });
     merged = await loadPackFacts(out);
+    const c = await mk("c", 6.5, "search");
+    const outer = path.join(path.dirname(out), "n.evidence");
+    await merge([out, c], { runId: "n", out: outer, finalize: true });
+    nested = await loadPackFacts(outer);
   });
 
   it("is recognised as merged and keeps the shared catalog", () => {
@@ -295,5 +333,21 @@ describe("resolveMetric — merged packs", () => {
     const p = { ...merged, run: { ...merged.run, metrics: { ...merged.run.metrics, ...stored } } };
     const r = resolveMetric(`metrics.${metric}`, p, catalogs(p));
     expect(r).toMatchObject({ error: { code, message: expect.stringMatching(message) }, trust: "stored" });
+  });
+
+  it("errors when a merged source stored no value, instead of folding the others", () => {
+    const { "2-b/credits": _dropped, ...metrics } = merged.run.metrics;
+    const p = { ...merged, run: { ...merged.run, metrics } };
+    expect(resolveMetric("metrics.credits", p, catalogs(p))).toMatchObject({
+      error: { code: "verdict.metric_missing", message: expect.stringMatching(/merged source 2-b stored no metrics\.credits/) },
+      trust: "stored",
+    });
+  });
+
+  it("folds the sources of a merged pack that was itself merged", () => {
+    expect(Object.keys(nested.run.metrics)).toEqual(expect.arrayContaining(["1-m/1-a/credits", "1-m/2-b/credits", "2-c/credits"]));
+    const r = resolveMetric("metrics.credits", nested, catalogs(nested));
+    expect(value(r)).toBe(21);
+    expect(r.trust).toBe("stored");
   });
 });

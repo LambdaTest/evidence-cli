@@ -5,6 +5,7 @@ import { judge } from "./evaluate";
 import type { VerdictDoc } from "./evaluate";
 import { loadPackFacts } from "./facts";
 import type { PackFacts } from "./facts";
+import { checkPolicy } from "./lint";
 import { loadPolicy } from "./policy";
 import type { Policy } from "./policy";
 
@@ -58,6 +59,26 @@ export function loadPolicies(inputs: PolicyInput[]): Policy[] {
 }
 
 /**
+ * Check every policy against the pack's catalog, or throw PolicyUsageError
+ * listing every problem: an unknown metric, an operator or threshold the
+ * metric's type does not allow, a where on a whole-run metric, an expression
+ * that does not compile. A policy whose `requires` the pack's catalog does not
+ * meet is left to judge, which errors that verdict: the pack, not the policy,
+ * is what is missing.
+ */
+function checkAgainstPack(policies: Policy[], facts: PackFacts): void {
+  const problems: { source: string; diagnostics: Diagnostic[] }[] = [];
+  for (const p of policies) {
+    const errors = checkPolicy(p, { catalog: facts.catalog, pack: true }).filter((d) => d.severity === "error" && d.code !== "policy.catalog_required");
+    if (errors.length > 0) problems.push({ source: p.source, diagnostics: errors });
+  }
+  if (problems.length > 0) {
+    const count = problems.reduce((n, p) => n + p.diagnostics.length, 0);
+    usage(`${count} problem(s) in ${problems.length} policy file(s) against the pack's metric catalog; nothing was judged`, problems);
+  }
+}
+
+/**
  * Judge a pack against one or more policies (decision 0047). Reads the pack
  * (live directory or sealed zip) once and returns one VerdictDoc per policy,
  * in the order given. Never writes — the pack is untouched and the caller
@@ -71,6 +92,7 @@ export async function verdict(pack: string, opts: VerdictOptions): Promise<Verdi
   } catch (e: any) {
     usage(`cannot read pack "${pack}": ${e?.message ?? e}`);
   }
+  checkAgainstPack(policies, facts);
   const evaluatedAt = opts.evaluatedAt ?? new Date().toISOString();
   return policies.map((p) => judge(facts, p, undefined, { evaluatedAt }));
 }

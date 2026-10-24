@@ -475,7 +475,7 @@ that snapshot. Each metric has a `type`, optional `unit`/`range`/`values`,
 | --- | --- | --- |
 | `stored` | reads `run.yaml.metrics.<name>`; checks type, unit and range | `stored` |
 | `{file, path}` | reads a dot-path from a `.yaml`/`.json` file in the pack | `file` |
-| `{aggregate, over?, path? \| value?, where?}` | folds a per-test value (`sum` `min` `max` `mean` `count` `p50` `p90` `p95`) over `tests/*/<file>` (default `tests/*/result.yaml`) | `recomputed` |
+| `{aggregate, over?, path? \| value?, where?}` | folds a per-test value (`sum` `min` `max` `mean` `count` `p50` `p90` `p95`) over `tests/*/<file>` (default `tests/*/result.yaml`); a test the `where` keeps that has no `path` (or whose `value` is null) errors the gate (`verdict.metric_missing`) instead of being left out, so a catalog narrows to the tests that carry the path with `where: has(test.<path>)` | `recomputed` |
 | `{expr}` | evaluates CEL over the pack facts | `recomputed` |
 
 When a recomputed metric also has a stored value, the two must agree, or the
@@ -484,8 +484,18 @@ with no catalog is still judged on built-ins; its `metrics.*` gates error
 (`verdict.catalog_missing`). On a **merged** pack a producer metric follows its
 `merge` rule: `sum`/`min`/`max`/`mean` combine every source's stored
 `<label>/<name>`, each first checked for type, unit and range like a single
-stored value (one bad source errors the gate), `recompute` re-runs its aggregate/expr over the merged tests,
+stored value (one bad source errors the gate). Every source in `merged_from`
+must store the metric, or the gate errors (`verdict.metric_missing`); a source
+that was itself a merged pack contributes its own sources'
+`<label>/<inner label>/<name>` values. `recompute` re-runs its aggregate/expr over the merged tests,
 `none` (the default) errors the gate.
+
+A metric may name `min_producer`, the lowest producer version (semver) that
+writes the facts it reads. A gate on it errors (`verdict.producer_version`)
+when any test was written by an older producer, or the pack records no
+producer version: each test's `result.yaml` `environment.producer.version`,
+else `run.yaml`'s. The catalog-level `min_producer` is for the service that
+hands catalogs out; the verdict does not read it.
 
 ### Expressions (CEL)
 
@@ -496,7 +506,10 @@ are CEL. A gate `expr` and a catalog `verify.expr` see `run`, `tests`,
 `tags`/`requirements`/`steps` read as `[]` and absent `flaky` as `false`.
 Numbers read from files are doubles; `totals.*` and `size()` are ints. Added
 functions: `sum(list)`, `mean(list)`, `percentile(list, p)` (nearest rank).
-Limits: 1000 AST nodes, depth 32, and 1,000,000 list reads per evaluation.
+Limits: 1000 AST nodes, depth 32, 1,000,000 list reads from the facts and
+5,000,000 evaluation steps per evaluation. The step limit counts every node
+evaluated, loop steps over lists the expression builds itself included, which
+the list-read limit cannot see.
 A `where` must be a bool: one whose type is known to be something else is
 rejected when the policy or catalog is checked (`policy.expr_type`,
 `catalog.expr`), and one that gives a non-bool for a test errors the gate
@@ -523,8 +536,11 @@ once, each as a Diagnostic with `code`, `location`, `message`, `line`,
 | `policy.catalog_needed` *(warning)* | `--lint` without `--catalog`, on a `metrics.*` gate or `requires` |
 
 A policy that cannot be read (parse, schema, unknown key, duplicate gate) is a
-**usage error**: nothing is judged. A policy problem found against a pack's
-catalog **errors** that policy's verdict, with the problem as its `error`.
+**usage error**: nothing is judged. So is a policy that does not check clean
+against the pack's catalog: every problem of every policy is listed and
+nothing is judged. The exception is `policy.catalog_required`: a pack that
+carries no catalog, or not the one `requires` names, errors that policy's
+verdict, since the pack is what is missing.
 
 ### Judging
 
@@ -533,7 +549,7 @@ validation (else `verdict.pack_invalid`). Each gate then resolves its metric
 and compares. Gate errors: `verdict.catalog_missing`, `verdict.metric_missing`,
 `verdict.stored_mismatch`, `verdict.stored_type`, `verdict.value_type`,
 `verdict.out_of_range`, `verdict.expr_error`, `verdict.merge_none`,
-`verdict.merge_unsupported`. The verdict `result` is `errored` if the policy or
+`verdict.merge_unsupported`, `verdict.producer_version`. The verdict `result` is `errored` if the policy or
 any gate errored, else `fail` if any blocking gate failed, else `pass`.
 
 ### The verdict file
@@ -560,8 +576,9 @@ exit_code: 1
 ### Exit codes
 
 `0` every policy passed · `1` a policy failed and none errored · `3` a policy
-errored · `2` usage (bad flags, an unreadable or unparseable policy, an
-unreadable pack, a policy id given twice). With `--lint`: `0` no errors, `1`
+errored · `2` usage (bad flags, an unreadable or unparseable policy, a policy
+that does not check clean against the pack's catalog, an unreadable pack, a
+policy id given twice). With `--lint`: `0` no errors, `1`
 problems found, `2` usage.
 
 ### Library

@@ -102,6 +102,7 @@ describe("lintCatalog", () => {
     { name: "aggregate sum with nothing to fold", text: "catalog: c\nversion: 1\nmetrics:\n  x: { type: count, verify: { aggregate: sum } }\n", codes: ["catalog.schema"] },
     { name: "range lo > hi", text: "catalog: c\nversion: 1\nmetrics:\n  x: { type: ratio, range: [1, 0], verify: { expr: '1.0' } }\n", codes: ["catalog.schema"] },
     { name: "values on a non-enum", text: "catalog: c\nversion: 1\nmetrics:\n  x: { type: string, values: [a], verify: stored }\n", codes: ["catalog.schema"] },
+    { name: "a metric min_producer that is not a semantic version", text: "catalog: c\nversion: 1\nmetrics:\n  x: { type: count, verify: stored, min_producer: 'latest' }\n", codes: ["catalog.schema"] },
   ];
   it.each(cases)("$name", ({ text, codes }) => {
     const { catalog, diagnostics } = lintCatalog(text);

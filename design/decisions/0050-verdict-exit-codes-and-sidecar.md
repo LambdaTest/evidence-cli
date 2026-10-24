@@ -24,8 +24,10 @@ options:
 decision: >
   Exit codes: `0` every policy passed · `1` at least one policy failed and none
   errored · `3` at least one policy errored · `2` usage or I/O (a bad flag, an
-  unreadable or unparseable policy, an unreadable pack, a policy id given
-  twice). With `--lint`: `0` no error diagnostics, `1` at least one, `2`
+  unreadable or unparseable policy, a policy that does not check clean against
+  the pack's catalog, an unreadable pack, a policy id given twice). A pack
+  that lacks the catalog a policy `requires` errors that verdict instead (3):
+  the pack, not the policy, is at fault. With `--lint`: `0` no error diagnostics, `1` at least one, `2`
   usage. Each verdict document carries its own `exit_code` (0, 1 or 3) so a
   consumer reading the file gets the same answer as the process. THE VERDICT IS
   A SIDECAR: `evidence verdict` writes `<policy-id>.verdict.json` next to the

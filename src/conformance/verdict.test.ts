@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { promises as fs, readdirSync, readFileSync } from "node:fs";
 import * as path from "node:path";
 import { loadToolSchema } from "../schemas/compile";
-import { verdict } from "../verdict";
+import { PolicyUsageError, verdict } from "../verdict";
 import type { VerdictDoc } from "../verdict/evaluate";
 import { parseYaml } from "../yaml";
 import { toZip } from "./harness";
@@ -12,8 +12,9 @@ import { toZip } from "./harness";
  * fixtures/0.1/verdict/<case>/ holds a pack (pack.evidence/, directory form),
  * the policy.yaml to judge it with, and expected.yaml — the result, the exit
  * code, the whole-verdict error code, and per-gate status/actual/trust/stored/
- * error. Every case runs on the directory and on a sealed zip of it; the two
- * must give the same document apart from pack.sha256 and evaluated_at.
+ * error, or `usage`: the diagnostic codes of the usage error judging throws.
+ * Every case runs on the directory and on a sealed zip of it; the two must
+ * give the same document apart from pack.sha256 and evaluated_at.
  */
 const ROOT = path.resolve(__dirname, "../../fixtures/0.1/verdict");
 const AT = "2026-10-21T00:00:00.000Z";
@@ -27,6 +28,7 @@ interface ExpectedGate {
 }
 
 interface Expected {
+  usage?: string[];
   result: string;
   exit_code: number;
   error: string | null;
@@ -70,11 +72,20 @@ function comparable(doc: VerdictDoc): unknown {
 
 describe("verdict conformance corpus", () => {
   it("covers the required cases", () => {
-    expect(cases).toEqual(["cel-expr", "errored-stored-mismatch", "errored-unknown-metric", "fail", "merged", "pass", "unfinalized"]);
+    expect(cases).toEqual(["cel-expr", "errored-stored-mismatch", "fail", "merged", "pass", "unfinalized", "usage-unknown-metric"]);
   });
 
   it.each(cases)("%s — directory and sealed zip", async (name) => {
     const { pack, policy, expected } = load(name);
+    if (expected.usage) {
+      for (const target of [pack, await toZip(pack)]) {
+        const e = await verdict(target, { policies: [{ content: policy, path: "policy.yaml" }], evaluatedAt: AT }).catch((x: unknown) => x);
+        expect(e, `${name}: usage error`).toBeInstanceOf(PolicyUsageError);
+        expect((e as PolicyUsageError).problems.flatMap((p) => p.diagnostics.map((d) => d.code)), `${name}: usage codes`).toEqual(expected.usage);
+        if (target !== pack) await fs.rm(path.dirname(target), { recursive: true, force: true });
+      }
+      return;
+    }
     const [dirDoc] = await verdict(pack, { policies: [{ content: policy, path: "policy.yaml" }], evaluatedAt: AT });
     assertCase(name, dirDoc, expected);
     expect(dirDoc.pack.sha256).toBeNull();

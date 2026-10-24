@@ -1,5 +1,6 @@
 import type { Diagnostic } from "../contract";
 import { err } from "../diagnostics";
+import { sanitizeLabel } from "../merge/gates";
 import { getKey } from "../merge/rules";
 import { DEFAULT_OVER, INTEGER_TYPES, own, STRING_TYPES } from "./catalog";
 import type { Catalog, MetricDef } from "./catalog";
@@ -7,6 +8,7 @@ import { compileExpr, evalExpr, ExprEvalError, makeFacts, percentile } from "./e
 import type { Compiled } from "./expr";
 import type { PackFacts } from "./facts";
 import { lookupMetric } from "./lint";
+import { compareSemver, parseSemver } from "./semver";
 
 export type Trust = "recomputed" | "file" | "stored";
 export type MetricValue = number | string;
@@ -137,7 +139,13 @@ function recompute(def: MetricDef, name: string, pack: PackFacts, scope: Scope):
         else if (x !== undefined && x !== null) count++;
         return;
       }
-      if (x === undefined || x === null) return;
+      if (x === undefined || x === null) {
+        const what = v.path !== undefined ? v.path : `value ${v.value!.src}`;
+        throw new Unresolved(fail("verdict.metric_missing", name, `${name}: test "${id}" has no ${what}`, {
+          trust: "recomputed",
+          hint: v.path !== undefined ? `when only some tests carry ${v.path}, the catalog narrows the metric with where: has(test.${v.path})` : undefined,
+        }));
+      }
       if (typeof x !== "number") {
         throw new Unresolved(fail("verdict.value_type", name, `${name}: test "${id}" gives ${JSON.stringify(x)}, not a number`, { trust: "recomputed" }));
       }
@@ -186,22 +194,34 @@ function storedValue(def: MetricDef, name: string, pack: PackFacts): MetricValue
 }
 
 /**
- * The stored values of a metric across a merged pack's sources
- * (<label>/<name>), each checked like a single stored value: type, unit,
- * then value type and range.
+ * The stored values of a metric across a merged pack's sources, each checked
+ * like a single stored value: type, unit, then value type and range. Every
+ * source in run.yaml merged_from must store the metric, under its label
+ * (<i>-<run_id>/<name>) or, for a source that was itself a merged pack, under
+ * its sources' labels (<i>-<run_id>/<inner label>/<name>); a source that does
+ * not is an error, never a value left out of the fold.
  */
 function mergedStored(def: MetricDef, name: string, pack: PackFacts): number[] {
+  const sources: unknown[] = Array.isArray(pack.run?.merged_from) ? pack.run.merged_from : [];
+  const entries = Object.entries<any>(pack.run?.metrics ?? {});
   const out: number[] = [];
-  for (const [key, m] of Object.entries<any>(pack.run?.metrics ?? {})) {
-    const slash = key.indexOf("/");
-    if (slash < 0 || key.slice(slash + 1) !== def.name) continue;
-    if (!m || typeof m !== "object" || typeof m.value !== "number") {
-      throw new Unresolved(fail("verdict.stored_type", name, `${name}: ${key} is not a number`, { trust: "stored" }));
+  sources.forEach((runId, i) => {
+    const label = `${i + 1}-${sanitizeLabel(String(runId))}`;
+    const keys = entries.filter(([key]) => key === `${label}/${def.name}` || (key.startsWith(`${label}/`) && key.endsWith(`/${def.name}`)));
+    if (keys.length === 0) {
+      throw new Unresolved(fail("verdict.metric_missing", name, `${name}: merged source ${label} stored no metrics.${def.name}`, {
+        trust: "stored",
+        hint: `every merged pack must store metrics.${def.name} for a merge: ${def.merge} metric`,
+      }));
     }
-    const value = checkValue(def, name, checkStored(def, name, key, m), "stored", `${name}: ${key}`);
-    out.push(value as number);
-  }
-  if (out.length === 0) throw new Unresolved(fail("verdict.metric_missing", name, `${name}: no merged source stored metrics.<label>/${def.name}`, { trust: "stored" }));
+    for (const [key, m] of keys) {
+      if (!m || typeof m !== "object" || typeof m.value !== "number") {
+        throw new Unresolved(fail("verdict.stored_type", name, `${name}: ${key} is not a number`, { trust: "stored" }));
+      }
+      out.push(checkValue(def, name, checkStored(def, name, key, m), "stored", `${name}: ${key}`) as number);
+    }
+  });
+  if (out.length === 0) throw new Unresolved(fail("verdict.metric_missing", name, `${name}: the merged pack lists no merged_from sources`, { trust: "stored" }));
   return out;
 }
 
@@ -248,6 +268,35 @@ function resolveProducerOnMerged(def: MetricDef, name: string, pack: PackFacts, 
 }
 
 /**
+ * Fail a producer metric whose catalog entry names a min_producer the pack
+ * does not meet: every test's producer version (result.yaml
+ * environment.producer, else run.yaml's) must be at least min_producer. An
+ * older producer does not write the facts the metric reads, so its value
+ * would be wrong rather than missing.
+ */
+function checkMinProducer(def: MetricDef, name: string, pack: PackFacts): void {
+  const min = parseSemver(def.min_producer);
+  if (!min) return;
+  const runProducer = pack.run?.environment?.producer;
+  const versions = pack.tests.length > 0
+    ? pack.tests.map((t) => t.result?.environment?.producer?.version ?? runProducer?.version)
+    : [runProducer?.version];
+  for (const v of new Set(versions)) {
+    const got = parseSemver(v);
+    if (!got) {
+      throw new Unresolved(fail("verdict.producer_version", name, `${name}: the pack records no producer version${v === undefined ? "" : ` it can read (${JSON.stringify(v)})`}, and the metric needs ${def.min_producer} or later`, {
+        hint: "the producer writes environment.producer.version into run.yaml",
+      }));
+    }
+    if (compareSemver(got, min) < 0) {
+      throw new Unresolved(fail("verdict.producer_version", name, `${name}: needs a producer at ${def.min_producer} or later, but the pack was written by ${v}`, {
+        hint: "judge a pack written by a newer producer, or gate on a metric this producer writes",
+      }));
+    }
+  }
+}
+
+/**
  * Resolve a policy metric on a pack (decision 0048): built-ins are
  * recomputed; a producer metric follows its catalog verify, is checked
  * against its type, unit and range, and a recompute is cross-checked against
@@ -266,6 +315,7 @@ export function resolveMetric(name: string, pack: PackFacts, catalogs: Catalog[]
   const def = found.def;
 
   try {
+    if (!found.builtin) checkMinProducer(def, name, pack);
     const { value, trust } =
       !found.builtin && pack.merged
         ? resolveProducerOnMerged(def, name, pack, where)

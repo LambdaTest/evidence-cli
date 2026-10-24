@@ -98,8 +98,14 @@ gates:
 
 Values are recomputed from the pack's own files wherever possible; a stored
 number that disagrees with its recompute errors the gate rather than passing
-it. See [the verdict contract](design/contract/03-commands.md) and decisions
-0047–0050.
+it. A missing value is never read as zero: a test with no value for an
+aggregated path, a merged source that stored no value, or a pack written by a
+producer older than the metric's `min_producer` all error the gate. A policy
+that does not check clean against the pack's catalog (an unknown metric, an
+operator its type does not allow) is a usage error, exit `2`, listing every
+problem. Expressions are bounded per evaluation (fact reads and evaluation
+steps), so no policy can hang a verdict. See [the verdict
+contract](design/contract/03-commands.md) and decisions 0047–0050.
 
 ## What's in a pack
 

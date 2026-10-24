@@ -147,11 +147,11 @@ gates:                            # every gate, in policy order
 | --- | --- | --- |
 | `pass` | `pass` | built-ins with `equals`, `min` and `max`, a `where`, `run.status` read from a file |
 | `fail` | `fail` | a failed blocking gate fails; a failed warning gate only warns |
-| `errored-unknown-metric` | `errored` | a gate naming a metric the pack's catalog lacks errors the whole policy (`policy.unknown_metric`) |
 | `errored-stored-mismatch` | `errored` | a stored value that disagrees with its recompute errors the gate (`verdict.stored_mismatch`) |
 | `unfinalized` | `errored` | a live, unsealed pack cannot be judged (`verdict.unfinalized`) |
 | `merged` | `pass` | merge keeps the shared catalog; `merge: sum` combines stored values, `merge: recompute` reruns over the merged tests |
 | `cel-expr` | `pass` | expression gates with `filter`, `all`, `exists`, `map`, `sum`, `mean`, `percentile` |
+| `usage-unknown-metric` | usage error (exit `2`) | a gate naming a metric the pack's catalog lacks is a policy mistake: nothing is judged (`policy.unknown_metric`) |
 
 The packs were produced by the real `finalize` and `merge`, so their totals,
 hashes and failure indexes are genuine. Adding a case is mechanical: add the
