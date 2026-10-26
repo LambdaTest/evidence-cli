@@ -1,0 +1,8 @@
+description: A merged pack keeps the shared catalog; credits sum across shards (merge sum), healed tests are recomputed over the merged tests (merge recompute), built-ins work unchanged.
+result: pass
+exit_code: 0
+error: null
+gates:
+  budget: { status: pass, actual: 14.5, trust: stored }
+  heals: { status: warn, actual: 1, trust: recomputed }
+  all-ran: { status: pass, actual: 2, trust: recomputed }

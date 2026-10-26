@@ -1,0 +1,4 @@
+policy: kane-gate
+gates:
+  - { id: flaky, metric: metrics.flaky_rate, max: 0.1, severity: warning }
+  - { id: no-failures, metric: totals.failed, equals: 0, severity: blocking }

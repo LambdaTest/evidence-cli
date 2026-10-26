@@ -1,0 +1,7 @@
+description: run.yaml stores flaky_rate 0 but the tests recompute to 0.5; the gate errors (whatever its severity) and the verdict is errored.
+result: errored
+exit_code: 3
+error: null
+gates:
+  flaky: { status: errored, actual: 0.5, stored: 0, trust: recomputed, error: verdict.stored_mismatch }
+  no-failures: { status: pass, actual: 0, trust: recomputed }

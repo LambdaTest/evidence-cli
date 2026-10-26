@@ -1,0 +1,6 @@
+policy: nightly-gate
+requires: { catalog: kane-cli }
+gates:
+  - { id: budget, metric: metrics.credits, max: 20, severity: blocking }
+  - { id: heals, metric: metrics.heal.healed_tests, max: 0, severity: warning }
+  - { id: all-ran, metric: totals.tests, equals: 2, severity: blocking }

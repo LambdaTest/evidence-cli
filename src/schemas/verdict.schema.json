@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://evidence-cli.dev/schemas/verdict.schema.json",
+  "title": "<policy>.verdict.json",
+  "description": "One policy judged against one evidence pack, as written by `evidence verdict`. A SIDECAR: it is written next to the pack and never into it, so any sealed pack can be judged at any time without changing its bytes. `pack.sha256` ties the verdict to the exact pack file it judged. See decisions 0047 and 0050.",
+  "type": "object",
+  "required": ["result", "evaluated_at", "evaluator", "pack", "policy", "catalog", "error", "gates", "failed_gates", "warnings", "errored_gates", "exit_code"],
+  "properties": {
+    "result": {
+      "description": "errored when the policy could not be judged as a whole or any gate errored; else fail when any blocking gate failed; else pass.",
+      "enum": ["pass", "fail", "errored"]
+    },
+    "evaluated_at": { "type": "string", "format": "date-time" },
+    "evaluator": { "description": "The tool and version that judged the pack, e.g. \"evidence-cli 0.2.0\".", "type": "string", "minLength": 1 },
+    "pack": {
+      "type": "object",
+      "required": ["run_id", "sha256", "contract"],
+      "properties": {
+        "run_id": { "type": ["string", "null"] },
+        "sha256": { "description": "sha256 hex of the sealed .evidence file bytes; null when a live directory was judged.", "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" },
+        "contract": { "description": "run.yaml `evidence`.", "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "policy": {
+      "type": "object",
+      "required": ["id", "sha256"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "sha256": { "description": "sha256 hex of the exact policy YAML bytes.", "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      },
+      "additionalProperties": false
+    },
+    "catalog": {
+      "description": "The producer catalog the pack carried, or null when it carried none.",
+      "type": ["object", "null"],
+      "required": ["id", "version", "sha256", "source"],
+      "properties": {
+        "id": { "type": "string" },
+        "version": { "type": ["integer", "string"] },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "source": { "description": "run.yaml metrics_catalog.source as the producer recorded it, or null.", "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "error": {
+      "description": "Set when the policy as a whole could not be judged (pack not finalized or not valid, a policy problem against this pack's catalog). gates is then empty.",
+      "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/error" }]
+    },
+    "gates": { "type": "array", "items": { "$ref": "#/$defs/gate" } },
+    "failed_gates": { "description": "Ids of blocking gates that failed.", "type": "array", "items": { "type": "string" } },
+    "warnings": { "description": "Ids of warning gates that failed.", "type": "array", "items": { "type": "string" } },
+    "errored_gates": { "type": "array", "items": { "type": "string" } },
+    "exit_code": { "description": "0 pass, 1 fail, 3 errored.", "enum": [0, 1, 3] }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "error": {
+      "type": "object",
+      "required": ["code", "message", "hint"],
+      "properties": {
+        "code": { "type": "string", "minLength": 1 },
+        "message": { "type": "string" },
+        "hint": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "gate": {
+      "type": "object",
+      "required": ["id", "where", "op", "expected", "actual", "severity", "status", "trust", "message", "error", "stored"],
+      "properties": {
+        "id": { "type": "string" },
+        "metric": { "type": "string" },
+        "expr": { "type": "string" },
+        "where": { "type": ["string", "null"] },
+        "op": { "description": "The comparison; expr for an expression gate.", "enum": ["equals", "min", "max", "range", "in", "expr"] },
+        "expected": { "description": "The threshold as written; true for an expression gate." },
+        "actual": { "description": "The resolved value, or null when it could not be resolved." },
+        "severity": { "enum": ["blocking", "warning"] },
+        "status": { "description": "warn is a failed warning gate.", "enum": ["pass", "fail", "warn", "errored"] },
+        "trust": {
+          "description": "recomputed: derived from the pack's raw files. file: read from a file in the pack. stored: the producer's own number. null when nothing was resolved.",
+          "enum": ["recomputed", "file", "stored", null]
+        },
+        "message": { "type": ["string", "null"] },
+        "error": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/error" }] },
+        "stored": { "description": "The producer's stored number when it disagreed with the recompute.", "type": ["number", "string", "null"] }
+      },
+      "oneOf": [{ "required": ["metric"] }, { "required": ["expr"] }],
+      "additionalProperties": false
+    }
+  }
+}

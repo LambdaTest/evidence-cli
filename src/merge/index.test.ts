@@ -30,7 +30,7 @@ describe("merge()", () => {
       rulesPath: await writeRules("tests: { on_collision: prefer_latest }\n"),
     });
 
-    expect(report.output).toMatchObject({ path: out, runId: "nightly", finalized: true });
+    expect(report.output).toEqual({ path: out, runId: "nightly", finalized: true, endedAt: "2026-07-08T10:00:00Z" });
     expect(report.packs.eligible).toEqual(["a", "b"]);
     expect(report.tests).toMatchObject({ merged: 2, discarded: [] });
     expect(report.tests.collisions[0]).toMatchObject({ test: "checkout", winner: "b" });
@@ -128,5 +128,69 @@ describe("merge()", () => {
     expect(report.packs.skipped[0]).toMatchObject({ runId: "skipme" });
     const run = parseYaml(await fs.readFile(path.join(out, "run.yaml"), "utf8")) as any;
     expect(Object.keys(run.metrics).sort()).toEqual(["1-a/requests", "2-b/requests"]); // b is ordinal 2, not 3
+  });
+
+  describe("output.endedAt counts only the packs merged", () => {
+    const DUP_SKIP = "rules:\n  - { file: run.yaml, key: run_id, must: different, on_violation: skip }\n";
+    const cases: { name: string; extra: () => Promise<string>; rules: string }[] = [
+      {
+        name: "a duplicate run_id skipped by the rules, though it ended later",
+        extra: async () => sealCopy(await stagePack({ runId: "a", ended: "2026-07-08T11:00:00Z", tests: { other: {} } })),
+        rules: DUP_SKIP,
+      },
+      {
+        name: "an unreadable pack skipped by the rules",
+        extra: async () => {
+          const p = path.join(await fs.mkdtemp(path.join(os.tmpdir(), "evi-bad-")), "bad.evidence");
+          await fs.writeFile(p, "not a zip");
+          return p;
+        },
+        rules: "packs: { on_ineligible: skip }\n",
+      },
+      {
+        name: "a live pack skipped by the rules, though it ended later",
+        extra: async () => stagePack({ runId: "live", ended: "2026-07-08T11:00:00Z", tests: { other: {} } }),
+        rules: "packs: { on_ineligible: skip }\n",
+      },
+    ];
+    it.each(cases)("$name", async ({ extra, rules }) => {
+      const a = await sealCopy(await stagePack({ runId: "a", ended: "2026-07-08T09:00:00Z", tests: { login: {} } }));
+      const b = await sealCopy(await stagePack({ runId: "b", ended: "2026-07-08T10:00:00Z", tests: { checkout: {} } }));
+      const rulesPath = await writeRules(rules);
+      const live = await merge([a, b, await extra()], { runId: "m", out: await outPath(), rulesPath });
+      expect(live.packs.skipped).toHaveLength(1);
+      expect(live.output).toMatchObject({ finalized: false, endedAt: "2026-07-08T10:00:00Z" });
+      const out = await outPath();
+      const sealed = await merge([a, b, await extra()], { runId: "m", out, rulesPath, finalize: true });
+      expect(sealed.output.endedAt).toBe("2026-07-08T10:00:00Z");
+      expect(parseYaml(new AdmZip(out).getEntry("run.yaml")!.getData().toString("utf8"))).toMatchObject({ ended: "2026-07-08T10:00:00Z" });
+    });
+  });
+
+  describe("metric catalog snapshot (decision 0048)", () => {
+    const CAT = "catalog: kane-cli\nversion: 3\nmetrics:\n  credits: { type: decimal, verify: stored, merge: sum }\n";
+    const OTHER = CAT.replace("version: 3", "version: 4");
+    const cases: { name: string; a?: string; b?: string; kept: boolean }[] = [
+      { name: "identical snapshots are kept once", a: CAT, b: CAT, kept: true },
+      { name: "different snapshots are dropped", a: CAT, b: OTHER, kept: false },
+      { name: "a source without a snapshot drops it", a: CAT, kept: false },
+      { name: "no snapshots, nothing to keep", kept: false },
+    ];
+    it.each(cases)("$name", async ({ a, b, kept }) => {
+      const pa = await sealCopy(await stagePack({ runId: "a", tests: { login: {} }, catalog: a ? { text: a, source: "controller" } : undefined }));
+      const pb = await sealCopy(await stagePack({ runId: "b", tests: { checkout: {} }, catalog: b ? { text: b, source: "cache" } : undefined }));
+      const out = await outPath();
+      await merge([pa, pb], { runId: "m", out });
+      const snapshot = await fs.readFile(path.join(out, "meta", "metrics-catalog.yaml"), "utf8").catch(() => null);
+      const run = parseYaml(await fs.readFile(path.join(out, "run.yaml"), "utf8")) as any;
+      if (kept) {
+        expect(snapshot).toBe(a);
+        expect(run.metrics_catalog).toMatchObject({ id: "kane-cli", version: 3, source: "controller" });
+      } else {
+        expect(snapshot).toBeNull();
+        expect(run.metrics_catalog).toBeUndefined();
+      }
+      expect((await validate(out)).valid).toBe(true);
+    });
   });
 });

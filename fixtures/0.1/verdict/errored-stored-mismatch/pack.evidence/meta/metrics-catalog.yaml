@@ -1,0 +1,14 @@
+catalog: kane-cli
+version: 3
+metrics:
+  credits: { type: decimal, unit: credits, verify: stored, merge: sum }
+  heal.healed_tests:
+    type: count
+    per_test: true
+    verify: { aggregate: count, where: "has(test.adaptive_heal) && test.adaptive_heal.outcome == 'healed'" }
+    merge: recompute
+  flaky_rate:
+    type: ratio
+    range: [0, 1]
+    verify: { expr: "double(size(tests.filter(t, t.flaky))) / double(totals.tests)" }
+    merge: recompute

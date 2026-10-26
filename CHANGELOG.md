@@ -4,6 +4,36 @@ All notable changes to evidence-cli are documented here. This format follows
 [Keep a Changelog](https://keepachangelog.com/), and the project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] — Unreleased
+
+- **Verdict** — `evidence verdict <pack> --policy <file>…` judges a sealed pack
+  against one or more policies and writes `<policy-id>.verdict.json` beside the
+  pack, never into it. A policy is a list of gates: a metric with one operator
+  (`equals`/`min`/`max`/`range`/`in`), optionally narrowed per test with
+  `where`, or a boolean CEL `expr`. Exit `0` pass · `1` fail · `3` errored ·
+  `2` usage, which includes a policy that does not check clean against the
+  pack's catalog (every problem listed). `--lint` checks policies with no pack
+  (against `--catalog` when given) and reports every problem at once with a
+  line and a hint. Missing values error a gate rather than reading as 0: an
+  aggregate whose kept test lacks the path, a merged source (at any depth)
+  that stored no value, a pack older than a metric's `min_producer`.
+  Expressions are bounded by fact reads and by evaluation steps. Library:
+  `verdict`, `lintPolicy`, `judge`, `loadPackFacts`, `loadPolicy`,
+  `loadCatalog`, `writeVerdicts`. See decisions 0047, 0049, 0050.
+- **Metric catalogs** — one format for the built-in `evidence-core` catalog
+  (`totals.*`, `pass_rate`, `steps.*`, `run.duration_ms`, `run.status`,
+  `failures.count`) and producer catalogs. A producer snapshots its catalog to
+  `meta/metrics-catalog.yaml` and records `run.yaml` `metrics_catalog`
+  (additive); `validate` checks the snapshot, its hash and identity, and
+  `merge` keeps it when every source carries the same one. See decision 0048.
+- **Merge report** gains `output.endedAt`: the seal time, the latest `ended`
+  (else `started`) among the eligible packs, reported with or without
+  `--finalize`, so a caller that seals the merged pack itself stamps the same
+  time. Additive.
+- **Diagnostics** gain optional `hint`, `line` and `column`.
+- **Node** — requires Node 20.19 or newer (the CEL library is an ES module).
+- The CLI's `--version` now reports the package version.
+
 ## [0.1.7] — 2026-07-20
 
 - **Merge identity grouping** — an optional `tests.identity` block in

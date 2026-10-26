@@ -1,0 +1,12 @@
+evidence: "0.1"
+run_id: cel-run
+status: finalized
+title: t-cel-run
+started: 2026-07-08T08:00:00Z
+ended: 2026-07-08T08:10:00Z
+totals:
+  tests: 3
+  passed: 2
+  failed: 0
+  broken: 0
+  skipped: 1

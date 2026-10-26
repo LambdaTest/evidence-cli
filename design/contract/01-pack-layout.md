@@ -39,6 +39,8 @@ directory (or zip) is a valid pack if and only if it has a top-level `run.yaml`.
 <name>.evidence/
   run.yaml                 # required — the manifest anchor (run-level)
   summary.md               # optional — auto-generated human TL;DR (never parsed)
+  meta/
+    metrics-catalog.yaml   # optional — the producer's metric catalog snapshot (decision 0048)
   tests/
     <id>/                  # one directory per test; id = a slug or run id
       <definition>         # required, OPAQUE — the framework's own artifact

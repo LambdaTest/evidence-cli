@@ -1,7 +1,7 @@
 {
   "name": "@testmuai/evidence-cli",
-  "version": "0.1.7",
-  "description": "An open, framework-agnostic format for what a test run produced — the .evidence pack, and the library + CLI that validate and seal it.",
+  "version": "0.2.0",
+  "description": "An open, framework-agnostic format for what a test run produced — the .evidence pack, and the library + CLI that validate, seal, merge and judge it.",
   "license": "Apache-2.0",
   "author": "TestMu AI (formerly LambdaTest)",
   "homepage": "https://github.com/LambdaTest/evidence-cli#readme",
@@ -24,7 +24,7 @@
     "framework-agnostic"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=20.19"
   },
   "bin": {
     "evidence": "dist/cli.js"
@@ -54,6 +54,7 @@
     "docs:install": "npm --prefix design/web install"
   },
   "dependencies": {
+    "@marcbachmann/cel-js": "^8.0.0",
     "adm-zip": "^0.5.14",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",

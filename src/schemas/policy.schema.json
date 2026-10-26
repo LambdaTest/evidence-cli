@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://evidence-cli.dev/schemas/policy.schema.json",
+  "title": "policy.yaml",
+  "description": "A verdict policy passed to `evidence verdict` (--policy). TOOL INPUT, not pack contract — it lives beside the versioned 0.1/ tree and is never written into a pack. A policy is a named list of gates; each gate either compares one metric against a threshold or evaluates a boolean CEL expression. Unknown keys are rejected so a typo'd operator fails loudly. See decisions 0047 and 0049.",
+  "type": "object",
+  "required": ["policy", "gates"],
+  "properties": {
+    "policy": {
+      "description": "Policy id, echoed in the verdict and used as the verdict file name (<policy>.verdict.json), so it is file-name safe.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+    },
+    "requires": {
+      "description": "Optional: refuse packs whose metric catalog is a different producer catalog, or a version outside `version`. A pack without a catalog fails this requirement.",
+      "type": "object",
+      "required": ["catalog"],
+      "properties": {
+        "catalog": { "description": "The catalog id the pack must carry (meta/metrics-catalog.yaml `catalog`).", "type": "string", "minLength": 1 },
+        "version": {
+          "description": "Space-separated comparators over the catalog version, e.g. \">=1\", \">=1 <4\", \"3\". Versions compare numerically by dot-separated segment.",
+          "type": "string",
+          "pattern": "^\\s*(?:(?:>=|<=|>|<|=)?\\s*[0-9]+(?:\\.[0-9]+)*\\s*)+$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "gates": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/gate" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "gate": {
+      "description": "One check. A metric gate names a metric and exactly one operator; an expression gate carries `expr` (a CEL expression that must evaluate to a bool) and no operator.",
+      "type": "object",
+      "required": ["id", "severity"],
+      "properties": {
+        "id": { "description": "Gate id, unique within the policy.", "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$" },
+        "metric": {
+          "description": "A built-in metric (evidence-core, unprefixed, e.g. totals.failed) or a producer metric from the pack's catalog (always metrics.<name>).",
+          "type": "string",
+          "minLength": 1
+        },
+        "expr": { "description": "A CEL expression over the pack facts that must evaluate to a bool (decision 0049).", "type": "string", "minLength": 1 },
+        "where": {
+          "description": "A CEL expression over one test (`test`) that narrows a per-test metric to the tests it holds for. Only on metric gates whose metric is per_test.",
+          "type": "string",
+          "minLength": 1
+        },
+        "equals": { "description": "Pass when the metric equals this value.", "type": ["number", "string"] },
+        "min": { "description": "Pass when the metric is >= this value.", "type": "number" },
+        "max": { "description": "Pass when the metric is <= this value.", "type": "number" },
+        "range": {
+          "description": "Pass when lo <= metric <= hi.",
+          "type": "array",
+          "prefixItems": [{ "type": "number" }, { "type": "number" }],
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "in": {
+          "description": "Pass when the metric is one of these values.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": ["number", "string"] }
+        },
+        "severity": {
+          "description": "blocking: a failure fails the verdict. warning: a failure is reported but does not fail it. An errored gate errors the verdict whatever its severity.",
+          "enum": ["blocking", "warning"]
+        },
+        "message": { "description": "Optional human message, echoed in the gate result.", "type": "string" }
+      },
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "required": ["metric"],
+          "not": { "required": ["expr"] },
+          "oneOf": [
+            { "required": ["equals"] },
+            { "required": ["min"] },
+            { "required": ["max"] },
+            { "required": ["range"] },
+            { "required": ["in"] }
+          ]
+        },
+        {
+          "required": ["expr"],
+          "not": {
+            "anyOf": [
+              { "required": ["metric"] },
+              { "required": ["where"] },
+              { "required": ["equals"] },
+              { "required": ["min"] },
+              { "required": ["max"] },
+              { "required": ["range"] },
+              { "required": ["in"] }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

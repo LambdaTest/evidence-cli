@@ -4,6 +4,9 @@ import logsMetaL1 from "./0.1/L1/logs-meta.schema.json";
 import videoL1 from "./0.1/L1/video.schema.json";
 import failureL1 from "./0.1/L1/failure.schema.json";
 import failureIndexL1 from "./0.1/L1/failure-index.schema.json";
+import policySchema from "./policy.schema.json";
+import metricsCatalogSchema from "./metrics-catalog.schema.json";
+import verdictSchema from "./verdict.schema.json";
 
 export interface SchemaPair {
   run: object;
@@ -51,6 +54,27 @@ export function getL1Schemas(version: string): L1Schemas {
   const s = L1_REGISTRY[version];
   if (!s) {
     throw new Error(`no L1 schemas for contract version ${version}`);
+  }
+  return s;
+}
+
+/**
+ * Tool-input and tool-output schemas that live beside the versioned tree
+ * (decisions 0047, 0048): a verdict policy, a metric catalog, and the verdict
+ * sidecar. They configure or report on a command rather than shape a pack.
+ */
+export type ToolSchemaId = "policy" | "metrics-catalog" | "verdict";
+
+const TOOL_SCHEMAS: Record<ToolSchemaId, object> = {
+  policy: policySchema as object,
+  "metrics-catalog": metricsCatalogSchema as object,
+  verdict: verdictSchema as object,
+};
+
+export function getToolSchema(id: ToolSchemaId): object {
+  const s = TOOL_SCHEMAS[id];
+  if (!s) {
+    throw new Error(`no tool schema "${id}"`);
   }
   return s;
 }

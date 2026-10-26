@@ -1,7 +1,8 @@
 import Ajv2020 from "ajv/dist/2020";
 import addFormats from "ajv-formats";
 import type { ValidateFunction } from "ajv";
-import { getSchemas, getL1Schemas } from "./registry";
+import { getSchemas, getL1Schemas, getToolSchema } from "./registry";
+import type { ToolSchemaId } from "./registry";
 
 export interface CompiledSchemas {
   run: ValidateFunction;
@@ -17,6 +18,7 @@ export interface CompiledL1Schemas {
 
 const cache = new Map<string, CompiledSchemas>();
 const l1Cache = new Map<string, CompiledL1Schemas>();
+const toolCache = new Map<ToolSchemaId, ValidateFunction>();
 
 function newAjv(): Ajv2020 {
   const ajv = new Ajv2020({ allErrors: true, strict: false });
@@ -52,5 +54,13 @@ export function loadL1Schemas(version: string): CompiledL1Schemas {
     failureIndex: ajv.compile(failureIndex),
   };
   l1Cache.set(version, compiled);
+  return compiled;
+}
+
+export function loadToolSchema(id: ToolSchemaId): ValidateFunction {
+  const hit = toolCache.get(id);
+  if (hit) return hit;
+  const compiled = newAjv().compile(getToolSchema(id));
+  toolCache.set(id, compiled);
   return compiled;
 }

@@ -1,0 +1,3 @@
+policy: release-gate
+gates:
+  - { id: no-failures, metric: totals.failed, equals: 0, severity: blocking }

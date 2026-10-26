@@ -1,0 +1,7 @@
+policy: release-gate
+gates:
+  - { id: no-failures, metric: totals.failed, equals: 0, severity: blocking }
+  - { id: pass-rate, metric: pass_rate, min: 0.95, severity: blocking }
+  - { id: checkout-green, metric: totals.failed, where: "'checkout' in test.tags", equals: 0, severity: blocking }
+  - { id: sealed, metric: run.status, equals: finalized, severity: blocking }
+  - { id: quick, metric: run.duration_ms, max: 3600000, severity: warning }

@@ -1,0 +1,29 @@
+evidence: "0.1"
+run_id: nightly
+status: finalized
+title: t-shard-a
+started: 2026-07-08T08:00:00Z
+merged_from:
+  - shard-a
+  - shard-b
+metrics:
+  1-shard-a/credits:
+    value: 10.5
+    type: decimal
+    unit: credits
+  2-shard-b/credits:
+    value: 4
+    type: decimal
+    unit: credits
+metrics_catalog:
+  id: kane-cli
+  version: 3
+  sha256: c35f953a3a688d0e8fecb516f5e7cefdfe0a9193737a146ae1e32dc14e357d6a
+  source: controller
+ended: 2026-07-08T08:09:00Z
+totals:
+  tests: 2
+  passed: 2
+  failed: 0
+  broken: 0
+  skipped: 0

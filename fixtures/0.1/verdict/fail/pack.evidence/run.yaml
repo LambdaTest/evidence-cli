@@ -1,0 +1,12 @@
+evidence: "0.1"
+run_id: fail-run
+status: finalized
+title: t-fail-run
+started: 2026-07-08T08:00:00Z
+ended: 2026-07-08T08:10:00Z
+totals:
+  tests: 2
+  passed: 1
+  failed: 1
+  broken: 0
+  skipped: 0

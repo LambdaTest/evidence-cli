@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://evidence-cli.dev/schemas/metrics-catalog.schema.json",
+  "title": "metrics catalog",
+  "description": "What each metric name means and how a verdict checks it. One format for the built-in catalog (evidence-core, shipped with evidence-cli) and for every producer catalog. A producer snapshots its catalog into the pack at meta/metrics-catalog.yaml and records it in run.yaml `metrics_catalog`. Producer metrics are reached in a policy as metrics.<name>; built-in names are unprefixed and reserved. See decision 0048.",
+  "type": "object",
+  "required": ["catalog", "version", "metrics"],
+  "properties": {
+    "catalog": { "description": "Catalog id (e.g. evidence-core, kane-cli).", "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$" },
+    "version": {
+      "description": "Catalog version: an integer, or a dot-separated numeric string. Compared numerically by segment against a policy's `requires.version`.",
+      "anyOf": [
+        { "type": "integer", "minimum": 0 },
+        { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)*$" }
+      ]
+    },
+    "min_producer": { "description": "Lowest producer version that writes every fact this catalog version reads. Used by the service that hands catalogs out; the verdict ignores it.", "type": "string", "minLength": 1 },
+    "description": { "type": "string" },
+    "metrics": {
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)*$" },
+      "additionalProperties": { "$ref": "#/$defs/metric" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "metric": {
+      "type": "object",
+      "required": ["type", "verify"],
+      "properties": {
+        "type": {
+          "description": "Fixes the value shape and the operators a gate may use. Integer kinds (count, integer, bytes) and number kinds (ms, currency) take equals/min/max/range/in; fraction kinds (ratio, percentage, decimal) take min/max/range; string kinds (string, enum) take equals/in.",
+          "enum": ["count", "integer", "ms", "bytes", "currency", "ratio", "percentage", "decimal", "string", "enum"]
+        },
+        "unit": { "type": "string", "minLength": 1 },
+        "label": { "type": "string" },
+        "description": { "type": "string" },
+        "range": {
+          "description": "Inclusive bounds every value must fall within; a value outside errors the gate.",
+          "type": "array",
+          "prefixItems": [{ "type": "number" }, { "type": "number" }],
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "values": { "description": "The allowed values of an enum metric.", "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "per_test": { "description": "true when a gate may narrow the metric to some tests with `where`.", "type": "boolean" },
+        "verify": {
+          "description": "How the verdict obtains the value. `stored` trusts run.yaml.metrics.<name>; `file` reads a dot-path from a YAML/JSON file in the pack; `aggregate` folds a per-test value over tests/*/…; `expr` evaluates CEL over the pack facts.",
+          "oneOf": [
+            { "const": "stored" },
+            {
+              "type": "object",
+              "required": ["file", "path"],
+              "properties": {
+                "file": { "description": "Pack-root-relative .yaml/.yml/.json file, contained in the pack.", "type": "string", "pattern": "\\.(ya?ml|json)$" },
+                "path": { "description": "Dot-path into the parsed file.", "type": "string", "minLength": 1 }
+              },
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "required": ["aggregate"],
+              "properties": {
+                "aggregate": { "enum": ["sum", "min", "max", "mean", "count", "p50", "p90", "p95"] },
+                "over": {
+                  "description": "Per-test file the value is read from, as tests/*/<file>. Default tests/*/result.yaml.",
+                  "type": "string",
+                  "pattern": "^tests/\\*/[^*]+\\.(ya?ml|json)$"
+                },
+                "path": { "description": "Dot-path into the per-test file.", "type": "string", "minLength": 1 },
+                "value": { "description": "CEL over `test` and `file` giving the per-test value.", "type": "string", "minLength": 1 },
+                "where": { "description": "A bool CEL expression over `test` and `file`; only tests it holds for are folded. A non-bool result errors the gate.", "type": "string", "minLength": 1 }
+              },
+              "additionalProperties": false,
+              "not": { "required": ["path", "value"] }
+            },
+            {
+              "type": "object",
+              "required": ["expr"],
+              "properties": {
+                "expr": { "description": "CEL over the pack facts (decision 0049).", "type": "string", "minLength": 1 }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "merge": {
+          "description": "How the metric resolves on a merged pack. sum/min/max/mean combine every source's stored value, each checked for type, unit and range first; recompute re-runs an aggregate/expr over the merged tests; none (the default) errors a gate on it.",
+          "enum": ["sum", "min", "max", "mean", "recompute", "none"]
+        },
+        "min_producer": { "description": "Lowest producer version (semver) that writes the facts this metric reads. The verdict errors a gate on the metric when a test in the pack was written by an older producer.", "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    }
+  }
+}

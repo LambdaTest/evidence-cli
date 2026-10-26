@@ -10,6 +10,11 @@ export interface Diagnostic {
   severity: Severity;
   location: string;
   message: string;
+  /** How to fix it, when the tool can say (policy lint, decision 0047). */
+  hint?: string;
+  /** 1-based line and column in the checked file, when known. */
+  line?: number;
+  column?: number;
 }
 
 export interface ValidationReport {
@@ -50,7 +55,10 @@ export interface MergeReport {
     collisions: { test: string; winner: string; rule: string; action?: "nest" | "split"; folder?: string }[];
     discarded: string[];
   };
-  output: { path: string; runId: string; finalized: boolean };
+  // endedAt: the seal time, the latest `ended` (else `started`) among the
+  // eligible packs; "" when none carries either. Set with or without finalize,
+  // so a caller that seals the pack itself stamps the same time.
+  output: { path: string; runId: string; finalized: boolean; endedAt: string };
 }
 
 export const Codes = {
@@ -98,6 +106,14 @@ export const Codes = {
   L1_FAILURE_INDEX_INVALID: "l1.failure_index.invalid",
   L1_FAILURE_INDEX_DANGLING: "l1.failure_index.dangling",
   L1_FAILURE_INDEX_INCOMPLETE: "l1.failure_index.incomplete",
+
+  // Metric catalog snapshot (decision 0048), checked at any status. The
+  // snapshot's own problems use the catalog lint codes (catalog.parse,
+  // catalog.schema, catalog.reserved_name, …).
+  CATALOG_MISSING: "catalog.missing",
+  CATALOG_HASH_MISMATCH: "catalog.hash_mismatch",
+  CATALOG_IDENTITY_MISMATCH: "catalog.identity_mismatch",
+  CATALOG_UNREFERENCED: "catalog.unreferenced",
 } as const;
 
 /**

@@ -6,10 +6,11 @@ profile: L0
 
 # Commands & config (L0)
 
-evidence-cli ships four commands, all operating on the pack's internal tree.
+evidence-cli ships five commands, all operating on the pack's internal tree.
 `finalize` and `index` take the **live** `<name>.evidence/` directory, `validate`
-accepts **either** a directory or a sealed `.evidence` zip, and `merge` reads N
-packs (either form) and writes a new live directory.
+accepts **either** a directory or a sealed `.evidence` zip, `merge` reads N
+packs (either form) and writes a new live directory, and `verdict` judges a
+sealed pack against policies and writes its verdicts **beside** the pack.
 
 | Command | Input | Mutates? |
 | --- | --- | --- |
@@ -17,6 +18,7 @@ packs (either form) and writes a new live directory.
 | `index` | live `<name>.evidence/` directory only | yes — only optional `*.md` renders |
 | `validate` | a directory **or** a sealed `.evidence` zip | no — read-only |
 | `merge` | N packs (directories or sealed zips) | no — sources read-only; writes a **new** live pack |
+| `verdict` | a sealed `.evidence` zip (or a finalized directory) | no — writes `<policy-id>.verdict.json` **next to** the pack |
 
 ## `evidence finalize <dir>`
 
@@ -84,6 +86,15 @@ sibling comparison, or filesystem facts:
 - `totals` equals the rolled-up per-test verdicts, **and** `totals.tests` equals
   the sum of the four verdict buckets;
 - every `definition.sha256` is present and hash-matches its file.
+
+**Metric catalog snapshot (every run status):** when `run.yaml` carries a
+`metrics_catalog` block, `meta/metrics-catalog.yaml` must exist
+(`catalog.missing`), pass the catalog checks (`catalog.parse`,
+`catalog.schema`, `catalog.reserved_name`, `catalog.expr`,
+`catalog.path_escape`, `catalog.merge_rule`), hash to `metrics_catalog.sha256`
+(`catalog.hash_mismatch`) and carry its `id` and `version`
+(`catalog.identity_mismatch`). A snapshot with no block is a warning
+(`catalog.unreferenced`). See decision [0048 — Metric catalogs](#/decisions).
 
 A test `status` that disagrees with its steps is a **warning**, never a failure —
 the [test verdict is authored](#/decisions), so the validator checks, it does not
@@ -325,6 +336,7 @@ grows with the number of runs kept.
 | `metrics` | no constraint — free-form semantics unknowable | **namespaced by flattening** into the metric name: `<i>-<run_id>/<name>` (1-based index over eligible packs in CLI order; skipped packs consume no ordinal), each original typed object intact |
 | `environment` | no built-in constraint; rules pick sub-keys | **common subset** stays run-level; divergent keys **pushed down** per test (per-test value wins where already present) |
 | `merged_from` *(new, additive)* | — | list of source `run_id`s, in CLI order |
+| `metrics_catalog` | — | the first source's block, kept **only** when every eligible source carries the byte-identical `meta/metrics-catalog.yaml` (which is then kept too); otherwise absent (decision [0048](#/decisions)) |
 
 `coverage/` from each eligible source nests under `coverage/<i>-<run_id>/`
 (the same label used for metrics). The root `failure.yaml` index is
@@ -356,8 +368,13 @@ tests:
     - { test: login, winner: shard-c, rule: tests.identity.on_same=nest, action: nest, folder: login }
     - { test: login, winner: shard-d, rule: tests.identity.on_different=split, action: split, folder: login-1 }
   discarded: [flaky-login]
-output: { path: merged.evidence, run_id: nightly-2026-07-08, finalized: true }
+output: { path: merged.evidence, run_id: nightly-2026-07-08, finalized: true, ended_at: "2026-07-08T10:00:00Z" }
 ```
+
+`output.ended_at` (`endedAt` in the library) is the seal time: the latest `ended` (else `started`) among
+the **eligible** packs only, never a skipped one; `""` when none carries
+either. It is reported with or without `--finalize`, so a caller that merges
+live and seals the pack itself stamps the same time `--finalize` would.
 
 `action` and `folder` appear only on 0046's shape-changing outcomes; the other
 three fields are unconditional, so existing `--json` consumers keep parsing
@@ -367,3 +384,211 @@ challenger for `split`.
 Policy-sanctioned skips/discards exit `0` — the report carries the story. The
 pack itself stays clean: `merged_from` is the only in-pack trace of the
 merge.
+
+## `evidence verdict <pack> --policy <file>…`
+
+Judges a sealed pack against one or more **policies** and writes one verdict
+per policy, `<policy-id>.verdict.json`, next to the pack (or into `-o`). The
+pack is **never modified**: any sealed pack can be judged at any time, against
+any policy, as often as needed, and its bytes — so its sha256 — never change.
+See decisions [0047 — Verdict command](#/decisions),
+[0048 — Metric catalogs](#/decisions), [0049 — CEL](#/decisions) and
+[0050 — Exit codes and the sidecar](#/decisions).
+
+```bash
+evidence verdict <pack> --policy <file> [--policy <file> …] [-o <dir>] [--json]
+evidence verdict --lint --policy <file> [--policy <file> …] [--catalog <file>] [--json]
+```
+
+- `--policy` — a policy YAML; repeat for several. Each is checked before any
+  gate runs.
+- `-o` — where the verdict files go; default the pack's own directory.
+- `--lint` — check the policies only, with no pack and no network; against
+  `--catalog <file>` when given, else against the built-ins alone.
+- `--json` — print the verdict documents (or, with `--lint`, one
+  `{source, valid, diagnostics}` entry per policy).
+
+### The policy file
+
+```yaml
+# release-policy.yaml
+policy: release-2.x                 # id; names the verdict file
+requires:                           # optional: refuse packs from another catalog
+  catalog: kane-cli
+  version: ">=1"
+gates:
+  # a metric compared with exactly one operator
+  - { id: all-pass, metric: totals.failed,       equals: 0,          severity: blocking }
+  - { id: heals,    metric: metrics.self_heals,  max: 3,             severity: warning }
+  - { id: lcp,      metric: metrics.perf.lcp_ms, range: [0, 2500],   severity: warning }
+  # a per-test metric narrowed with `where` (CEL over `test`)
+  - id: checkout-pass-rate
+    metric: pass_rate
+    where: "'checkout' in test.tags"
+    min: 0.95
+    severity: blocking
+  # a free expression gate: CEL that must be a bool
+  - id: no-flaky-critical
+    expr: "tests.filter(t, 'critical' in t.tags).all(t, !t.flaky)"
+    severity: blocking
+    message: critical tests must not be flaky
+```
+
+Built-in metrics are unprefixed; a producer's metrics are always
+`metrics.<name>`. A metric's catalog `type` fixes the operators:
+
+| Type | Operators |
+| --- | --- |
+| `count`, `integer`, `ms`, `bytes`, `currency` | `equals` · `min` · `max` · `range` · `in` |
+| `ratio`, `percentage`, `decimal` | `min` · `max` · `range` |
+| `string`, `enum` | `equals` · `in` |
+
+`severity: blocking` — a failure fails the verdict; `warning` — reported as
+`warn`, does not fail it. An **errored** gate errors the verdict whatever its
+severity, because the pack could not be judged. `src/schemas/policy.schema.json`
+is the schema; unknown keys are rejected.
+
+### Built-in metrics (`evidence-core` 0.1)
+
+| Name | Type | How it is computed | `where` |
+| --- | --- | --- | --- |
+| `totals.tests` · `passed` · `failed` · `broken` · `skipped` | count | counted from every top-level `tests/<id>/result.yaml` status | yes |
+| `pass_rate` | ratio [0, 1] | passed ÷ (tests − skipped); errors when every test was skipped | yes |
+| `steps.total` · `failed` · `skipped` | count | step statuses in each `result.yaml` | yes |
+| `run.duration_ms` | ms | `run.yaml` ended − started | no |
+| `run.status` | enum | `run.yaml` status | no |
+| `failures.count` | count | rows in the root `failure.yaml` index | no |
+
+The built-in catalog is `src/schemas/0.1/evidence-core.catalog.json`, in the
+same format as a producer catalog.
+
+### Metric catalogs
+
+A producer defines its metrics in a catalog
+(`src/schemas/metrics-catalog.schema.json`) and snapshots it into the pack at
+`meta/metrics-catalog.yaml`, recorded in `run.yaml` as
+`metrics_catalog: {id, version, sha256, source}`. The verdict reads **only**
+that snapshot. Each metric has a `type`, optional `unit`/`range`/`values`,
+`per_test`, a `merge` rule, and a `verify` rule:
+
+| `verify` | The verdict | `trust` |
+| --- | --- | --- |
+| `stored` | reads `run.yaml.metrics.<name>`; checks type, unit and range | `stored` |
+| `{file, path}` | reads a dot-path from a `.yaml`/`.json` file in the pack | `file` |
+| `{aggregate, over?, path? \| value?, where?}` | folds a per-test value (`sum` `min` `max` `mean` `count` `p50` `p90` `p95`) over `tests/*/<file>` (default `tests/*/result.yaml`); a test the `where` keeps that has no `path` (or whose `value` is null) errors the gate (`verdict.metric_missing`) instead of being left out, so a catalog narrows to the tests that carry the path with `where: has(test.<path>)` | `recomputed` |
+| `{expr}` | evaluates CEL over the pack facts | `recomputed` |
+
+When a recomputed metric also has a stored value, the two must agree, or the
+gate errors with `verdict.stored_mismatch` and reports both numbers. A pack
+with no catalog is still judged on built-ins; its `metrics.*` gates error
+(`verdict.catalog_missing`). On a **merged** pack a producer metric follows its
+`merge` rule: `sum`/`min`/`max`/`mean` combine every source's stored
+`<label>/<name>`, each first checked for type, unit and range like a single
+stored value (one bad source errors the gate). Every source in `merged_from`
+must store the metric, or the gate errors (`verdict.metric_missing`); a source
+that was itself a merged pack contributes its own sources'
+`<label>/<inner label>/<name>` values. `recompute` re-runs its aggregate/expr over the merged tests,
+`none` (the default) errors the gate.
+
+A metric may name `min_producer`, the lowest producer version (semver) that
+writes the facts it reads. A gate on it errors (`verdict.producer_version`)
+when any test was written by an older producer, or the pack records no
+producer version: each test's `result.yaml` `environment.producer.version`,
+else `run.yaml`'s. The catalog-level `min_producer` is for the service that
+hands catalogs out; the verdict does not read it.
+
+### Expressions (CEL)
+
+`where`, `expr`, and a catalog's `verify.expr` / aggregate `value` and `where`
+are CEL. A gate `expr` and a catalog `verify.expr` see `run`, `tests`,
+`totals` and `failures`; a `where` and an aggregate's `value`/`where` see
+`test`, `file` and `run`. A test is its `result.yaml` plus `id`, with absent
+`tags`/`requirements`/`steps` read as `[]` and absent `flaky` as `false`.
+Numbers read from files are doubles; `totals.*` and `size()` are ints. Added
+functions: `sum(list)`, `mean(list)`, `percentile(list, p)` (nearest rank).
+Limits: 1000 AST nodes, depth 32, 1,000,000 list reads from the facts and
+5,000,000 evaluation steps per evaluation. The step limit counts every node
+evaluated, loop steps over lists the expression builds itself included, which
+the list-read limit cannot see.
+A `where` must be a bool: one whose type is known to be something else is
+rejected when the policy or catalog is checked (`policy.expr_type`,
+`catalog.expr`), and one that gives a non-bool for a test errors the gate
+(`verdict.expr_error`) instead of leaving the test out.
+
+### Checking a policy
+
+The policy is checked before any gate runs and every problem is reported at
+once, each as a Diagnostic with `code`, `location`, `message`, `line`,
+`column` and a `hint`:
+
+| Code | When |
+| --- | --- |
+| `policy.parse` / `policy.schema` | bad YAML, or a shape `policy.schema.json` rejects |
+| `policy.unknown_key` | a key the format does not know (hint: the closest key) |
+| `policy.duplicate_gate` | two gates with one id |
+| `policy.unknown_metric` | a name in neither evidence-core nor the catalog (hint: the closest names, and what was searched) |
+| `policy.builtin_prefixed` | `metrics.<built-in>` |
+| `policy.op_not_allowed` | an operator the metric's type does not allow |
+| `policy.value_type` | a threshold of the wrong type, outside the metric's range, or not one of an enum's values |
+| `policy.where_not_per_test` | `where` on a whole-run metric |
+| `policy.expr_syntax` / `policy.expr_type` | an expression that does not parse, names an unknown variable, mistypes, or is not a bool |
+| `policy.catalog_required` | `requires` names a catalog or version the pack (or `--catalog`) does not have |
+| `policy.catalog_needed` *(warning)* | `--lint` without `--catalog`, on a `metrics.*` gate or `requires` |
+
+A policy that cannot be read (parse, schema, unknown key, duplicate gate) is a
+**usage error**: nothing is judged. So is a policy that does not check clean
+against the pack's catalog: every problem of every policy is listed and
+nothing is judged. The exception is `policy.catalog_required`: a pack that
+carries no catalog, or not the one `requires` names, errors that policy's
+verdict, since the pack is what is missing.
+
+### Judging
+
+The pack must be `finalized` (else `verdict.unfinalized`) and pass L0
+validation (else `verdict.pack_invalid`). Each gate then resolves its metric
+and compares. Gate errors: `verdict.catalog_missing`, `verdict.metric_missing`,
+`verdict.stored_mismatch`, `verdict.stored_type`, `verdict.value_type`,
+`verdict.out_of_range`, `verdict.expr_error`, `verdict.merge_none`,
+`verdict.merge_unsupported`, `verdict.producer_version`. The verdict `result` is `errored` if the policy or
+any gate errored, else `fail` if any blocking gate failed, else `pass`.
+
+### The verdict file
+
+`src/schemas/verdict.schema.json`; one per policy, beside the pack:
+
+```yaml
+result: fail                                     # pass | fail | errored
+evaluated_at: 2026-10-21T10:12:03Z
+evaluator: evidence-cli 0.2.0
+pack:    { run_id: nightly-4821, sha256: "…", contract: "0.1" }   # sha256 of the sealed file; null for a directory
+policy:  { id: release-2.x, sha256: "…" }                         # sha256 of the exact policy bytes
+catalog: { id: kane-cli, version: 3, sha256: "…", source: controller }   # or null
+error: null                                      # {code, message, hint} when the policy as a whole errored
+gates:
+  - { id: all-pass, metric: totals.failed, where: null, op: equals, expected: 0, actual: 1,
+      severity: blocking, status: fail, trust: recomputed, message: null, error: null, stored: null }
+failed_gates: [all-pass]
+warnings: []
+errored_gates: []
+exit_code: 1
+```
+
+### Exit codes
+
+`0` every policy passed · `1` a policy failed and none errored · `3` a policy
+errored · `2` usage (bad flags, an unreadable or unparseable policy, a policy
+that does not check clean against the pack's catalog, an unreadable pack, a
+policy id given twice). With `--lint`: `0` no errors, `1`
+problems found, `2` usage.
+
+### Library
+
+```ts
+verdict(pack: string, opts: { policies: { content: string; path?: string }[]; evaluatedAt?: string }): Promise<VerdictDoc[]>
+lintPolicy(text: string, opts?: { catalog?: Catalog | null; source?: string }): Diagnostic[]
+judge(pack: PackFacts, policy: Policy, catalogs?: Catalog[], opts?: { evaluatedAt?: string }): VerdictDoc
+loadPackFacts(pack: string): Promise<PackFacts>
+loadPolicy(text: string, opts?: { source?: string }): { policy: Policy | null; diagnostics: Diagnostic[] }
+loadCatalog(text: string): Catalog            // throws CatalogLoadError with every diagnostic
+writeVerdicts(docs: VerdictDoc[], dir: string): Promise<string[]>
+```

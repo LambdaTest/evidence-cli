@@ -75,6 +75,18 @@
         "additionalProperties": true
       }
     },
+    "metrics_catalog": {
+      "description": "Present when the producer snapshotted its metric catalog into the pack at meta/metrics-catalog.yaml: which catalog it is and the sha256 hex of the snapshot's bytes. `validate` checks the snapshot exists, conforms, hashes to `sha256` and carries `id` and `version`. `source` is the producer's own word for where the catalog came from (e.g. controller, cache, bundled). See decision 0048.",
+      "type": "object",
+      "required": ["id", "version", "sha256"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "version": { "type": ["integer", "string"] },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "source": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": true
+    },
     "merged_from": {
       "description": "Present only on a pack produced by `evidence merge`: the source run_ids, in CLI order. The additive slice of deferred lineage (0014). See decision 0045.",
       "type": "array",

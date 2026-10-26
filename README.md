@@ -1,12 +1,12 @@
 # evidence-cli — TestMu AI (formerly LambdaTest)
 
 **An open, framework-agnostic format for what a test run produced — the
-`.evidence` pack, and the library + CLI that validate and seal it.**
+`.evidence` pack, and the library + CLI that validate, seal, merge and judge it.**
 
 [![npm version](https://img.shields.io/npm/v/@testmuai/evidence-cli)](https://www.npmjs.com/package/@testmuai/evidence-cli)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 [![CI](https://github.com/LambdaTest/evidence-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/LambdaTest/evidence-cli/actions/workflows/ci.yml)
-![Node](https://img.shields.io/badge/node-%3E%3D18-brightgreen)
+![Node](https://img.shields.io/badge/node-%3E%3D20.19-brightgreen)
 [![Discord](https://img.shields.io/badge/Discord-Join%20the%20community-5865F2?logo=discord&logoColor=white)](https://discord.gg/SqVMtNeWEf)
 
 One shape, whatever made it — a browser agent, a Playwright suite, a Jest run, an
@@ -16,7 +16,7 @@ without knowing the framework that wrote it.
 ## Install
 
 ```bash
-# As a library (Node 18+)
+# As a library (Node 20.19+)
 npm install @testmuai/evidence-cli
 
 # Or the CLI, globally
@@ -44,6 +44,21 @@ const { totals, sealedPath } = await finalize("my-run.evidence", {
 });
 ```
 
+Judge a sealed pack against one or more policies. The pack is never modified;
+each verdict is a separate document you keep beside it:
+
+```ts
+import { verdict, writeVerdicts, lintPolicy } from "@testmuai/evidence-cli";
+import { readFileSync } from "node:fs";
+
+const content = readFileSync("release-policy.yaml", "utf8");
+for (const d of lintPolicy(content)) console.error(`${d.code} line ${d.line}: ${d.message}`);
+
+const [doc] = await verdict("my-run.evidence", { policies: [{ content, path: "release-policy.yaml" }] });
+console.log(doc.result, doc.failed_gates); // "fail" [ "all-pass" ]
+await writeVerdicts([doc], "."); // ./release-2.x.verdict.json
+```
+
 The package ships type definitions; `validate` and `finalize` are the load-bearing
 entry points, and the pack container types (`openContainer`, `RemoteZipContainer`,
 …) are exported for reading packs directly — including ranged reads from a blob
@@ -55,10 +70,42 @@ store.
 evidence validate my-run.evidence --profile L0   # check a directory OR a sealed .evidence zip
 evidence validate my-run.evidence --profile L1   # L1 = L0 + the captured-artifact layer
 evidence finalize my-run.evidence/               # roll up totals, hash definitions, seal → .evidence
+evidence merge a.evidence b.evidence --run-id nightly -o merged.evidence --finalize
+evidence verdict my-run.evidence --policy release-policy.yaml   # writes release-2.x.verdict.json beside the pack
+evidence verdict --lint --policy release-policy.yaml [--catalog kane-catalog.yaml]
 ```
 
-Exit codes: `0` valid · `1` invalid · `2` usage error. Add `--json` for a
+Exit codes: `0` valid / passed · `1` invalid / failed · `2` usage error ·
+`3` a verdict errored (the pack could not be judged). Add `--json` for a
 machine-readable report.
+
+### Verdict policies
+
+A policy is a list of gates over **metrics**: built-ins every pack has
+(`totals.failed`, `pass_rate`, `steps.failed`, `run.duration_ms`, …) and a
+producer's own `metrics.<name>`, defined in the metric catalog the producer
+snapshots into the pack at `meta/metrics-catalog.yaml`. Gates compare a metric
+with `equals`, `min`, `max`, `range` or `in`, can be narrowed per test with a
+`where`, or are free CEL expressions:
+
+```yaml
+policy: release-2.x
+gates:
+  - { id: all-pass, metric: totals.failed, equals: 0, severity: blocking }
+  - { id: checkout, metric: pass_rate, where: "'checkout' in test.tags", min: 0.95, severity: blocking }
+  - { id: no-flaky-critical, expr: "tests.filter(t, 'critical' in t.tags).all(t, !t.flaky)", severity: warning }
+```
+
+Values are recomputed from the pack's own files wherever possible; a stored
+number that disagrees with its recompute errors the gate rather than passing
+it. A missing value is never read as zero: a test with no value for an
+aggregated path, a merged source that stored no value, or a pack written by a
+producer older than the metric's `min_producer` all error the gate. A policy
+that does not check clean against the pack's catalog (an unknown metric, an
+operator its type does not allow) is a usage error, exit `2`, listing every
+problem. Expressions are bounded per evaluation (fact reads and evaluation
+steps), so no policy can hang a verdict. See [the verdict
+contract](design/contract/03-commands.md) and decisions 0047–0050.
 
 ## What's in a pack
 

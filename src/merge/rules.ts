@@ -83,10 +83,10 @@ export async function loadRules(rulesPath?: string): Promise<MergeRules> {
   };
 }
 
-/** Walk a dot-path into parsed YAML; undefined means the key is absent. */
+/** Walk a dot-path of own keys into parsed YAML; undefined means the key is absent. */
 export function getKey(obj: unknown, dotPath: string): unknown {
   return dotPath.split(".").reduce<unknown>((o, k) => {
-    if (o == null || typeof o !== "object") return undefined;
+    if (o == null || typeof o !== "object" || !Object.hasOwn(o, k)) return undefined;
     return (o as Record<string, unknown>)[k];
   }, obj);
 }

@@ -1,0 +1,20 @@
+evidence: "0.1"
+run_id: k-run
+status: finalized
+title: t-k-run
+started: 2026-07-08T08:00:00Z
+metrics: { "flaky_rate": { "value": 0, "type": "ratio" } }
+metrics_catalog:
+  {
+    "id": "kane-cli",
+    "version": 3,
+    "sha256": "c35f953a3a688d0e8fecb516f5e7cefdfe0a9193737a146ae1e32dc14e357d6a",
+    "source": "controller"
+  }
+ended: 2026-07-08T08:10:00Z
+totals:
+  tests: 2
+  passed: 2
+  failed: 0
+  broken: 0
+  skipped: 0

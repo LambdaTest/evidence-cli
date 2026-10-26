@@ -1,0 +1,11 @@
+generated: 2026-07-08T08:10:00Z
+totals:
+  failures: 1
+  triaged: 0
+  untriaged: 1
+failures:
+  - test: login
+    ordinal: 2
+    step: pay
+    status: failed
+    path: tests/login/steps/2-pay/failure.yaml
