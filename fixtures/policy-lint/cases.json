@@ -17,6 +17,30 @@
       "text": "policy: p\ngates:\n  - { id: g, expr: \"sum([1, 2]) > 0 && mean([1.0, 2.0]) > 0.0 && percentile([1, 2, 3], 90) >= 1.0\", severity: blocking }\n"
     },
     {
+      "name": "a double compared with an int",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"double(run.duration_ms) > 1\", severity: blocking }\n"
+    },
+    {
+      "name": "an int compared with a double",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"totals.failed <= 0.0 || totals.failed < 1.5\", severity: blocking }\n"
+    },
+    {
+      "name": "an int compared with a uint",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"size(tests) >= 1u\", severity: blocking }\n"
+    },
+    {
+      "name": "a size compared with a double",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"size(tests) > 0.5\", severity: blocking }\n"
+    },
+    {
+      "name": "a string extension function",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"run.branch.lowerAscii() == 'main'\", severity: blocking }\n"
+    },
+    {
+      "name": "member matches",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"run.branch.matches('^rel')\", severity: blocking }\n"
+    },
+    {
       "name": "producer metric named like a prototype key",
       "text": "policy: p\ngates:\n  - { id: g, metric: metrics.healed_tests, max: 1, severity: blocking }\n"
     }
@@ -160,6 +184,41 @@
       "text": "policy: p\ngates:\n  - { id: g, expr: \"size([[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[1]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]) > 0\", severity: blocking }\n",
       "codes": [
         "policy.expr_syntax"
+      ]
+    },
+    {
+      "name": "a list literal mixing int and double",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"sum([1, 2.0]) > 0\", severity: blocking }\n",
+      "codes": [
+        "policy.expr_type"
+      ]
+    },
+    {
+      "name": "a list literal mixing int and string",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"[1, 'a'].size() == 2\", severity: blocking }\n",
+      "codes": [
+        "policy.expr_type"
+      ]
+    },
+    {
+      "name": "a map literal mixing value types",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"{'a': 1, 'b': 'x'}.size() == 2\", severity: blocking }\n",
+      "codes": [
+        "policy.expr_type"
+      ]
+    },
+    {
+      "name": "global matches",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"matches(run.branch, '^rel')\", severity: blocking }\n",
+      "codes": [
+        "policy.expr_type"
+      ]
+    },
+    {
+      "name": "YAML whose aliases expand past the limit",
+      "text": "a0: &a0 [x, x, x, x, x, x, x, x, x]\na1: &a1 [*a0, *a0, *a0, *a0, *a0, *a0, *a0, *a0, *a0]\na2: &a2 [*a1, *a1, *a1, *a1, *a1, *a1, *a1, *a1, *a1]\na3: &a3 [*a2, *a2, *a2, *a2, *a2, *a2, *a2, *a2, *a2]\na4: &a4 [*a3, *a3, *a3, *a3, *a3, *a3, *a3, *a3, *a3]\na5: &a5 [*a4, *a4, *a4, *a4, *a4, *a4, *a4, *a4, *a4]\na6: &a6 [*a5, *a5, *a5, *a5, *a5, *a5, *a5, *a5, *a5]\na7: &a7 [*a6, *a6, *a6, *a6, *a6, *a6, *a6, *a6, *a6]\na8: &a8 [*a7, *a7, *a7, *a7, *a7, *a7, *a7, *a7, *a7]\na9: &a9 [*a8, *a8, *a8, *a8, *a8, *a8, *a8, *a8, *a8]\na10: &a10 [*a9, *a9, *a9, *a9, *a9, *a9, *a9, *a9, *a9]\na11: &a11 [*a10, *a10, *a10, *a10, *a10, *a10, *a10, *a10, *a10]\npolicy: p\ngates:\n  - { id: g, metric: totals.failed, max: 0, severity: blocking }\n",
+      "codes": [
+        "policy.parse"
       ]
     },
     {
