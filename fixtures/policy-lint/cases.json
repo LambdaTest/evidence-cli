@@ -1,0 +1,246 @@
+{
+  "description": "Policy lint cases shared with other implementations of the lint (Test Manager's server-side check). clean: no error-severity diagnostic. cases: the set of error-severity codes, in any order. Linted against catalogs['kane-cli'] plus the built-in evidence-core catalog.",
+  "catalogs": {
+    "kane-cli": "catalog: kane-cli\nversion: 3\nmetrics:\n  self_heals: { type: count, verify: stored, merge: sum }\n  perf.lcp_ms: { type: ms, verify: stored }\n  flaky_rate: { type: ratio, range: [0, 1], verify: { expr: \"1.0\" } }\n  browser: { type: enum, values: [chrome, firefox], verify: stored }\n  healed_tests: { type: count, per_test: true, verify: { aggregate: count } }\n"
+  },
+  "clean": [
+    {
+      "name": "a clean policy against its catalog",
+      "text": "policy: release-2.x\nrequires: { catalog: kane-cli, version: \">=1\" }\ngates:\n  - { id: all-pass, metric: totals.failed, equals: 0, severity: blocking }\n  - { id: heals, metric: metrics.self_heals, max: 3, severity: warning }\n  - { id: lcp, metric: metrics.perf.lcp_ms, range: [0, 2500], severity: warning }\n  - { id: rate, metric: pass_rate, where: \"'checkout' in test.tags\", min: 0.95, severity: blocking }\n  - { id: browser, metric: metrics.browser, in: [chrome], severity: blocking }\n  - { id: status, metric: run.status, equals: finalized, severity: blocking }\n  - { id: flaky, expr: \"tests.filter(t, 'critical' in t.tags).all(t, !t.flaky)\", severity: blocking }\n"
+    },
+    {
+      "name": "where with a dyn result",
+      "text": "policy: p\ngates:\n  - { id: g, metric: pass_rate, where: \"test.flaky\", min: 0.5, severity: blocking }\n"
+    },
+    {
+      "name": "custom functions in expr",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"sum([1, 2]) > 0 && mean([1.0, 2.0]) > 0.0 && percentile([1, 2, 3], 90) >= 1.0\", severity: blocking }\n"
+    },
+    {
+      "name": "producer metric named like a prototype key",
+      "text": "policy: p\ngates:\n  - { id: g, metric: metrics.healed_tests, max: 1, severity: blocking }\n"
+    }
+  ],
+  "cases": [
+    {
+      "name": "unknown producer metric, with a suggestion",
+      "text": "policy: p\ngates:\n  - { id: heals, metric: metrics.self_heal, max: 3, severity: warning }\n",
+      "codes": [
+        "policy.unknown_metric"
+      ]
+    },
+    {
+      "name": "unknown built-in, with a suggestion",
+      "text": "policy: p\ngates:\n  - { id: g, metric: totals.faild, equals: 0, severity: blocking }\n",
+      "codes": [
+        "policy.unknown_metric"
+      ]
+    },
+    {
+      "name": "producer metric written without metrics.",
+      "text": "policy: p\ngates:\n  - { id: g, metric: self_heals, max: 1, severity: blocking }\n",
+      "codes": [
+        "policy.unknown_metric"
+      ]
+    },
+    {
+      "name": "built-in written with metrics.",
+      "text": "policy: p\ngates:\n  - { id: rate, metric: metrics.pass_rate, min: 0.9, severity: blocking }\n",
+      "codes": [
+        "policy.builtin_prefixed"
+      ]
+    },
+    {
+      "name": "equals on a ratio",
+      "text": "policy: p\ngates:\n  - { id: g, metric: pass_rate, equals: 1, severity: blocking }\n",
+      "codes": [
+        "policy.op_not_allowed"
+      ]
+    },
+    {
+      "name": "min on an enum",
+      "text": "policy: p\ngates:\n  - { id: g, metric: run.status, min: 1, severity: blocking }\n",
+      "codes": [
+        "policy.op_not_allowed"
+      ]
+    },
+    {
+      "name": "non-integer threshold on a count",
+      "text": "policy: p\ngates:\n  - { id: g, metric: totals.failed, max: 0.5, severity: blocking }\n",
+      "codes": [
+        "policy.value_type"
+      ]
+    },
+    {
+      "name": "string threshold on a count",
+      "text": "policy: p\ngates:\n  - { id: g, metric: totals.failed, in: [zero], severity: blocking }\n",
+      "codes": [
+        "policy.value_type"
+      ]
+    },
+    {
+      "name": "threshold outside the metric range",
+      "text": "policy: p\ngates:\n  - { id: g, metric: pass_rate, min: 95, severity: blocking }\n",
+      "codes": [
+        "policy.value_type"
+      ]
+    },
+    {
+      "name": "range with lo > hi",
+      "text": "policy: p\ngates:\n  - { id: g, metric: run.duration_ms, range: [10, 1], severity: blocking }\n",
+      "codes": [
+        "policy.value_type"
+      ]
+    },
+    {
+      "name": "enum value not in the catalog",
+      "text": "policy: p\ngates:\n  - { id: g, metric: run.status, equals: done, severity: blocking }\n",
+      "codes": [
+        "policy.value_type"
+      ]
+    },
+    {
+      "name": "where on a whole-run metric",
+      "text": "policy: p\ngates:\n  - { id: g, metric: run.duration_ms, where: \"'x' in test.tags\", max: 10, severity: blocking }\n",
+      "codes": [
+        "policy.where_not_per_test"
+      ]
+    },
+    {
+      "name": "where that does not parse",
+      "text": "policy: p\ngates:\n  - { id: g, metric: pass_rate, where: \"'x' in\", min: 0.5, severity: blocking }\n",
+      "codes": [
+        "policy.expr_syntax"
+      ]
+    },
+    {
+      "name": "where that is not a bool",
+      "text": "policy: p\ngates:\n  - { id: g, metric: pass_rate, where: \"size(test.tags)\", min: 0.5, severity: blocking }\n",
+      "codes": [
+        "policy.expr_type"
+      ]
+    },
+    {
+      "name": "expr that does not parse",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"tests.all(t,\", severity: blocking }\n",
+      "codes": [
+        "policy.expr_syntax"
+      ]
+    },
+    {
+      "name": "expr with an unknown variable",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"test.flaky\", severity: blocking }\n",
+      "codes": [
+        "policy.expr_type"
+      ]
+    },
+    {
+      "name": "expr that is not a bool",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"size(tests)\", severity: blocking }\n",
+      "codes": [
+        "policy.expr_type"
+      ]
+    },
+    {
+      "name": "expr calling an unknown function",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"median(tests) > 1\", severity: blocking }\n",
+      "codes": [
+        "policy.expr_type"
+      ]
+    },
+    {
+      "name": "expr over the AST node limit",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"size([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]) > 0\", severity: blocking }\n",
+      "codes": [
+        "policy.expr_syntax"
+      ]
+    },
+    {
+      "name": "expr over the depth limit",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"size([[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[1]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]) > 0\", severity: blocking }\n",
+      "codes": [
+        "policy.expr_syntax"
+      ]
+    },
+    {
+      "name": "requires a different catalog",
+      "text": "policy: p\nrequires: { catalog: other }\ngates:\n  - { id: g, expr: \"true\", severity: blocking }\n",
+      "codes": [
+        "policy.catalog_required"
+      ]
+    },
+    {
+      "name": "requires a newer catalog",
+      "text": "policy: p\nrequires: { catalog: kane-cli, version: \">=4\" }\ngates:\n  - { id: g, expr: \"true\", severity: blocking }\n",
+      "codes": [
+        "policy.catalog_required"
+      ]
+    },
+    {
+      "name": "reports every problem in one pass, structural and semantic",
+      "text": "policy: p\ngates:\n  - { id: a, metric: metrics.self_heal, max: 3, severity: warning }\n  - { id: b, metric: metrics.perf.lcp_ms, equals: 1.5, severity: warning }\n  - { id: c, metric: metrics.pass_rate, min: 0.9, severity: blocking }\n  - { id: c, expr: \"true\", severity: blocking, minimum: 1 }\n",
+      "codes": [
+        "policy.unknown_metric",
+        "policy.builtin_prefixed",
+        "policy.unknown_key",
+        "policy.duplicate_gate"
+      ]
+    },
+    {
+      "name": "prototype name constructor is an unknown metric",
+      "text": "policy: p\ngates:\n  - { id: g, metric: \"constructor\", max: 1, severity: blocking }\n",
+      "codes": [
+        "policy.unknown_metric"
+      ]
+    },
+    {
+      "name": "prototype name toString is an unknown metric",
+      "text": "policy: p\ngates:\n  - { id: g, metric: \"toString\", max: 1, severity: blocking }\n",
+      "codes": [
+        "policy.unknown_metric"
+      ]
+    },
+    {
+      "name": "prototype name __proto__ is an unknown metric",
+      "text": "policy: p\ngates:\n  - { id: g, metric: \"__proto__\", max: 1, severity: blocking }\n",
+      "codes": [
+        "policy.unknown_metric"
+      ]
+    },
+    {
+      "name": "prototype name hasOwnProperty is an unknown metric",
+      "text": "policy: p\ngates:\n  - { id: g, metric: \"hasOwnProperty\", max: 1, severity: blocking }\n",
+      "codes": [
+        "policy.unknown_metric"
+      ]
+    },
+    {
+      "name": "prototype name metrics.constructor is an unknown metric",
+      "text": "policy: p\ngates:\n  - { id: g, metric: \"metrics.constructor\", max: 1, severity: blocking }\n",
+      "codes": [
+        "policy.unknown_metric"
+      ]
+    },
+    {
+      "name": "prototype name metrics.toString is an unknown metric",
+      "text": "policy: p\ngates:\n  - { id: g, metric: \"metrics.toString\", max: 1, severity: blocking }\n",
+      "codes": [
+        "policy.unknown_metric"
+      ]
+    },
+    {
+      "name": "prototype name metrics.__proto__ is an unknown metric",
+      "text": "policy: p\ngates:\n  - { id: g, metric: \"metrics.__proto__\", max: 1, severity: blocking }\n",
+      "codes": [
+        "policy.unknown_metric"
+      ]
+    },
+    {
+      "name": "YAML that does not parse",
+      "text": "policy: [",
+      "codes": [
+        "policy.parse"
+      ]
+    }
+  ]
+}

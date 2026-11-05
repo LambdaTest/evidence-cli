@@ -1,77 +1,65 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { loadCatalog } from "./catalog";
 import { checkPolicy, lintPolicy } from "./lint";
 import { loadPolicy } from "./policy";
 
-const KANE = loadCatalog(`catalog: kane-cli
-version: 3
-metrics:
-  self_heals: { type: count, verify: stored, merge: sum }
-  perf.lcp_ms: { type: ms, verify: stored }
-  flaky_rate: { type: ratio, range: [0, 1], verify: { expr: "1.0" } }
-  browser: { type: enum, values: [chrome, firefox], verify: stored }
-  healed_tests: { type: count, per_test: true, verify: { aggregate: count } }
-`);
+interface LintCase { name: string; text: string; codes: string[] }
+interface LintFixture { catalogs: Record<string, string>; clean: { name: string; text: string }[]; cases: LintCase[] }
+
+// Shared with other implementations of the lint (Test Manager checks uploaded policies with a Go port).
+const FIXTURE: LintFixture = JSON.parse(readFileSync(join(__dirname, "../../fixtures/policy-lint/cases.json"), "utf-8"));
+const KANE = loadCatalog(FIXTURE.catalogs["kane-cli"]);
 
 function gates(...lines: string[]): string {
   return `policy: p\ngates:\n${lines.map((l) => `  - ${l}`).join("\n")}\n`;
 }
 
+const errorCodes = (text: string) =>
+  lintPolicy(text, { catalog: KANE }).filter((d) => d.severity === "error").map((d) => d.code);
+
 describe("lintPolicy", () => {
-  it("passes a clean policy against its catalog", () => {
-    const text = `policy: release-2.x
-requires: { catalog: kane-cli, version: ">=1" }
-gates:
-  - { id: all-pass, metric: totals.failed, equals: 0, severity: blocking }
-  - { id: heals, metric: metrics.self_heals, max: 3, severity: warning }
-  - { id: lcp, metric: metrics.perf.lcp_ms, range: [0, 2500], severity: warning }
-  - { id: rate, metric: pass_rate, where: "'checkout' in test.tags", min: 0.95, severity: blocking }
-  - { id: browser, metric: metrics.browser, in: [chrome], severity: blocking }
-  - { id: status, metric: run.status, equals: finalized, severity: blocking }
-  - { id: flaky, expr: "tests.filter(t, 'critical' in t.tags).all(t, !t.flaky)", severity: blocking }
-`;
-    expect(lintPolicy(text, { catalog: KANE })).toEqual([]);
+  it.each(FIXTURE.clean)("clean: $name", ({ text }) => {
+    expect(errorCodes(text)).toEqual([]);
   });
 
-  const cases: { name: string; text: string; code: string; hint?: RegExp; message?: RegExp; severity?: string }[] = [
-    { name: "unknown producer metric, with a suggestion", text: gates("{ id: heals, metric: metrics.self_heal, max: 3, severity: warning }"), code: "policy.unknown_metric", hint: /"metrics\.self_heals".*kane-cli catalog v3/ },
-    { name: "unknown built-in, with a suggestion", text: gates("{ id: g, metric: totals.faild, equals: 0, severity: blocking }"), code: "policy.unknown_metric", hint: /"totals\.failed"/ },
-    { name: "producer metric written without metrics.", text: gates("{ id: g, metric: self_heals, max: 1, severity: blocking }"), code: "policy.unknown_metric", hint: /metric: metrics\.self_heals/ },
-    { name: "built-in written with metrics.", text: gates("{ id: rate, metric: metrics.pass_rate, min: 0.9, severity: blocking }"), code: "policy.builtin_prefixed", hint: /metric: pass_rate/ },
-    { name: "equals on a ratio", text: gates("{ id: g, metric: pass_rate, equals: 1, severity: blocking }"), code: "policy.op_not_allowed", hint: /min, max, range/ },
-    { name: "min on an enum", text: gates("{ id: g, metric: run.status, min: 1, severity: blocking }"), code: "policy.op_not_allowed", hint: /equals, in/ },
-    { name: "non-integer threshold on a count", text: gates("{ id: g, metric: totals.failed, max: 0.5, severity: blocking }"), code: "policy.value_type", message: /integer/ },
-    { name: "string threshold on a count", text: gates("{ id: g, metric: totals.failed, in: [zero], severity: blocking }"), code: "policy.value_type" },
-    { name: "threshold outside the metric range", text: gates("{ id: g, metric: pass_rate, min: 95, severity: blocking }"), code: "policy.value_type", message: /\[0, 1\]/ },
-    { name: "range with lo > hi", text: gates("{ id: g, metric: run.duration_ms, range: [10, 1], severity: blocking }"), code: "policy.value_type" },
-    { name: "enum value not in the catalog", text: gates("{ id: g, metric: run.status, equals: done, severity: blocking }"), code: "policy.value_type", hint: /running, finalized, aborted/ },
-    { name: "where on a whole-run metric", text: gates("{ id: g, metric: run.duration_ms, where: \"'x' in test.tags\", max: 10, severity: blocking }"), code: "policy.where_not_per_test", hint: /pass_rate/ },
-    { name: "where that does not parse", text: gates("{ id: g, metric: pass_rate, where: \"'x' in\", min: 0.5, severity: blocking }"), code: "policy.expr_syntax" },
-    { name: "where that is not a bool", text: gates("{ id: g, metric: pass_rate, where: \"size(test.tags)\", min: 0.5, severity: blocking }"), code: "policy.expr_type", message: /bool/ },
-    { name: "expr that does not parse", text: gates("{ id: g, expr: \"tests.all(t,\", severity: blocking }"), code: "policy.expr_syntax" },
-    { name: "expr with an unknown variable", text: gates("{ id: g, expr: \"test.flaky\", severity: blocking }"), code: "policy.expr_type", hint: /run, tests, totals, failures/ },
-    { name: "expr that is not a bool", text: gates("{ id: g, expr: \"size(tests)\", severity: blocking }"), code: "policy.expr_type", message: /bool/ },
-    { name: "requires a different catalog", text: `policy: p\nrequires: { catalog: other }\ngates:\n  - { id: g, expr: "true", severity: blocking }\n`, code: "policy.catalog_required", hint: /kane-cli/ },
-    { name: "requires a newer catalog", text: `policy: p\nrequires: { catalog: kane-cli, version: ">=4" }\ngates:\n  - { id: g, expr: "true", severity: blocking }\n`, code: "policy.catalog_required", message: /v3/ },
-  ];
-  it.each(cases)("$name", ({ text, code, hint, message }) => {
-    const diags = lintPolicy(text, { catalog: KANE });
-    const d = diags.find((x) => x.code === code);
-    expect(d, JSON.stringify(diags, null, 1)).toBeDefined();
+  it.each(FIXTURE.cases)("$name", ({ text, codes }) => {
+    expect([...new Set(errorCodes(text))].sort()).toEqual([...new Set(codes)].sort());
+  });
+
+  // Hint and message wording, checked here only: other implementations match codes, not prose.
+  const wording: Record<string, { code: string; hint?: RegExp; message?: RegExp }> = {
+    "unknown producer metric, with a suggestion": { code: "policy.unknown_metric", hint: /"metrics\.self_heals".*kane-cli catalog v3/ },
+    "unknown built-in, with a suggestion": { code: "policy.unknown_metric", hint: /"totals\.failed"/ },
+    "producer metric written without metrics.": { code: "policy.unknown_metric", hint: /metric: metrics\.self_heals/ },
+    "built-in written with metrics.": { code: "policy.builtin_prefixed", hint: /metric: pass_rate/ },
+    "equals on a ratio": { code: "policy.op_not_allowed", hint: /min, max, range/ },
+    "min on an enum": { code: "policy.op_not_allowed", hint: /equals, in/ },
+    "non-integer threshold on a count": { code: "policy.value_type", message: /integer/ },
+    "threshold outside the metric range": { code: "policy.value_type", message: /\[0, 1\]/ },
+    "enum value not in the catalog": { code: "policy.value_type", hint: /running, finalized, aborted/ },
+    "where on a whole-run metric": { code: "policy.where_not_per_test", hint: /pass_rate/ },
+    "where that is not a bool": { code: "policy.expr_type", message: /bool/ },
+    "expr with an unknown variable": { code: "policy.expr_type", hint: /run, tests, totals, failures/ },
+    "expr that is not a bool": { code: "policy.expr_type", message: /bool/ },
+    "requires a different catalog": { code: "policy.catalog_required", hint: /kane-cli/ },
+    "requires a newer catalog": { code: "policy.catalog_required", message: /v3/ },
+  };
+  it.each(Object.entries(wording))("wording: %s", (name, { code, hint, message }) => {
+    const c = FIXTURE.cases.find((x) => x.name === name);
+    expect(c, name).toBeDefined();
+    const d = lintPolicy(c!.text, { catalog: KANE }).find((x) => x.code === code);
+    expect(d).toBeDefined();
     expect(d!.severity).toBe("error");
     expect(d!.line).toBeGreaterThan(0);
     if (hint) expect(d!.hint).toMatch(hint);
     if (message) expect(d!.message).toMatch(message);
   });
 
-  it("reports every problem in one pass, structural and semantic", () => {
-    const text = gates(
-      "{ id: a, metric: metrics.self_heal, max: 3, severity: warning }",
-      "{ id: b, metric: metrics.perf.lcp_ms, equals: 1.5, severity: warning }",
-      "{ id: c, metric: metrics.pass_rate, min: 0.9, severity: blocking }",
-      "{ id: c, expr: \"true\", severity: blocking, minimum: 1 }",
-    );
-    expect(lintPolicy(text, { catalog: KANE }).map((d) => d.code)).toEqual([
+  it("reports every problem in one pass, in line order", () => {
+    const c = FIXTURE.cases.find((x) => x.name === "reports every problem in one pass, structural and semantic")!;
+    expect(lintPolicy(c.text, { catalog: KANE }).map((d) => d.code)).toEqual([
       "policy.unknown_metric",
       "policy.builtin_prefixed",
       "policy.unknown_key",
@@ -90,12 +78,6 @@ gates:
     expect(diags[0].hint).toMatch(/--catalog/);
   });
 
-  const prototypeNames = ["constructor", "toString", "__proto__", "hasOwnProperty", "metrics.constructor", "metrics.toString", "metrics.__proto__"];
-  it.each(prototypeNames)("reports %s as an unknown metric, not a built-in", (name) => {
-    const diags = lintPolicy(gates(`{ id: g, metric: "${name}", max: 1, severity: blocking }`), { catalog: KANE });
-    expect(diags.map((d) => d.code)).toEqual(["policy.unknown_metric"]);
-  });
-
   it("finds a producer metric named constructor, and hints the prefix when it is written bare", () => {
     const catalog = loadCatalog("catalog: c\nversion: 1\nmetrics:\n  constructor: { type: count, verify: stored }\n");
     expect(lintPolicy(gates("{ id: g, metric: metrics.constructor, max: 1, severity: blocking }"), { catalog })).toEqual([]);
@@ -109,9 +91,6 @@ gates:
     expect(diags[0].hint).not.toMatch(/metrics\.toString/);
   });
 
-  it("returns only the parse error when the YAML does not parse", () => {
-    expect(lintPolicy("policy: [").map((d) => d.code)).toEqual(["policy.parse"]);
-  });
 });
 
 describe("checkPolicy in a pack context", () => {
