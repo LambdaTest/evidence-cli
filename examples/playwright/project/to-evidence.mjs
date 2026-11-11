@@ -83,19 +83,40 @@ for (const suite of report.suites) {
       steps,
     });
 
-    // Playwright takes one screenshot per test, when it ends: on the step that
-    // failed, or on the last step of a test that passed.
+    // Every step gets a folder. step.json is the per-step record the viewer
+    // reads for its label (summary) and address bar (url); screenshot.png is
+    // what the page looked like when the step ended. Both come from the
+    // attachments the `step()` helper in tests/fixtures.ts records.
+    const attachment = (name) => result.attachments.find((a) => a.name === name);
+    const save = (a, file) => {
+      if (a?.path) copyFileSync(a.path, file);
+      else if (a?.body) writeFileSync(file, Buffer.from(a.body, 'base64'));
+      return Boolean(a?.path || a?.body);
+    };
+    const text = (a) => (a?.body ? Buffer.from(a.body, 'base64').toString('utf8') : a?.path ? readFileSync(a.path, 'utf8') : undefined);
     const failedAt = result.steps.findIndex((s) => s.error);
+    for (const step of steps) {
+      const stepDir = join(dir, 'steps', `${step.ordinal}-${step.id}`);
+      mkdirSync(stepDir, { recursive: true });
+      let shot = save(attachment(`step-screenshot:${step.title}`), join(stepDir, 'screenshot.png'));
+      // Fall back to Playwright's own end-of-test screenshot for the step it ended on.
+      const endsTest = step === steps.at(failedAt);
+      if (!shot && endsTest) shot = save(attachment('screenshot'), join(stepDir, 'screenshot.png'));
+      writeFileSync(join(stepDir, 'step.json'), JSON.stringify({
+        id: step.id,
+        kind: step.kind ?? 'action',
+        status: step.status,
+        summary: step.title,
+        url: text(attachment(`step-url:${step.title}`)),
+        duration_ms: step.duration_ms,
+      }, null, 2) + '\n');
+    }
     const last = steps.at(failedAt);
-    const stepDir = join(dir, 'steps', `${last.ordinal}-${last.id}`);
-    mkdirSync(stepDir, { recursive: true });
-    const attachment = (name) => result.attachments.find((a) => a.name === name)?.path;
-    if (attachment('screenshot')) copyFileSync(attachment('screenshot'), join(stepDir, 'screenshot.png'));
 
     const failedStep = failedAt === -1 ? null : result.steps[failedAt];
     if (failedStep) {
-      const snapshot = attachment('error-context');
-      if (snapshot) copyFileSync(snapshot, join(stepDir, 'error-context.md'));
+      const stepDir = join(dir, 'steps', `${last.ordinal}-${last.id}`);
+      const snapshot = save(attachment('error-context'), join(stepDir, 'error-context.md'));
       const loc = failedStep.error.location;
       yaml(join(stepDir, 'failure.yaml'), {
         step: last.id,
@@ -123,7 +144,7 @@ for (const suite of report.suites) {
     // Logs: the test's slice of the JSON report, and its stack trace when it failed.
     const logs = [{ name: 'playwright-result', file: 'playwright-result.json', format: 'json' }];
     writeFileSync(join(dir, 'logs', 'playwright-result.json'),
-      scrub(JSON.stringify({ ...spec, tests: [{ ...test, results: [{ ...result, attachments: result.attachments.map((a) => ({ ...a, path: basename(a.path) })) }] }] }, null, 2)) + '\n');
+      scrub(JSON.stringify({ ...spec, tests: [{ ...test, results: [{ ...result, attachments: result.attachments.map(({ body, ...a }) => ({ ...a, ...(a.path && { path: basename(a.path) }) })) }] }] }, null, 2)) + '\n');
     if (result.errors?.length) {
       writeFileSync(join(dir, 'logs', 'error.log'), result.errors.map((e) => scrub(e.stack ?? e.message)).join('\n\n') + '\n');
       logs.push({ name: 'error', file: 'error.log', format: 'log' });

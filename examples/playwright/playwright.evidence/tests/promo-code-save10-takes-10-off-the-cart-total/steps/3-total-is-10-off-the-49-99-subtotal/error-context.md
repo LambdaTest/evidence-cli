@@ -7,7 +7,7 @@
 # Test info
 
 - Name: promo-code.spec.ts >> SAVE10 takes 10% off the cart total
-- Location: tests/promo-code.spec.ts:3:5
+- Location: tests/promo-code.spec.ts:3:1
 
 # Error details
 
@@ -34,18 +34,18 @@ Call log:
 # Test source
 
 ```ts
-  1  | import { test, expect } from './fixtures';
+  1  | import { test, expect, step } from './fixtures';
   2  | 
   3  | test('SAVE10 takes 10% off the cart total', async ({ page }) => {
-  4  |   await test.step('open the cart', async () => {
+  4  |   await step(page, 'open the cart', async () => {
   5  |     await page.goto('/cart');
   6  |   });
-  7  |   await test.step('apply promo code SAVE10', async () => {
+  7  |   await step(page, 'apply promo code SAVE10', async () => {
   8  |     await page.getByLabel('Promo code').fill('SAVE10');
   9  |     await page.getByRole('button', { name: 'Apply' }).click();
   10 |     await expect(page.getByRole('status')).toHaveText('SAVE10 applied: 10% off');
   11 |   });
-  12 |   await test.step('total is 10% off the $49.99 subtotal', async () => {
+  12 |   await step(page, 'total is 10% off the $49.99 subtotal', async () => {
 > 13 |     await expect(page.getByTestId('cart-total')).toHaveText('$44.99');
      |                                                  ^ Error: expect(locator).toHaveText(expected) failed
   14 |   });

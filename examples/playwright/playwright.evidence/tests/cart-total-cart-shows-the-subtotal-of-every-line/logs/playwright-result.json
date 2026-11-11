@@ -14,7 +14,7 @@
           "workerIndex": 0,
           "parallelIndex": 0,
           "status": "passed",
-          "duration": 210,
+          "duration": 1708,
           "errors": [],
           "stdout": [],
           "stderr": [],
@@ -22,20 +22,44 @@
           "steps": [
             {
               "title": "open the cart",
-              "duration": 34
+              "duration": 47
             },
             {
               "title": "two lines are listed",
-              "duration": 44
+              "duration": 46
             },
             {
               "title": "total equals the sum of the lines",
-              "duration": 6
+              "duration": 33
             }
           ],
-          "startTime": "2026-11-11T13:44:19.347Z",
+          "startTime": "2026-11-11T14:40:44.855Z",
           "annotations": [],
           "attachments": [
+            {
+              "name": "step-url:open the cart",
+              "contentType": "text/plain"
+            },
+            {
+              "name": "step-screenshot:open the cart",
+              "contentType": "image/png"
+            },
+            {
+              "name": "step-url:two lines are listed",
+              "contentType": "text/plain"
+            },
+            {
+              "name": "step-screenshot:two lines are listed",
+              "contentType": "image/png"
+            },
+            {
+              "name": "step-url:total equals the sum of the lines",
+              "contentType": "text/plain"
+            },
+            {
+              "name": "step-screenshot:total equals the sum of the lines",
+              "contentType": "image/png"
+            },
             {
               "name": "screenshot",
               "contentType": "image/png",
@@ -50,5 +74,5 @@
   "id": "2eb203001832875bbe74-e0b439e3c99ebb4a3bda",
   "file": "cart-total.spec.ts",
   "line": 3,
-  "column": 5
+  "column": 1
 }

@@ -1,0 +1,8 @@
+{
+  "id": "open-the-cart",
+  "kind": "action",
+  "status": "passed",
+  "summary": "open the cart",
+  "url": "https://shop.example.test/cart",
+  "duration_ms": 47
+}

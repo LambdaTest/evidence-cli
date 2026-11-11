@@ -1,0 +1,8 @@
+{
+  "id": "total-is-10-off-the-49-99-subtotal",
+  "kind": "assertion",
+  "status": "failed",
+  "summary": "total is 10% off the $49.99 subtotal",
+  "url": "https://shop.example.test/cart",
+  "duration_ms": 2032
+}

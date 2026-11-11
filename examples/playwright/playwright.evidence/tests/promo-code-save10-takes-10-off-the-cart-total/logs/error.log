@@ -13,11 +13,12 @@ Call log:
 
 
   11 |   });
-  12 |   await test.step('total is 10% off the $49.99 subtotal', async () => {
+  12 |   await step(page, 'total is 10% off the $49.99 subtotal', async () => {
 > 13 |     await expect(page.getByTestId('cart-total')).toHaveText('$44.99');
      |                                                  ^
   14 |   });
   15 | });
   16 |
-    at tests/promo-code.spec.ts:13:50
+    at body (tests/promo-code.spec.ts:13:50)
+    at tests/fixtures.ts:24:13
     at tests/promo-code.spec.ts:12:3

@@ -1,0 +1,8 @@
+{
+  "id": "two-lines-are-listed",
+  "kind": "action",
+  "status": "passed",
+  "summary": "two lines are listed",
+  "url": "https://shop.example.test/cart",
+  "duration_ms": 46
+}

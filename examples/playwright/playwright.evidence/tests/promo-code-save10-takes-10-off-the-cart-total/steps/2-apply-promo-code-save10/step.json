@@ -1,0 +1,8 @@
+{
+  "id": "apply-promo-code-save10",
+  "kind": "action",
+  "status": "passed",
+  "summary": "apply promo code SAVE10",
+  "url": "https://shop.example.test/cart",
+  "duration_ms": 201
+}

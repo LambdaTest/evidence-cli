@@ -33,7 +33,9 @@ Received: "$47.49"
 Timeout:  2000ms
 ```
 
-Playwright 1.63.0, Chromium, `retries: 0`, `screenshot: 'on'`.
+Playwright 1.63.0, Chromium, `retries: 0`, `screenshot: 'on'`. Each `test.step` goes through a
+small `step()` helper (`project/tests/fixtures.ts`) that also records the page URL and a
+screenshot when the step ends, so every step has its own frame in the viewer.
 
 ## The pack
 
@@ -46,14 +48,19 @@ playwright.evidence/
     cart-total.spec.ts                      # L0 — the definition: the spec file itself, opaque and hashed
     result.yaml                             # L0 — status: passed, 3 steps (one per test.step)
     logs/meta.yaml  playwright-result.json  # L1 — this test's slice of Playwright's JSON report
-    steps/3-total-equals-the-sum-of-the-lines/screenshot.png
+    steps/1-open-the-cart/                  #      one folder per step, each with:
+      step.json                             #      the viewer's per-step record: summary (label), url, kind, status
+      screenshot.png                        #      the page when the step ended
+    steps/2-two-lines-are-listed/  steps/3-total-equals-the-sum-of-the-lines/
   tests/promo-code-save10-takes-10-off-the-cart-total/
     promo-code.spec.ts                      # L0 — the definition
     result.yaml                             # L0 — status: failed; step 3 carries kind/defect/expected/actual/check
     logs/meta.yaml  playwright-result.json  error.log
+    steps/1-open-the-cart/  steps/2-apply-promo-code-save10/   # step.json + screenshot.png
     steps/3-total-is-10-off-the-49-99-subtotal/
+      step.json                             #      kind: assertion, status: failed
       failure.yaml                          # L1 — why the step failed: error, locator, source, snippet, page state
-      screenshot.png                        #      the frame Playwright took on failure (shows $47.49)
+      screenshot.png                        #      the page when the assertion gave up (shows $47.49)
       error-context.md                      #      Playwright's page snapshot at failure, referenced as page_state.a11y
 ```
 
@@ -78,7 +85,7 @@ and the product was wrong) from `broken` (the check could not decide). A failed
     ordinal: 3
     title: total is 10% off the $49.99 subtotal
     status: failed
-    duration_ms: 2008
+    duration_ms: 2032
     kind: assertion
     defect: Product
     expected: $44.99
@@ -146,7 +153,8 @@ output to a live pack. It is a sketch of a producer, not a published reporter.
 | Each attempt | `result.yaml` `attempts[]` |
 | An `expect` matcher failure | step `status: failed`, `kind: assertion`, `defect: Product`, plus `expected`/`actual` taken from the matcher's `Expected:`/`Received:` lines |
 | Any other error (an action timeout, a crash) | step `status: broken`, `defect: Test` |
-| The `screenshot` attachment | `steps/<ordinal>-<id>/screenshot.png` on the failed step, or on the last step of a passing test |
+| The `step()` helper's attachments (`tests/fixtures.ts`): the page URL and a screenshot when each step ends | `steps/<ordinal>-<id>/step.json` (`summary` = the step title, `url`) and `screenshot.png`. step.json is opaque to the format; evidence.lambdatest.com reads it for each step's label and address bar |
+| Playwright's own end-of-test `screenshot` | fallback `screenshot.png` for the step the test ended on |
 | The `error-context` attachment | `steps/<ordinal>-<id>/error-context.md`, referenced as `page_state.a11y` |
 | The test's JSON result and stack | `logs/playwright-result.json`, `logs/error.log` |
 

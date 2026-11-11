@@ -1,15 +1,15 @@
 evidence: "0.1"
-run_id: 2c16f8bb-8131-462f-a9a4-a57b6b0e042f
+run_id: 7a7e283a-9542-4982-ac4a-4362717cc738
 status: finalized
 title: Demo Shop — cart checks (Playwright)
-started: 2026-11-11T13:44:18.850Z
+started: 2026-11-11T14:40:44.277Z
 environment:
   producer:
     name: playwright
     version: 1.63.0
   browser: chromium
-  workers: 2
-ended: 2026-11-11T13:44:22.113Z
+  workers: 5
+ended: 2026-11-11T14:40:49.350Z
 totals:
   tests: 2
   passed: 1
