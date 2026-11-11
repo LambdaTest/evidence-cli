@@ -1,0 +1,4 @@
+logs:
+  - name: playwright-result
+    file: playwright-result.json
+    format: json

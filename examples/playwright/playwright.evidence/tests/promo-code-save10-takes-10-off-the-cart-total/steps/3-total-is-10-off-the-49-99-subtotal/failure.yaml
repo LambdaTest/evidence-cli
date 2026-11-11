@@ -1,0 +1,36 @@
+step: total-is-10-off-the-49-99-subtotal
+status: failed
+title: "total is 10% off the $49.99 subtotal: expected $44.99, got $47.49"
+expected: $44.99
+actual: $47.49
+error:
+  type: AssertionError
+  message: |-
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator:  getByTestId('cart-total')
+    Expected: "$44.99"
+    Received: "$47.49"
+    Timeout:  2000ms
+
+    Call log:
+      - Expect "toHaveText" getByTestId('cart-total') with timeout 2000ms
+      - waiting for getByTestId('cart-total')
+        21 × locator resolved to <span id="total" data-testid="cart-total">$47.49</span>
+           - unexpected value "$47.49"
+repro:
+  definition: promo-code.spec.ts
+locator_context:
+  locator: getByTestId('cart-total')
+  source: promo-code.spec.ts:13:50
+  snippet: |2-
+      11 |   });
+      12 |   await test.step('total is 10% off the $49.99 subtotal', async () => {
+    > 13 |     await expect(page.getByTestId('cart-total')).toHaveText('$44.99');
+         |                                                  ^
+      14 |   });
+      15 | });
+      16 |
+page_state:
+  screenshot: steps/3-total-is-10-off-the-49-99-subtotal/screenshot.png
+  a11y: steps/3-total-is-10-off-the-49-99-subtotal/error-context.md

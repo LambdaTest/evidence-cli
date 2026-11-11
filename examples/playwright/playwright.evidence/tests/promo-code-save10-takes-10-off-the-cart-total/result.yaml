@@ -1,0 +1,41 @@
+evidence: "0.1"
+test: promo-code-save10-takes-10-off-the-cart-total
+status: failed
+title: SAVE10 takes 10% off the cart total
+definition:
+  path: promo-code.spec.ts
+  sha256: sha256:57ed4c00e135ee0def7a27ca8b5e1b10c858cf6a200c1e19e94a6f5246cf9d63
+duration_ms: 2293
+external_id:
+  playwright_test_id: c1e2f537619f3036db4d-11de60f2364dd32dc0ec
+  file: promo-code.spec.ts
+  line: 3
+environment:
+  project: chromium
+  browser: chromium
+attempts:
+  - status: failed
+    duration_ms: 2293
+steps:
+  - id: open-the-cart
+    ordinal: 1
+    title: open the cart
+    status: passed
+    duration_ms: 29
+  - id: apply-promo-code-save10
+    ordinal: 2
+    title: apply promo code SAVE10
+    status: passed
+    duration_ms: 115
+  - id: total-is-10-off-the-49-99-subtotal
+    ordinal: 3
+    title: total is 10% off the $49.99 subtotal
+    status: failed
+    duration_ms: 2008
+    kind: assertion
+    defect: Product
+    expected: $44.99
+    actual: $47.49
+    check:
+      kind: value
+      matcher: toHaveText

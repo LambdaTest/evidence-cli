@@ -1,0 +1,12 @@
+generated: 2026-11-11T13:44:22.113Z
+totals:
+  failures: 1
+  triaged: 0
+  untriaged: 1
+failures:
+  - test: promo-code-save10-takes-10-off-the-cart-total
+    ordinal: 3
+    step: total-is-10-off-the-49-99-subtotal
+    status: failed
+    path: tests/promo-code-save10-takes-10-off-the-cart-total/steps/3-total-is-10-off-the-49-99-subtotal/failure.yaml
+    title: "total is 10% off the $49.99 subtotal: expected $44.99, got $47.49"
