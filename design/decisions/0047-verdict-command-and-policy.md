@@ -117,6 +117,13 @@ because a number was missing would be worse than no verdict.
 - `Diagnostic` gains optional `hint`, `line` and `column` (additive).
 - `design/features.yaml` gains the `verdict` feature; `03-commands.md` gains the
   `## verdict` section.
+- `fixtures/policy-lint/cases.json` holds the lint's cases (clean policies, and
+  the set of error codes each broken policy must produce, against one producer
+  catalog plus evidence-core). `src/verdict/lint.test.ts` runs them, and any
+  other implementation of the lint runs the same file: Test Manager re-checks
+  uploaded policies with a Go port and must report the same codes. A rule
+  change lands here first, with its case, so the other implementations fail
+  their tests until they match. Hint and message wording stay evidence-cli's own.
 - Deferred: per-policy trust requirements (e.g. blocking gates must be
   `recomputed`), waivers and overrides, signing a verdict (L3), and expressions
   that reference other metrics by name.

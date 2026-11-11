@@ -20,6 +20,11 @@ All notable changes to evidence-cli are documented here. This format follows
   Expressions are bounded by fact reads and by evaluation steps. Library:
   `verdict`, `lintPolicy`, `judge`, `loadPackFacts`, `loadPolicy`,
   `loadCatalog`, `writeVerdicts`. See decisions 0047, 0049, 0050.
+- **Policy lint fixture** — `fixtures/policy-lint/cases.json` holds the lint's
+  clean policies and the error codes each broken one must produce. evidence-cli's
+  tests run it, and other implementations of the lint (Test Manager's Go port)
+  must report the same codes. A policy whose YAML aliases expand past the
+  parser's limit is now `policy.parse` instead of a thrown error.
 - **Metric catalogs** — one format for the built-in `evidence-core` catalog
   (`totals.*`, `pass_rate`, `steps.*`, `run.duration_ms`, `run.status`,
   `failures.count`) and producer catalogs. A producer snapshots its catalog to

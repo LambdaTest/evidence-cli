@@ -169,7 +169,14 @@ export function loadPolicy(text: string, opts: { source?: string } = {}): { poli
     }
     return { policy: null, diagnostics: diags };
   }
-  const raw: any = doc.toJS();
+  let raw: any;
+  try {
+    raw = doc.toJS();
+  } catch (e) {
+    // The YAML parser refuses aliases that expand past its limit (a small file standing for a huge document).
+    diags.push(err("policy.parse", source, `policy is not valid YAML: ${e instanceof Error ? e.message : String(e)}`));
+    return { policy: null, diagnostics: diags };
+  }
   if (!isMap(doc.contents)) {
     diags.push(policyDiag(at, "policy.schema", [], "a policy must be a mapping with `policy` and `gates`"));
     return { policy: null, diagnostics: diags };

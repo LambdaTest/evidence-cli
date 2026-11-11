@@ -104,8 +104,15 @@ producer older than the metric's `min_producer` all error the gate. A policy
 that does not check clean against the pack's catalog (an unknown metric, an
 operator its type does not allow) is a usage error, exit `2`, listing every
 problem. Expressions are bounded per evaluation (fact reads and evaluation
-steps), so no policy can hang a verdict. See [the verdict
-contract](design/contract/03-commands.md) and decisions 0047–0050.
+steps), so no policy can hang a verdict. A policy whose YAML aliases expand
+past the parser's limit is a `policy.parse` problem, not a crash. See [the
+verdict contract](design/contract/03-commands.md) and decisions 0047–0050.
+
+The lint's cases live in `fixtures/policy-lint/cases.json`: clean policies, and
+the error codes each broken policy must produce. `src/verdict/lint.test.ts`
+runs them, and any other implementation of the lint runs the same file (Test
+Manager re-checks uploaded policies with a Go port). A rule change lands there
+first, with its case.
 
 ## What's in a pack
 

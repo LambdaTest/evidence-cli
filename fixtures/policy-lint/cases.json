@@ -1,0 +1,309 @@
+{
+  "description": "Policy lint cases shared with other implementations of the lint (Test Manager's server-side check). clean: no error-severity diagnostic. cases: the set of error-severity codes, in any order. Linted against catalogs['kane-cli'] plus the built-in evidence-core catalog.",
+  "catalogs": {
+    "kane-cli": "catalog: kane-cli\nversion: 3\nmetrics:\n  self_heals: { type: count, verify: stored, merge: sum }\n  perf.lcp_ms: { type: ms, verify: stored }\n  flaky_rate: { type: ratio, range: [0, 1], verify: { expr: \"1.0\" } }\n  browser: { type: enum, values: [chrome, firefox], verify: stored }\n  healed_tests: { type: count, per_test: true, verify: { aggregate: count } }\n"
+  },
+  "clean": [
+    {
+      "name": "a clean policy against its catalog",
+      "text": "policy: release-2.x\nrequires: { catalog: kane-cli, version: \">=1\" }\ngates:\n  - { id: all-pass, metric: totals.failed, equals: 0, severity: blocking }\n  - { id: heals, metric: metrics.self_heals, max: 3, severity: warning }\n  - { id: lcp, metric: metrics.perf.lcp_ms, range: [0, 2500], severity: warning }\n  - { id: rate, metric: pass_rate, where: \"'checkout' in test.tags\", min: 0.95, severity: blocking }\n  - { id: browser, metric: metrics.browser, in: [chrome], severity: blocking }\n  - { id: status, metric: run.status, equals: finalized, severity: blocking }\n  - { id: flaky, expr: \"tests.filter(t, 'critical' in t.tags).all(t, !t.flaky)\", severity: blocking }\n"
+    },
+    {
+      "name": "where with a dyn result",
+      "text": "policy: p\ngates:\n  - { id: g, metric: pass_rate, where: \"test.flaky\", min: 0.5, severity: blocking }\n"
+    },
+    {
+      "name": "custom functions in expr",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"sum([1, 2]) > 0 && mean([1.0, 2.0]) > 0.0 && percentile([1, 2, 3], 90) >= 1.0\", severity: blocking }\n"
+    },
+    {
+      "name": "a double compared with an int",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"double(run.duration_ms) > 1\", severity: blocking }\n"
+    },
+    {
+      "name": "an int compared with a double",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"totals.failed <= 0.0 || totals.failed < 1.5\", severity: blocking }\n"
+    },
+    {
+      "name": "an int compared with a uint",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"size(tests) >= 1u\", severity: blocking }\n"
+    },
+    {
+      "name": "a size compared with a double",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"size(tests) > 0.5\", severity: blocking }\n"
+    },
+    {
+      "name": "a string extension function",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"run.branch.lowerAscii() == 'main'\", severity: blocking }\n"
+    },
+    {
+      "name": "member matches",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"run.branch.matches('^rel')\", severity: blocking }\n"
+    },
+    {
+      "name": "producer metric named like a prototype key",
+      "text": "policy: p\ngates:\n  - { id: g, metric: metrics.healed_tests, max: 1, severity: blocking }\n"
+    },
+    {
+      "name": "two anchors reused 59 times each (under the per-anchor alias limit)",
+      "text": "policy: shared-aliases\ngates:\n  - {id: g0, metric: pass_rate, where: &w \"'checkout' in test.tags\", min: 0.5, severity: &s blocking}\n  - {id: g1, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g2, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g3, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g4, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g5, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g6, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g7, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g8, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g9, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g10, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g11, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g12, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g13, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g14, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g15, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g16, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g17, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g18, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g19, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g20, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g21, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g22, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g23, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g24, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g25, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g26, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g27, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g28, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g29, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g30, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g31, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g32, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g33, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g34, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g35, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g36, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g37, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g38, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g39, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g40, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g41, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g42, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g43, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g44, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g45, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g46, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g47, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g48, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g49, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g50, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g51, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g52, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g53, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g54, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g55, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g56, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g57, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g58, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n  - {id: g59, metric: pass_rate, where: *w, min: 0.5, severity: *s}\n"
+    }
+  ],
+  "cases": [
+    {
+      "name": "unknown producer metric, with a suggestion",
+      "text": "policy: p\ngates:\n  - { id: heals, metric: metrics.self_heal, max: 3, severity: warning }\n",
+      "codes": [
+        "policy.unknown_metric"
+      ]
+    },
+    {
+      "name": "unknown built-in, with a suggestion",
+      "text": "policy: p\ngates:\n  - { id: g, metric: totals.faild, equals: 0, severity: blocking }\n",
+      "codes": [
+        "policy.unknown_metric"
+      ]
+    },
+    {
+      "name": "producer metric written without metrics.",
+      "text": "policy: p\ngates:\n  - { id: g, metric: self_heals, max: 1, severity: blocking }\n",
+      "codes": [
+        "policy.unknown_metric"
+      ]
+    },
+    {
+      "name": "built-in written with metrics.",
+      "text": "policy: p\ngates:\n  - { id: rate, metric: metrics.pass_rate, min: 0.9, severity: blocking }\n",
+      "codes": [
+        "policy.builtin_prefixed"
+      ]
+    },
+    {
+      "name": "equals on a ratio",
+      "text": "policy: p\ngates:\n  - { id: g, metric: pass_rate, equals: 1, severity: blocking }\n",
+      "codes": [
+        "policy.op_not_allowed"
+      ]
+    },
+    {
+      "name": "min on an enum",
+      "text": "policy: p\ngates:\n  - { id: g, metric: run.status, min: 1, severity: blocking }\n",
+      "codes": [
+        "policy.op_not_allowed"
+      ]
+    },
+    {
+      "name": "non-integer threshold on a count",
+      "text": "policy: p\ngates:\n  - { id: g, metric: totals.failed, max: 0.5, severity: blocking }\n",
+      "codes": [
+        "policy.value_type"
+      ]
+    },
+    {
+      "name": "string threshold on a count",
+      "text": "policy: p\ngates:\n  - { id: g, metric: totals.failed, in: [zero], severity: blocking }\n",
+      "codes": [
+        "policy.value_type"
+      ]
+    },
+    {
+      "name": "threshold outside the metric range",
+      "text": "policy: p\ngates:\n  - { id: g, metric: pass_rate, min: 95, severity: blocking }\n",
+      "codes": [
+        "policy.value_type"
+      ]
+    },
+    {
+      "name": "range with lo > hi",
+      "text": "policy: p\ngates:\n  - { id: g, metric: run.duration_ms, range: [10, 1], severity: blocking }\n",
+      "codes": [
+        "policy.value_type"
+      ]
+    },
+    {
+      "name": "enum value not in the catalog",
+      "text": "policy: p\ngates:\n  - { id: g, metric: run.status, equals: done, severity: blocking }\n",
+      "codes": [
+        "policy.value_type"
+      ]
+    },
+    {
+      "name": "where on a whole-run metric",
+      "text": "policy: p\ngates:\n  - { id: g, metric: run.duration_ms, where: \"'x' in test.tags\", max: 10, severity: blocking }\n",
+      "codes": [
+        "policy.where_not_per_test"
+      ]
+    },
+    {
+      "name": "where that does not parse",
+      "text": "policy: p\ngates:\n  - { id: g, metric: pass_rate, where: \"'x' in\", min: 0.5, severity: blocking }\n",
+      "codes": [
+        "policy.expr_syntax"
+      ]
+    },
+    {
+      "name": "where that is not a bool",
+      "text": "policy: p\ngates:\n  - { id: g, metric: pass_rate, where: \"size(test.tags)\", min: 0.5, severity: blocking }\n",
+      "codes": [
+        "policy.expr_type"
+      ]
+    },
+    {
+      "name": "expr that does not parse",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"tests.all(t,\", severity: blocking }\n",
+      "codes": [
+        "policy.expr_syntax"
+      ]
+    },
+    {
+      "name": "expr with an unknown variable",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"test.flaky\", severity: blocking }\n",
+      "codes": [
+        "policy.expr_type"
+      ]
+    },
+    {
+      "name": "expr that is not a bool",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"size(tests)\", severity: blocking }\n",
+      "codes": [
+        "policy.expr_type"
+      ]
+    },
+    {
+      "name": "expr calling an unknown function",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"median(tests) > 1\", severity: blocking }\n",
+      "codes": [
+        "policy.expr_type"
+      ]
+    },
+    {
+      "name": "expr over the AST node limit",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"size([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]) > 0\", severity: blocking }\n",
+      "codes": [
+        "policy.expr_syntax"
+      ]
+    },
+    {
+      "name": "expr over the depth limit",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"size([[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[1]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]) > 0\", severity: blocking }\n",
+      "codes": [
+        "policy.expr_syntax"
+      ]
+    },
+    {
+      "name": "a list literal mixing int and double",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"sum([1, 2.0]) > 0\", severity: blocking }\n",
+      "codes": [
+        "policy.expr_type"
+      ]
+    },
+    {
+      "name": "a list literal mixing int and string",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"[1, 'a'].size() == 2\", severity: blocking }\n",
+      "codes": [
+        "policy.expr_type"
+      ]
+    },
+    {
+      "name": "a map literal mixing value types",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"{'a': 1, 'b': 'x'}.size() == 2\", severity: blocking }\n",
+      "codes": [
+        "policy.expr_type"
+      ]
+    },
+    {
+      "name": "global matches",
+      "text": "policy: p\ngates:\n  - { id: g, expr: \"matches(run.branch, '^rel')\", severity: blocking }\n",
+      "codes": [
+        "policy.expr_type"
+      ]
+    },
+    {
+      "name": "YAML whose aliases expand past the limit",
+      "text": "a0: &a0 [x, x, x, x, x, x, x, x, x]\na1: &a1 [*a0, *a0, *a0, *a0, *a0, *a0, *a0, *a0, *a0]\na2: &a2 [*a1, *a1, *a1, *a1, *a1, *a1, *a1, *a1, *a1]\na3: &a3 [*a2, *a2, *a2, *a2, *a2, *a2, *a2, *a2, *a2]\na4: &a4 [*a3, *a3, *a3, *a3, *a3, *a3, *a3, *a3, *a3]\na5: &a5 [*a4, *a4, *a4, *a4, *a4, *a4, *a4, *a4, *a4]\na6: &a6 [*a5, *a5, *a5, *a5, *a5, *a5, *a5, *a5, *a5]\na7: &a7 [*a6, *a6, *a6, *a6, *a6, *a6, *a6, *a6, *a6]\na8: &a8 [*a7, *a7, *a7, *a7, *a7, *a7, *a7, *a7, *a7]\na9: &a9 [*a8, *a8, *a8, *a8, *a8, *a8, *a8, *a8, *a8]\na10: &a10 [*a9, *a9, *a9, *a9, *a9, *a9, *a9, *a9, *a9]\na11: &a11 [*a10, *a10, *a10, *a10, *a10, *a10, *a10, *a10, *a10]\npolicy: p\ngates:\n  - { id: g, metric: totals.failed, max: 0, severity: blocking }\n",
+      "codes": [
+        "policy.parse"
+      ]
+    },
+    {
+      "name": "requires a different catalog",
+      "text": "policy: p\nrequires: { catalog: other }\ngates:\n  - { id: g, expr: \"true\", severity: blocking }\n",
+      "codes": [
+        "policy.catalog_required"
+      ]
+    },
+    {
+      "name": "requires a newer catalog",
+      "text": "policy: p\nrequires: { catalog: kane-cli, version: \">=4\" }\ngates:\n  - { id: g, expr: \"true\", severity: blocking }\n",
+      "codes": [
+        "policy.catalog_required"
+      ]
+    },
+    {
+      "name": "reports every problem in one pass, structural and semantic",
+      "text": "policy: p\ngates:\n  - { id: a, metric: metrics.self_heal, max: 3, severity: warning }\n  - { id: b, metric: metrics.perf.lcp_ms, equals: 1.5, severity: warning }\n  - { id: c, metric: metrics.pass_rate, min: 0.9, severity: blocking }\n  - { id: c, expr: \"true\", severity: blocking, minimum: 1 }\n",
+      "codes": [
+        "policy.unknown_metric",
+        "policy.builtin_prefixed",
+        "policy.unknown_key",
+        "policy.duplicate_gate"
+      ]
+    },
+    {
+      "name": "prototype name constructor is an unknown metric",
+      "text": "policy: p\ngates:\n  - { id: g, metric: \"constructor\", max: 1, severity: blocking }\n",
+      "codes": [
+        "policy.unknown_metric"
+      ]
+    },
+    {
+      "name": "prototype name toString is an unknown metric",
+      "text": "policy: p\ngates:\n  - { id: g, metric: \"toString\", max: 1, severity: blocking }\n",
+      "codes": [
+        "policy.unknown_metric"
+      ]
+    },
+    {
+      "name": "prototype name __proto__ is an unknown metric",
+      "text": "policy: p\ngates:\n  - { id: g, metric: \"__proto__\", max: 1, severity: blocking }\n",
+      "codes": [
+        "policy.unknown_metric"
+      ]
+    },
+    {
+      "name": "prototype name hasOwnProperty is an unknown metric",
+      "text": "policy: p\ngates:\n  - { id: g, metric: \"hasOwnProperty\", max: 1, severity: blocking }\n",
+      "codes": [
+        "policy.unknown_metric"
+      ]
+    },
+    {
+      "name": "prototype name metrics.constructor is an unknown metric",
+      "text": "policy: p\ngates:\n  - { id: g, metric: \"metrics.constructor\", max: 1, severity: blocking }\n",
+      "codes": [
+        "policy.unknown_metric"
+      ]
+    },
+    {
+      "name": "prototype name metrics.toString is an unknown metric",
+      "text": "policy: p\ngates:\n  - { id: g, metric: \"metrics.toString\", max: 1, severity: blocking }\n",
+      "codes": [
+        "policy.unknown_metric"
+      ]
+    },
+    {
+      "name": "prototype name metrics.__proto__ is an unknown metric",
+      "text": "policy: p\ngates:\n  - { id: g, metric: \"metrics.__proto__\", max: 1, severity: blocking }\n",
+      "codes": [
+        "policy.unknown_metric"
+      ]
+    },
+    {
+      "name": "YAML that does not parse",
+      "text": "policy: [",
+      "codes": [
+        "policy.parse"
+      ]
+    }
+  ]
+}
