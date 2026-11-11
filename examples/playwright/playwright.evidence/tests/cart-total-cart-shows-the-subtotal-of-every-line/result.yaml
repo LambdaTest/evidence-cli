@@ -1,0 +1,34 @@
+evidence: "0.1"
+test: cart-total-cart-shows-the-subtotal-of-every-line
+status: passed
+title: cart shows the subtotal of every line
+definition:
+  path: cart-total.spec.ts
+  sha256: sha256:e47d0e342cb7a10ed24c199891b37d20643df2c31fc5efb30fa4044d4cbd2237
+duration_ms: 1708
+external_id:
+  playwright_test_id: 2eb203001832875bbe74-e0b439e3c99ebb4a3bda
+  file: cart-total.spec.ts
+  line: 3
+environment:
+  project: chromium
+  browser: chromium
+attempts:
+  - status: passed
+    duration_ms: 1708
+steps:
+  - id: open-the-cart
+    ordinal: 1
+    title: open the cart
+    status: passed
+    duration_ms: 47
+  - id: two-lines-are-listed
+    ordinal: 2
+    title: two lines are listed
+    status: passed
+    duration_ms: 46
+  - id: total-equals-the-sum-of-the-lines
+    ordinal: 3
+    title: total equals the sum of the lines
+    status: passed
+    duration_ms: 33

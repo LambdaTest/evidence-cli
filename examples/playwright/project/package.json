@@ -1,0 +1,14 @@
+{
+  "name": "evidence-example-playwright",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "evidence": "node to-evidence.mjs results.json playwright.evidence && evidence finalize playwright.evidence"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@testmuai/evidence-cli": "^0.2.0",
+    "yaml": "^2.5.0"
+  }
+}

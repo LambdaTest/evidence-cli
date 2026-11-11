@@ -1,0 +1,8 @@
+{
+  "id": "total-equals-the-sum-of-the-lines",
+  "kind": "action",
+  "status": "passed",
+  "summary": "total equals the sum of the lines",
+  "url": "https://shop.example.test/cart",
+  "duration_ms": 33
+}

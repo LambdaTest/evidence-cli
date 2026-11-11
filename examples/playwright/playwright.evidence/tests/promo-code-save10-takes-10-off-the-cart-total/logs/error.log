@@ -1,0 +1,24 @@
+Error: expect(locator).toHaveText(expected) failed
+
+Locator:  getByTestId('cart-total')
+Expected: "$44.99"
+Received: "$47.49"
+Timeout:  2000ms
+
+Call log:
+  - Expect "toHaveText" getByTestId('cart-total') with timeout 2000ms
+  - waiting for getByTestId('cart-total')
+    21 × locator resolved to <span id="total" data-testid="cart-total">$47.49</span>
+       - unexpected value "$47.49"
+
+
+  11 |   });
+  12 |   await step(page, 'total is 10% off the $49.99 subtotal', async () => {
+> 13 |     await expect(page.getByTestId('cart-total')).toHaveText('$44.99');
+     |                                                  ^
+  14 |   });
+  15 | });
+  16 |
+    at body (tests/promo-code.spec.ts:13:50)
+    at tests/fixtures.ts:24:13
+    at tests/promo-code.spec.ts:12:3

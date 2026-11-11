@@ -1,0 +1,28 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Demo Shop — Cart</title>
+<style>body{font-family:system-ui,sans-serif;max-width:520px;margin:40px auto;color:#222}
+li{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #ddd}
+#total{font-size:1.4em;font-weight:600}button{padding:8px 14px;margin-top:12px}</style></head>
+<body>
+<h1>Your cart</h1>
+<ul id="items"></ul>
+<label>Promo code <input id="promo"></label>
+<button id="apply">Apply</button>
+<p id="promo-msg" role="status"></p>
+<p>Total: <span id="total" data-testid="cart-total"></span></p>
+<script>
+const items=[{name:'Wireless Mouse',price:24.99,qty:1},{name:'USB-C Cable',price:12.5,qty:2}];
+let discount=0;
+function render(){
+  document.getElementById('items').innerHTML=items.map(i=>'<li data-testid="line"><span>'+i.name+' × '+i.qty+'</span><span>$'+(i.price*i.qty).toFixed(2)+'</span></li>').join('');
+  const sub=items.reduce((s,i)=>s+i.price*i.qty,0);
+  // BUG: the 10% promo is applied to the first line only, not the subtotal.
+  const total=sub-(discount?items[0].price*items[0].qty*discount:0);
+  document.getElementById('total').textContent='$'+total.toFixed(2);
+}
+document.getElementById('apply').onclick=()=>{
+  if(document.getElementById('promo').value.trim().toUpperCase()==='SAVE10'){discount=0.1;document.getElementById('promo-msg').textContent='SAVE10 applied: 10% off';}
+  render();
+};
+render();
+</script></body></html>
