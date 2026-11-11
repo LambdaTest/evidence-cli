@@ -1,12 +1,15 @@
 # Example: a Playwright pack with a failed assertion
 
 This directory holds a **real `.evidence` pack produced from a Playwright run**
-(`playwright.evidence/`), the Playwright project that produced it (`project/`),
-and this walkthrough.
+(`playwright.evidence/`, and sealed as `sealed/playwright.evidence`), the
+Playwright project that produced it (`project/`), and this walkthrough.
 
 The [kane-cli example](../kane-cli/overview.md) shows a clean run. This one shows
 what a **failure** looks like in a pack: one test passes, and one fails on an
 `expect(...).toHaveText(...)` assertion because the product is wrong.
+
+**[Open this pack in the viewer ↗](https://evidence.lambdatest.com/?pack=https%3A%2F%2Fraw.githubusercontent.com%2FLambdaTest%2Fevidence-cli%2Fmain%2Fexamples%2Fplaywright%2Fsealed%2Fplaywright.evidence)**
+GitHub serves the sealed file with Range support, so the viewer reads it in place.
 
 ## The run
 
@@ -170,7 +173,18 @@ committed `playwright.evidence/` is that zip unpacked, so you can browse it here
 Run IDs, timestamps and durations change between runs. The definition hashes
 don't change unless you edit the specs.
 
-To view the pack, open it in the viewer the same way as the
-[kane-cli pack](../kane-cli/overview.md#the-viewer): drop the sealed file onto
-`https://evidence.lambdatest.com`, or serve it with HTTP Range support and open
-`?pack=<url>`.
+## View it
+
+`sealed/playwright.evidence` is the sealed zip that `finalize` wrote; the
+committed `playwright.evidence/` directory is exactly that zip unpacked. Open it
+in the viewer the same way as the [kane-cli pack](../kane-cli/overview.md#the-viewer):
+
+- **By URL:** GitHub's raw host answers HTTP Range requests and allows
+  cross-origin reads, so the committed file works as a `?pack=` URL:
+  [evidence.lambdatest.com/?pack=…/main/examples/playwright/sealed/playwright.evidence](https://evidence.lambdatest.com/?pack=https%3A%2F%2Fraw.githubusercontent.com%2FLambdaTest%2Fevidence-cli%2Fmain%2Fexamples%2Fplaywright%2Fsealed%2Fplaywright.evidence).
+  For another branch, replace `main` in the encoded URL.
+- **By file:** download `sealed/playwright.evidence` and drop it onto
+  `https://evidence.lambdatest.com`.
+
+If you regenerate the pack, replace `sealed/playwright.evidence` with the new
+sealed zip and the directory with its unpacked contents, so the two stay in step.
